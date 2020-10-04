@@ -45,7 +45,7 @@ cp linux-5.3.18-scarlett-gen3.patch /usr/src
 
 It is highly recommended to make a copy of the kernel to not to clash with the factory kernel:
 ```bash
-cd /usr/src/linux
+cd /usr/src
 cp -r linux-`uname -r` linux-5.3.18-custom-rt
 ```
 
