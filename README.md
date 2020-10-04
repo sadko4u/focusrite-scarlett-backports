@@ -1,9 +1,9 @@
 # Focusrite Scarlett Gen3 backports
 
-This is backport of [https://github.com/geoffreybennett](Geoffrey D. Bennet's)
-[https://github.com/geoffreybennett/scarlett-gen2](Linux kernel driver)
+This is backport of [Geoffrey D. Bennet's](https://github.com/geoffreybennett)
+[Linux kernel driver](https://github.com/geoffreybennett/scarlett-gen2)
 that adds support of Focusrite Scarlett Gen3 devices formed as a single patch to the
-Linux Kernel 5.3.18 currently used in [https://www.opensuse.org/](openSUSE Leap 15.2).
+Linux Kernel 5.3.18 currently used in [openSUSE Leap 15.2](https://www.opensuse.org/).
 
 The supported list of Gen3 devices:
 
@@ -69,7 +69,7 @@ Optionally, you may configure your custom kernel to not to clash with standard k
 make menuconfig
 ```
 
-Then go to ```General setup``` and modify the parameter ```Local version - append to kernel release``` to match the linux kernel
+Then go to ```General setup``` and modify the parameter ```Local version -> append to kernel release``` to match the linux kernel
 directory name. For ```linux-5.3.18-custom-rt``` the value should be ```-custom-rt```.
 
 Save configuration and leave.
@@ -102,6 +102,8 @@ echo "options snd_usb_audio vid=0x1235 pid=0x8213 device_setup=1" >> /etc/modpro
 echo "options snd_usb_audio vid=0x1235 pid=0x8214 device_setup=1" >> /etc/modprobe.d/scarlett-gen3.conf
 echo "options snd_usb_audio vid=0x1235 pid=0x8215 device_setup=1" >> /etc/modprobe.d/scarlett-gen3.conf
 ```
+
+These options will enable driver for all supported Gen3 devices.
 
 Enabling MSD (Mass Storage Device) mode seems to me to be something that you would never want to do, so once you disable it the
 control gets hidden (use device_setup=3 if you really want to make it reappear).
