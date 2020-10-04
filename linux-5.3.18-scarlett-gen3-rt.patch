@@ -1,6 +1,6 @@
-diff -uNr linux-5.3.18-lp152.44/sound/usb/mixer.c linux-5.3.18-custom/sound/usb/mixer.c
---- linux-5.3.18-lp152.44/sound/usb/mixer.c	2020-09-30 21:51:43.000000000 +0300
-+++ linux-5.3.18-custom/sound/usb/mixer.c	2020-10-04 21:37:44.257649438 +0300
+diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer.c linux-5.3.18-custom-rt/sound/usb/mixer.c
+--- linux-5.3.18-custom-rt-orig/sound/usb/mixer.c	2020-10-04 12:17:41.113670329 +0300
++++ linux-5.3.18-custom-rt/sound/usb/mixer.c	2020-10-04 13:52:15.068810987 +0300
 @@ -50,7 +50,7 @@
  #include "mixer_quirks.h"
  #include "power.h"
@@ -10,10 +10,10 @@ diff -uNr linux-5.3.18-lp152.44/sound/usb/mixer.c linux-5.3.18-custom/sound/usb/
  
  struct usb_audio_term {
  	int id;
-diff -uNr linux-5.3.18-lp152.44/sound/usb/mixer_quirks.c linux-5.3.18-custom/sound/usb/mixer_quirks.c
---- linux-5.3.18-lp152.44/sound/usb/mixer_quirks.c	2020-09-30 21:51:43.000000000 +0300
-+++ linux-5.3.18-custom/sound/usb/mixer_quirks.c	2020-10-04 21:33:03.399757416 +0300
-@@ -2684,6 +2684,10 @@
+diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_quirks.c linux-5.3.18-custom-rt/sound/usb/mixer_quirks.c
+--- linux-5.3.18-custom-rt-orig/sound/usb/mixer_quirks.c	2020-10-04 12:17:41.113670329 +0300
++++ linux-5.3.18-custom-rt/sound/usb/mixer_quirks.c	2020-10-04 13:51:47.145996149 +0300
+@@ -2267,6 +2267,10 @@
  	case USB_ID(0x1235, 0x8203): /* Focusrite Scarlett 6i6 2nd Gen */
  	case USB_ID(0x1235, 0x8204): /* Focusrite Scarlett 18i8 2nd Gen */
  	case USB_ID(0x1235, 0x8201): /* Focusrite Scarlett 18i20 2nd Gen */
@@ -24,9 +24,9 @@ diff -uNr linux-5.3.18-lp152.44/sound/usb/mixer_quirks.c linux-5.3.18-custom/sou
  		err = snd_scarlett_gen2_controls_create(mixer);
  		break;
  
-diff -uNr linux-5.3.18-lp152.44/sound/usb/mixer_scarlett_gen2.c linux-5.3.18-custom/sound/usb/mixer_scarlett_gen2.c
---- linux-5.3.18-lp152.44/sound/usb/mixer_scarlett_gen2.c	2020-09-30 21:51:43.000000000 +0300
-+++ linux-5.3.18-custom/sound/usb/mixer_scarlett_gen2.c	2020-10-04 13:53:14.097419557 +0300
+diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.18-custom-rt/sound/usb/mixer_scarlett_gen2.c
+--- linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c	2020-10-04 12:17:41.115670325 +0300
++++ linux-5.3.18-custom-rt/sound/usb/mixer_scarlett_gen2.c	2020-10-04 13:53:14.097419557 +0300
 @@ -1,8 +1,9 @@
  // SPDX-License-Identifier: GPL-2.0
  /*
@@ -206,7 +206,7 @@ diff -uNr linux-5.3.18-lp152.44/sound/usb/mixer_scarlett_gen2.c linux-5.3.18-cus
  		},
  		[SCARLETT2_PORT_TYPE_SPDIF] = {
  			.id = 0x180,
--			/* S/PDIF outputs aren't available at 192kHz
+-			/* S/PDIF outputs aren't available at 192KHz
 -			 * but are included in the USB mux I/O
 -			 * assignment message anyway
 -			 */
@@ -230,15 +230,6 @@ diff -uNr linux-5.3.18-lp152.44/sound/usb/mixer_scarlett_gen2.c linux-5.3.18-cus
  		},
  		[SCARLETT2_PORT_TYPE_ANALOGUE] = {
  			.id = 0x080,
-@@ -401,7 +428,7 @@
- 			.dst_descr = "Analogue Output %02d Playback"
- 		},
- 		[SCARLETT2_PORT_TYPE_SPDIF] = {
--			/* S/PDIF outputs aren't available at 192kHz
-+			/* S/PDIF outputs aren't available at 192KHz
- 			 * but are included in the USB mux I/O
- 			 * assignment message anyway
- 			 */
 @@ -435,6 +462,282 @@
  	},
  };
