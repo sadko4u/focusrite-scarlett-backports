@@ -12,12 +12,19 @@ The supported list of Gen3 devices:
 * Focusrite Scarlett 18i8
 * Focusrite Scarlett 18i20
 
+Provided patches:
+
+* ```linux-5.3.18-scarlett-gen3.patch``` - patch for the standard desktop openSUSE 5.3.18 kernel.
+* ```linux-5.3.18-scarlett-gen3-rt.patch``` - patch for the realtime (RT) openSUSE 5.3.18 kernel.
+
 ## Installation
 
 The kernel should be built from sources, so here you are all on your own.
 
 The following manual is written for openSUSE Leap 15.2 users and tries to provide the
 information for average user which is not familiar with building kernel from source.
+
+Below we will assume that we apply patch to the openSUSE RT kernel which is more suitable for the audio production.
 
 ### Preparing the system
 
@@ -27,7 +34,8 @@ First of all, the following packages should be installed:
 * pkg-config
 * make
 * gcc
-* kernel-source, kernel-source-rt or both
+* kernel-source for non-realtime kernel
+* kernel-source-rt for realtime kernel
 
 This may be obtained by the following command by the ```root``` user:
 ```
@@ -40,7 +48,7 @@ To apply patch, we can do the following steps:
 
 Copy patch to ```/usr/src``` directory:
 ```bash
-cp linux-5.3.18-scarlett-gen3.patch /usr/src
+cp linux-5.3.18-scarlett-gen3-rt.patch /usr/src
 ```
 
 It is highly recommended to make a copy of the kernel to not to clash with the factory kernel:
@@ -54,7 +62,7 @@ Further we assume that kernel source is located in the ```linux-5.3.18-custom-rt
 Then we can apply the patch to the kernel:
 ```bash
 cd /usr/src/linux-5.3.18-custom-rt
-patch -p1 < ../linux-5.3.18-scarlett-gen3.patch
+patch -p1 < ../linux-5.3.18-scarlett-gen3-rt.patch
 ```
 
 ### Configuring the kernel
