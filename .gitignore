@@ -1,3 +1,4 @@
 /.project
 **/*.log
 reverse-eng/decode
+/Debug/

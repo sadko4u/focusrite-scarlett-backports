@@ -274,7 +274,6 @@ void dump_packet(pcap_packet_t *packet, uint8_t *data)
 
     len                 = packet->incl_len;
     uint8_t *head       = data;
-    uint8_t *tail       = &data[len];
     hdr                 = reinterpret_cast<usb_header_t *>(data);
     data               += sizeof(usb_header_t);
 
