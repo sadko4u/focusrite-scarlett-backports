@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #define CONTROL_STAGE_SETUP     0
 #define CONTROL_STAGE_DATA      1
@@ -22,6 +23,8 @@
 #define FOCUSRITE_GET_DATA      0x00800000
 #define FOCUSRITE_SET_DATA      0x00800001
 #define FOCUSRITE_DATA_CMD      0x00800002
+
+#define DEVICE_DATA_SIZE        0x10000
 
 typedef uint8_t UCHAR;
 typedef uint16_t USHORT;
@@ -114,15 +117,26 @@ typedef struct
     uint32_t        bytes;
 } get_data_packet_t;
 
+typedef struct
+{
+    uint16_t        channel;
+    uint16_t        gain[];
+} set_mix_packet_t;
+
 #pragma pack(pop)
 
 typedef struct
 {
+    uint32_t        init_sec;       // Initial seconds
+    uint32_t        init_usec;      // Initial milliseconds
+
     bool            ctl_setup;      // control setup flag
     size_t          requestType;
     size_t          request;
 
     ssize_t         data_off;       // Data offset for GET_DATA request
+    size_t          data_size;      // Maximum size of data
+    uint8_t         data[DEVICE_DATA_SIZE];  // Internal data state of the device
 } protocol_state_t;
 
 bool read_header(FILE *fd, pcap_hdr_t *hdr)
@@ -314,21 +328,189 @@ bool is_focusrite_packet(protocol_state_t *pstate, usb_header_t *hdr, control_he
     return false;
 }
 
+inline float decode_gain(uint16_t level)
+{
+    return 20.0f * log10(level / 8192.0f);
+}
+
+void emit_byte_array(const uint8_t *data, size_t count)
+{
+    putchar('[');
+    for (size_t i=0; i<count; ++i)
+    {
+        if (i > 0)
+            putchar(' ');
+        printf("%02x", data[i]);
+    }
+    putchar(']');
+}
+
+void commit_data_changes(protocol_state_t *pstate, size_t offset, const uint8_t *src, size_t bytes)
+{
+    ssize_t start   = -1;
+    uint8_t *dst    = &pstate->data[offset];
+    size_t count    = 0;
+
+    // Lookup for changes
+    for (size_t i=0; i<bytes; ++i)
+    {
+        if (start < 0)
+        {
+            // We're tracking start of changes
+            if (dst[i] != src[i])
+                start       = i;
+        }
+        else // start >= 0
+        {
+            // We're tracking end of changes
+            if (dst[i] == src[i])
+            {
+                if ((count++) > 0)
+                    fputs(", ", stdout);
+                printf("0x%04x:", int(offset + start));
+                emit_byte_array(&dst[start], i-start);
+                printf("->");
+                emit_byte_array(&src[start], i-start);
+                memcpy(&dst[start], &src[start], i-start);
+                start = -1;
+            }
+        }
+    }
+
+    // Emit tail changes
+    if (start >= 0)
+    {
+        if ((count++) > 0)
+            fputs(", ", stdout);
+        printf("0x%04x:", int(offset + start));
+        emit_byte_array(&dst[start], bytes-start);
+        printf("->");
+        emit_byte_array(&src[start], bytes-start);
+        memcpy(&dst[start], &src[start], bytes-start);
+        start = -1;
+    }
+
+    // Update maximum data size
+    if (pstate->data_size < offset + bytes)
+        pstate->data_size = offset + bytes;
+}
+
+void decode_focusrite_packet(protocol_state_t *pstate, usb_header_t *hdr, control_header_t *ctl, control_data_t *cdata, uint8_t **buf)
+{
+    uint8_t *data       = *buf;
+    char s_cmd[0x40];
+    if (!is_focusrite_packet(pstate, hdr, ctl, cdata))
+        return;
+
+    focusrite_packet_t *fpacket = reinterpret_cast<focusrite_packet_t *>(data);
+    data           += sizeof(focusrite_packet_t);
+    bool req        = (!pstate->ctl_setup);
+
+    // Decode focusrite proprietary protocol
+    switch (fpacket->cmd)
+    {
+        case FOCUSRITE_SET_DATA:
+        {
+            if (req)
+            {
+                set_data_packet_t *set_data = reinterpret_cast<set_data_packet_t *>(data);
+                data       += sizeof(set_data_packet_t);
+
+                printf(" SET_DATA[offset=0x%x bytes=%d changes={", set_data->offset, set_data->bytes);
+                commit_data_changes(pstate, set_data->offset, data, set_data->bytes);
+                printf("}]");
+            }
+            else
+                printf(" SET_DATA_ACK");
+            break;
+        }
+
+        case FOCUSRITE_GET_DATA:
+        {
+            if (req)
+            {
+                get_data_packet_t *get_data = reinterpret_cast<get_data_packet_t *>(data);
+                data       += sizeof(set_data_packet_t);
+                pstate->data_off    = get_data->offset;
+
+                printf(" GET_DATA[offset=0x%x bytes=%d changes={", get_data->offset, get_data->bytes);
+                commit_data_changes(pstate, get_data->offset, data, get_data->bytes);
+                printf("}]");
+            }
+            else
+            {
+                if (pstate->data_off > 0)
+                    printf(" DATA[offset=0x%x bytes=%d]", int(pstate->data_off), fpacket->size);
+                else
+                    printf(" DATA[bytes=%d]", fpacket->size);
+                pstate->data_off    = -1;
+            }
+            break;
+        }
+
+        case FOCUSRITE_SET_MIX:
+        {
+            if (req)
+            {
+                set_mix_packet_t *set_mix = reinterpret_cast<set_mix_packet_t *>(data);
+                size_t gains= (fpacket->size - sizeof(set_mix_packet_t)) / sizeof(uint16_t);
+
+                printf(" SET_MIX[channel=%d, levels=%d, gains={", set_mix->channel, int(gains));
+                for (size_t i=0; i<gains; ++i)
+                    printf(" %.2f(0x%04x)", decode_gain(set_mix->gain[i]), set_mix->gain[i]);
+                printf(" }]");
+            }
+            else
+                printf(" SET_MIX_ACK");
+            break;
+        }
+
+        default:
+            printf(" FOCUSRITE%s[%s size=%d seq=0x%x error=%d pad=%d]",
+                    (req) ? "_REQ" : "_RESP",
+                    decode_focusrite_cmd(s_cmd, fpacket->cmd),
+                    fpacket->size, fpacket->seq, fpacket->error, fpacket->pad
+            );
+            break;
+    }
+
+    // Update data pointer at exit
+    *buf    = data;
+}
+
 void dump_packet(pcap_packet_t *packet, protocol_state_t *pstate, uint8_t *data)
 {
     usb_header_t *hdr;
     isoch_header_t *iso;
     control_header_t *ctl;
     control_data_t *cdata;
-    focusrite_packet_t *fpacket;
 
     size_t len;
-    char s_func[0x40], s_addr[0x40], s_stage[0x40], s_req[0x40], s_cmd[0x40];
+    char s_func[0x40], s_addr[0x40], s_stage[0x40], s_req[0x40];
 
     len                 = packet->incl_len;
     uint8_t *head       = data;
     hdr                 = reinterpret_cast<usb_header_t *>(data);
     data               += sizeof(usb_header_t);
+
+    // Lazy initialization of time
+    if ((pstate->init_sec == 0) && (pstate->init_usec == 0))
+    {
+        pstate->init_sec    = packet->ts_sec;
+        pstate->init_usec   = packet->ts_usec;
+    }
+
+    // Subtract time
+    if (packet->ts_usec < pstate->init_usec)
+    {
+        packet->ts_sec  = packet->ts_sec - pstate->init_sec - 1;
+        packet->ts_usec = packet->ts_usec + 1000000U - pstate->init_usec;
+    }
+    else
+    {
+        packet->ts_sec  = packet->ts_sec - pstate->init_sec;
+        packet->ts_usec = packet->ts_usec - pstate->init_usec;
+    }
 
 
     printf("%d.%d: [%s] hlen=%d, st=%x, %s",
@@ -375,62 +557,7 @@ void dump_packet(pcap_packet_t *packet, protocol_state_t *pstate, uint8_t *data)
     }
 
     printf(" |");
-    if (is_focusrite_packet(pstate, hdr, ctl, cdata))
-    {
-        fpacket     = reinterpret_cast<focusrite_packet_t *>(data);
-        data       += sizeof(focusrite_packet_t);
-        bool req    = (!pstate->ctl_setup);
-
-        // Decode focusrite proprietary protocol
-
-
-        switch (fpacket->cmd)
-        {
-            case FOCUSRITE_SET_DATA:
-            {
-                if (req)
-                {
-                    set_data_packet_t *set_data = reinterpret_cast<set_data_packet_t *>(data);
-                    data       += sizeof(set_data_packet_t);
-
-                    printf(" SET_DATA[offset=0x%x bytes=%d]", set_data->offset, set_data->bytes);
-                }
-                else
-                    printf(" SET_DATA_ACK");
-                break;
-            }
-
-            case FOCUSRITE_GET_DATA:
-            {
-                if (req)
-                {
-                    get_data_packet_t *get_data = reinterpret_cast<get_data_packet_t *>(data);
-                    data       += sizeof(set_data_packet_t);
-                    pstate->data_off    = get_data->offset;
-
-                    printf(" GET_DATA[offset=0x%x bytes=%d]", get_data->offset, get_data->bytes);
-                }
-                else
-                {
-                    if (pstate->data_off > 0)
-                        printf(" DATA[offset=0x%x bytes=%d]", int(pstate->data_off), fpacket->size);
-                    else
-                        printf(" DATA[bytes=%d]", fpacket->size);
-                    pstate->data_off    = -1;
-                }
-                break;
-            }
-
-            default:
-                printf(" FOCUSRITE%s[%s size=%d seq=0x%x error=%d pad=%d]",
-                        (req) ? "_REQ" : "_RESP",
-                        decode_focusrite_cmd(s_cmd, fpacket->cmd),
-                        fpacket->size, fpacket->seq, fpacket->error, fpacket->pad
-                );
-                break;
-        }
-    }
-
+    decode_focusrite_packet(pstate, hdr, ctl, cdata, &data);
     update_protocol_state(pstate, hdr, ctl, cdata);
 
     len    -= (data - head);
@@ -445,6 +572,40 @@ void dump_packet(pcap_packet_t *packet, protocol_state_t *pstate, uint8_t *data)
         putchar(((data[i] >= 0x20) && (data[i] < 0x7f)) ? data[i] : '.');
     printf("\"");
 
+    printf("\n");
+}
+
+void dump_buffer(const uint8_t *buf, size_t bytes)
+{
+    printf("      00 01 02 03 | 04 05 06 07 | 08 09 0a 0b | 0c 0d 0e 0f   0123456789abcdef");
+    for (size_t i=0; i<bytes; i += 16)
+    {
+        if (!(i&0xff))
+            printf("\n      -----------------------------------------------------   ----------------");
+        if (!(i&0x0f))
+            printf("\n%04x:", int(i));
+
+        // Dump hex codes
+        for (size_t j=i; j<i+16; ++j)
+        {
+            if (((j & 0x0c) > 0) && (!(j & 0x03)))
+                printf(" |");
+            if (j < bytes)
+                printf(" %02x", buf[j]);
+            else
+                printf("   ");
+        }
+
+        printf("   ");
+
+        for (size_t j=i; j<i+16; ++j)
+        {
+            if (j < bytes)
+                putchar(((buf[j] >= 0x20) && (buf[j] < 0x7f)) ? buf[j] : '.');
+            else
+                putchar(' ');
+        }
+    }
     printf("\n");
 }
 
@@ -469,10 +630,14 @@ int main(int argc, const char **argv)
     uint8_t *data       = static_cast<uint8_t *>(malloc(pcap_hdr.snaplen + 0x100));
 
     protocol_state_t state;
+    state.init_sec      = 0;
+    state.init_usec     = 0;
     state.ctl_setup     = false;
     state.requestType   = -1;
     state.request       = -1;
     state.data_off      = -1;
+    state.data_size     = 0;
+    memset(state.data, 0, DEVICE_DATA_SIZE);
 
     // Parse file
     while ((len = read_packet(fd, &packet, data)) > 0)
@@ -482,6 +647,9 @@ int main(int argc, const char **argv)
     
     off64_t pos = ftello64(fd);
     printf("Overall read bytes: %lld\n", (long long)pos);
+    printf("Maximum data block address: 0x%x\n", int(state.data_size));
+    printf("Data dump:\n\n");
+    dump_buffer(state.data, (state.data_size > 0) ? state.data_size : DEVICE_DATA_SIZE);
 
     fclose(fd);
 }
