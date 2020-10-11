@@ -17,16 +17,16 @@
 00e0: ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ??
 00f0: ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ??
 
-AS:		Air switch (bit mask)
-AT:		ALT/Talkback switches (bit mask)
-DIM: 	Dim/Mute buttons (2x)
-GH:		Gain halos
-IS:		Instrument switch (bit mask)
+AS:     Air switch (bit mask)
+AT:     ALT/Talkback switches (bit mask)
+DIM:    Dim/Mute buttons (2x)
+GH:     Gain halos
+IS:     Instrument switch (bit mask)
 MS:     Mass Storage Device (MSD) mode
-MSV: 	Master volume knob (front panel)
+MSV:    Master volume knob (front panel)
 PP:     Phantom power (48V) switch (bit mask)
 PS:     Pad switch (bit mask)
 SP:     S/PDIF volume source
-SS:		Speaker switching function
-TAL:	Talkback mixer output enable (bit mask, 12 bits)
-VS:    	Software/hardware controlled volume switch
+SS:     Speaker switching function
+TAL:    Talkback mixer output enable (bit mask, 12 bits)
+VS:     Software/hardware controlled volume switch

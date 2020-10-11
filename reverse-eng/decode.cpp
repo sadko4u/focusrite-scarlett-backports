@@ -611,9 +611,18 @@ void dump_buffer(const uint8_t *buf, size_t bytes)
 
 int main(int argc, const char **argv)
 {
+    if (argc < 2)
+    {
+        fprintf(stderr, "USAGE: decode <in-file> [<out-rom-dump>]\n");
+        return -1;
+    }
+
     FILE *fd = fopen(argv[1], "r");
     if (fd == NULL)
+    {
+        fprintf(stderr, "Could not open for reading: %s\n", argv[1]);
         return -1;
+    }
 
     ssize_t len;
 
@@ -652,5 +661,20 @@ int main(int argc, const char **argv)
     dump_buffer(state.data, (state.data_size > 0) ? state.data_size : DEVICE_DATA_SIZE);
 
     fclose(fd);
+
+    // Save ROM data
+    if (argc >= 3)
+    {
+        // Dump ROM data
+        fd = fopen(argv[2], "w");
+        if (fd == NULL)
+        {
+            fprintf(stderr, "Could not open for writing: %s\n", argv[2]);
+            return -1;
+        }
+
+        fwrite(state.data, (state.data_size > 0) ? state.data_size : DEVICE_DATA_SIZE, 1, fd);
+        fclose(fd);
+    }
 }
 
