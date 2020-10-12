@@ -42,17 +42,11 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
-					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1192990093.1708276893" name="checksum.cpp" rcbsApplicability="disable" resourcePath="reverse-eng/checksum.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.1422061414.1961640933">
-						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.1422061414.1961640933" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.1422061414"/>
-						<tool customBuildStep="true" id="org.eclipse.cdt.managedbuilder.ui.rcbs.2049637212" name="Resource Custom Build Step">
-							<inputType id="org.eclipse.cdt.managedbuilder.ui.rcbs.inputtype.1593475431" name="Resource Custom Build Step Input Type">
-								<additionalInput kind="additionalinputdependency" paths=""/>
-							</inputType>
-							<outputType id="org.eclipse.cdt.managedbuilder.ui.rcbs.outputtype.1794293076" name="Resource Custom Build Step Output Type"/>
-						</tool>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1192990093.1455276106" name="mixer_level.cpp" rcbsApplicability="disable" resourcePath="reverse-eng/mixer_level.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.1422061414.1646324229">
+						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.1422061414.1646324229" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.1422061414"/>
 					</fileInfo>
 					<sourceEntries>
-						<entry excluding="reverse-eng/checksum.cpp|debug-drv/mixer_scarlett_gen2.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="reverse-eng/mixer_level.cpp|reverse-eng/checksum.cpp|debug-drv/mixer_scarlett_gen2.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -99,11 +93,11 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
-					<fileInfo id="cdt.managedbuild.config.gnu.exe.release.930194647.1275015497" name="checksum.cpp" rcbsApplicability="disable" resourcePath="reverse-eng/checksum.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.release.1276414846.2004972538">
-						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.release.1276414846.2004972538" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.release.1276414846"/>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.release.930194647.323711406" name="mixer_level.cpp" rcbsApplicability="disable" resourcePath="reverse-eng/mixer_level.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.release.1276414846.646322531">
+						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.release.1276414846.646322531" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.release.1276414846"/>
 					</fileInfo>
 					<sourceEntries>
-						<entry excluding="reverse-eng/checksum.cpp|debug-drv/mixer_scarlett_gen2.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="reverse-eng/mixer_level.cpp|reverse-eng/checksum.cpp|debug-drv/mixer_scarlett_gen2.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
