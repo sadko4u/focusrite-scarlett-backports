@@ -176,9 +176,9 @@ static const u16 scarlett2_mixer_values[173] = {
 
 /* Maximum number of level, pad, and air switches */
 #define SCARLETT2_LEVEL_SWITCH_MAX 2
-#define SCARLETT2_48V_SWITCH_MAX 2
 #define SCARLETT2_PAD_SWITCH_MAX 8
 #define SCARLETT2_AIR_SWITCH_MAX 8
+#define SCARLETT2_48V_SWITCH_MAX 2
 
 /* Maximum number of inputs to the mixer */
 #define SCARLETT2_INPUT_MIX_MAX 24
@@ -255,7 +255,7 @@ struct scarlett2_device_info {
 	u8 power_48v_count; /* 48V phantom power */
 	u8 has_msd_mode; /* Gen 3 devices have an internal MSD mode switch */
 	u8 has_speaker_switching; /* main/alt speaker switching */
-	u8 has_talkback; /* 18i20 has Gen 3 has 'talkback' feature */
+	u8 has_talkback; /* 18i20 Gen 3 has 'talkback' feature */
 	const char * const line_out_descrs[SCARLETT2_ANALOGUE_MAX];
 	struct scarlett2_ports ports[SCARLETT2_PORT_TYPE_COUNT];
 };
@@ -278,8 +278,8 @@ struct scarlett2_mixer_data {
 	u8 master_vol;
 	u8 vol[SCARLETT2_ANALOGUE_MAX];
 	u8 vol_sw_hw_switch[SCARLETT2_ANALOGUE_MAX];
-	u8 pad_switch[SCARLETT2_PAD_SWITCH_MAX];
 	u8 level_switch[SCARLETT2_LEVEL_SWITCH_MAX];
+	u8 pad_switch[SCARLETT2_PAD_SWITCH_MAX];
 	u8 air_switch[SCARLETT2_AIR_SWITCH_MAX];
 	u8 pow_switch[SCARLETT2_48V_SWITCH_MAX];
 	u8 msd_switch;
@@ -822,7 +822,6 @@ static int scarlett2_get_port_start_num(const struct scarlett2_ports *ports,
 #define SCARLETT2_USB_SET_DATA 0x00800001
 #define SCARLETT2_USB_DATA_CMD 0x00800002
 
-
 /*#define SCARLETT2_USB_VOLUME_STATUS_OFFSET 0x31*/
 #define SCARLETT2_SW_CONFIG_PACKET_SIZE          1024     /* The maximum packet size used to transfer data */
 #define SCARLETT2_SW_CONFIG_BASE                 0xec
@@ -1000,7 +999,7 @@ struct scarlett2_usb_packet {
 };
 
 /* Decode floating-point value into valid scarlett gain
- * The input floating-point value may be any (including NaNs)
+ * The input floating-point value may be any (including Infs and NaNs)
  * The output integer value is in range of -160 to 12 (dB with 0.5 step)
  */
 static int scarlett2_float_to_mixer_level(u32 v)
@@ -2343,7 +2342,7 @@ static int scarlett2_mixer_ctl_put(struct snd_kcontrol *kctl,
 	if (err < 0)
 		goto unlock;
 	
-	/* TODO: update configuration data */
+	/* TODO: update configuration data here */
 	
 	if (err == 0)
 		err = 1;
@@ -2389,17 +2388,20 @@ static int scarlett2_add_mixer_ctls(struct usb_mixer_interface *mixer)
 	/* For each mixer */
 	for (i=0; i<num_outputs; ++i) {
 		mix_idx   = i * SCARLETT2_INPUT_MIX_MAX;
-		cfg_idx   = i * SCARLETT2_SW_CONFIG_MIXER_INPUTS; /* This may change, need to verify for other models */
+		cfg_idx   = i * SCARLETT2_SW_CONFIG_MIXER_INPUTS; /* TODO: This may change, need to verify for other models */
 
 		/* Add Mix control */
 		for (j = 0; j < num_inputs; ++j, ++cfg_idx, ++mix_idx) {
 			snprintf(s, sizeof(s),
-				 "Mix %c Input %02d Playback Volume",
+				 "Mix %c Input %02d Gain",
 				 'A' + i, j + 1);
 
-			level = (cfg_idx < private->sw_cfg_mixer_size) ? 
+			level = (cfg_idx < private->sw_cfg_mixer_size) ?
 			        le32_to_cpu(private->sw_cfg_mixer[cfg_idx]) : 0;
-			private->mix[mix_idx] = scarlett2_float_to_mixer_level(level) - (SCARLETT2_MIXER_MIN_DB * 2);
+
+			private->mix[mix_idx] = scarlett2_float_to_mixer_level(level) -
+			                        (SCARLETT2_MIXER_MIN_DB * 2);
+
 			usb_audio_info(mixer->chip, "MIX %c:%02d level=0x%08x gain=%d\n", 'A' + i, j + 1, level, private->mix[mix_idx]);
 
 			err = scarlett2_add_new_ctl(mixer, &scarlett2_mixer_ctl,
@@ -3083,7 +3085,7 @@ static int scarlett2_init_private(struct usb_mixer_interface *mixer,
 	private->sw_cfg_mixer = NULL;
 	private->sw_cfg_mixer_size = 0;
 	private->sw_cfg_cksum = NULL;
-	
+
 	err = scarlett2_find_fc_interface(mixer->chip->dev, private);
 
 	if (err < 0)
@@ -3266,7 +3268,7 @@ static int scarlett2_read_software_configs(struct usb_mixer_interface *mixer)
 	private->sw_cfg_data  = kmalloc(private->sw_cfg_size, GFP_KERNEL);
 	if (private->sw_cfg_data == NULL)
 		return -ENOMEM;
-	
+
 	usb_audio_info(mixer->chip, "software configuration size=%d (0x%x)\n", private->sw_cfg_size, private->sw_cfg_size);
 
 	/* Associate pointers with their locations, last 4 bytes are checksum */
@@ -3331,7 +3333,7 @@ static int scarlett2_commit_software_config(
 	    ((offset + bytes) > private->sw_cfg_size))
 		return -EINVAL;
 
-	/* Re-compute the checksum of the configuration data */
+	/* Re-compute the checksum of the software configuration area */
 	checksum = 0;
 	*(private->sw_cfg_cksum) = 0;
 	ckptr = (__le32 *)private->sw_cfg_data;
@@ -3622,8 +3624,8 @@ int snd_scarlett_gen2_controls_create(struct usb_mixer_interface *mixer)
 	err = scarlett2_read_configs(mixer);
 	if (err < 0)
 		return err;
-	
-	/* Read volume levels and controls from the interface */
+
+	/* Read software configuration containing mixer gains */
 	err = scarlett2_read_software_configs(mixer);
 	if (err < 0)
 		return err;
