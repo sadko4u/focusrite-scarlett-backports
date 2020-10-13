@@ -1932,7 +1932,7 @@ static int scarlett2_level_enum_ctl_put(struct snd_kcontrol *kctl,
 
 	private->level_switch[index] = val;
 
-	/* Send switch change to the device */
+	/* Send inst change to the device */
 	err = scarlett2_usb_set_config(mixer, SCARLETT2_CONFIG_LEVEL_SWITCH,
 				       index, val);
 
@@ -1997,7 +1997,7 @@ static int scarlett2_pad_ctl_put(struct snd_kcontrol *kctl,
 
 	private->pad_switch[index] = val;
 
-	/* Send switch change to the device */
+	/* Send pad change to the device */
 	err = scarlett2_usb_set_config(mixer, SCARLETT2_CONFIG_PAD_SWITCH,
 				       index, val);
 
@@ -2356,6 +2356,7 @@ static int scarlett2_mixer_ctl_put(struct snd_kcontrol *kctl,
 	int index = elem->control;
 	int cfg_idx;
 	u32 level;
+	__le32 *gain;
 
 	usb_audio_info(mixer->chip, "scarlett2_mixer_ctl_put\n");
 	usb_audio_info(mixer->chip, "mutex_lock(data)\n");
@@ -2380,11 +2381,12 @@ static int scarlett2_mixer_ctl_put(struct snd_kcontrol *kctl,
 	cfg_idx = mix_num * SCARLETT2_SW_CONFIG_MIXER_INPUTS + input_num;
 	if (cfg_idx < private->sw_cfg_mixer_size) {
 		level = scarlett2_sw_config_mixer_values[val];
-		private->sw_cfg_mixer[cfg_idx] = cpu_to_le32(level << 16); /* Convert to F32LE */
+		gain = &private->sw_cfg_mixer[cfg_idx];
+		*gain = cpu_to_le32(level << 16); /* Convert to F32LE */
 
 		usb_audio_info(mixer->chip, "cfg_idx=%d, value=0x%08x\n", cfg_idx, le32_to_cpu(private->sw_cfg_mixer[cfg_idx]));
 
-		scarlett2_commit_software_config(mixer, &private->sw_cfg_mixer[cfg_idx], sizeof(__le32));
+		scarlett2_commit_software_config(mixer, gain, sizeof(__le32));
 	}
 
 	if (err == 0)
@@ -2452,7 +2454,7 @@ static int scarlett2_add_mixer_ctls(struct usb_mixer_interface *mixer)
 			if (err < 0)
 				return err;
 		}
-		
+
 		/* Commit the actual mix state at startup */
 		err = scarlett2_usb_set_mix(mixer, i);
 		if (err < 0)
@@ -2834,9 +2836,9 @@ static int scarlett2_speaker_switch_update_state(struct usb_mixer_interface *mix
 	/* update talkback speaker and talkback */
 	if (!err) {
 		int val = (alt == 2);
-		if ((info->has_talkback) && (talkback))
-			val |= 0x2;
-		
+		if (info->has_talkback)
+			val |= talkback << 1;
+
 		err = scarlett2_usb_set_config(
 			mixer, SCARLETT2_CONFIG_MAIN_ALT_SPEAKER_SWITCH,
 			0, val);
