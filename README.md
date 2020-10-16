@@ -14,8 +14,9 @@ The supported list of Gen3 devices:
 
 Provided patches:
 
-* ```linux-5.3.18-scarlett-gen3.patch``` - patch for the standard desktop openSUSE 5.3.18 kernel.
-* ```linux-5.3.18-scarlett-gen3-rt.patch``` - patch for the realtime (RT) openSUSE 5.3.18 kernel.
+* ```opensuse-leap-linux-5.3.18-scarlett-gen3.patch``` - patch for the standard desktop openSUSE Leap 5.3.18 kernel.
+* ```opensuse-leap-linux-5.3.18-scarlett-gen3-rt.patch``` - patch for the realtime (RT) openSUSE Leap 5.3.18 kernel.
+* ```vanilla-linux-5.9.0-scarlettt-gen3.patch``` - patch for the original (vanilla) Linux kernel 5.9.0
 
 ## Installation
 
@@ -48,21 +49,21 @@ To apply patch, we can do the following steps:
 
 Copy patch to ```/usr/src``` directory:
 ```bash
-cp linux-5.3.18-scarlett-gen3-rt.patch /usr/src
+cp opensuse-leap-linux-5.3.18-scarlett-gen3-rt.patch /usr/src
 ```
 
 It is highly recommended to make a copy of the kernel to not to clash with the factory kernel:
 ```bash
 cd /usr/src
-cp -r linux-`uname -r` linux-5.3.18-custom-rt
+cp -r linux-`uname -r` opensuse-leap-linux-5.3.18-custom-rt
 ```
 
-Further we assume that kernel source is located in the ```linux-5.3.18-custom-rt``` directory.
+Further we assume that kernel source is located in the ```opensuse-leap-linux-5.3.18-custom-rt``` directory.
 
 Then we can apply the patch to the kernel:
 ```bash
-cd /usr/src/linux-5.3.18-custom-rt
-patch -p1 < ../linux-5.3.18-scarlett-gen3-rt.patch
+cd /usr/src/opensuse-leap-linux-5.3.18-custom-rt
+patch -p1 < ../opensuse-leap-linux-5.3.18-scarlett-gen3-rt.patch
 ```
 
 ### Configuring the kernel
@@ -78,7 +79,7 @@ make menuconfig
 ```
 
 Then go to ```General setup``` and modify the parameter ```Local version -> append to kernel release``` to match the linux kernel
-directory name. For ```linux-5.3.18-custom-rt``` the value should be ```-custom-rt```.
+directory name. For ```opensuse-leap-linux-5.3.18-custom-rt``` the value should be ```-custom-rt```.
 
 Save configuration and leave.
 
