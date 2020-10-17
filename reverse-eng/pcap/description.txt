@@ -7,6 +7,7 @@ connect - the dump of data exchange when the device is connected to the USB port
 connect-mixer - the dump of data exchange when the device is connected ot the USB port of the host after the mixer settings have changed.
 custom-mix-talk - switching Custom Mix/Custom Mix + Talkback settings for each mixer channel
 custom-mix-talk2 - switching Custom Mix/Custom Mix + Talkback settings for each mixer channel with another mixer configuration
+out-volume-settings - setting output volume for outputs in STEREO mode.
 talkback - setting on and off talkback button via software.
 mixer - different mixer settings.
 mixer-all - setting state of all gain levels for the internal mixer (each channel operates in stereo).

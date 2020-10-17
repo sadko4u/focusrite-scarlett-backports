@@ -54,8 +54,13 @@ The mapping of software configuration area:
     - 24..25 - Loopback 1-2
 
 0x01bc(+0x00d0): Volume settings of each output:
-  - stored as a plain array of f32le values
-  - each value encodes the level of -128..0 dB
+  - stored as array of structures:
+    - uint16le byte gain value (same will be written to SW VOLUME SETTINGS):
+      - 0x0000 means -127 dB
+      - 0xff81 means 0 dB
+    - uint8 change flag
+    - uint8 some unknown data
+  - volume changes only for first output in pair in STEREO mode
   - 10 values for 18i20 device
 
 0x10dc(+0x0ff0): Matrix mixer settings:
