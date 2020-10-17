@@ -16,8 +16,8 @@ The description of configuration space of the 18i20 device:
 00b0: [TAL] ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ??
 00c0: ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ??
 00d0: ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ??
-00e0: ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? [ APP ROM ]
-00f0: [ APP ROM ] [ROM] [         APP ROM           ]
+00e0: ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? [ SW CFG  ]
+00f0: [ SW CFG  ] [ROM] [         SW CFG            ]
 
 AS:     Air switch (bit mask)
 AT:     ALT/Talkback switches (bit mask)
@@ -31,8 +31,43 @@ PS:     Pad switch (bit mask)
 ROM:    The size of ROM data used by application
 SP:     S/PDIF volume source
 SS:     Speaker switching function
+SW CFG: Software configuration area
 TAL:    Talkback mixer output enable (bit mask, 12 bits)
 VS:     Software/hardware controlled volume switch
+
+The mapping of software configuration area:
+
+0x00e8(+0x0000): Start of the software configuration area
+
+0x00f4(+0x0008): The size of software configuration area (2 bytes)
+  - includes size of checksum
+  - 18i20 device has value of 0x1984
+
+0x01b4(+0x00c8): Mono/Stereo switch for output channels:
+  - it's a bitmask
+  - bits are set/cleared by pairs, for example: 0xff -> 0xfc
+  - bit encoding:
+    - 0..9   - outputs 1-10
+    - 10..11 - SPDIF 1-2
+    - 12..19 - ADAT 1.1-1.8
+    - 20..23 - ADAT 2.1-2.4 ???
+    - 24..25 - Loopback 1-2
+
+0x01bc(+0x00d0): Volume settings of each output:
+  - stored as a plain array of f32le values
+  - each value encodes the level of -128..0 dB
+  - 10 values for 18i20 device
+
+0x10dc(+0x0ff0): Matrix mixer settings:
+  - gain values stored as two-dimentional array of f32le values
+  - each value encodes the level of -128..+6 dB with 0.5 dB step
+  - each mixer output setting cosists of 30 gain values
+  - at least 12 channels
+
+0x1a6c(+0x1980): Checksum:
+  - the sum of uint32 values of the whole area except checksum field
+  - stored with inversed sign
+  - the final sum with checksum area should give 0
 
 Mixer settings start in configuration space from 0xff0 offset.
 It's part of APP ROM data and is stored as plain float32le values:
@@ -42,3 +77,5 @@ The ROM is check-sumed from the beginning address 0xec up to the
 end address. The overall ROM size is stored in [ROM] variable.
 Last 4 bytes are little-endian sign-reversed sum of all previous data.
 So actually the checksum should always give 0 as a result.
+
+Software 

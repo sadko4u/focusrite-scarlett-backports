@@ -1,6 +1,8 @@
 List of PCAP files:
 
 channel0-levels - set-up of all mixer levels for the channel 0
+channel0-routing - configuration of a single channel routing
+channels01-routing - configuration of channel routing pair
 connect - the dump of data exchange when the device is connected to the USB port of the host.
 connect-mixer - the dump of data exchange when the device is connected ot the USB port of the host after the mixer settings have changed.
 custom-mix-talk - switching Custom Mix/Custom Mix + Talkback settings for each mixer channel
@@ -8,3 +10,4 @@ custom-mix-talk2 - switching Custom Mix/Custom Mix + Talkback settings for each 
 talkback - setting on and off talkback button via software.
 mixer - different mixer settings.
 mixer-all - setting state of all gain levels for the internal mixer (each channel operates in stereo).
+mono-stereo-switch - sequential switching from stereo channels to mono channels and back.
