@@ -901,7 +901,7 @@ struct scarlett2_usb_volume_status {
 	/* front panel volume knob */
 	s16 master_vol; /* 0x76 */
 	
-	u8 pad4[88]; /* 0x77 */
+	u8 pad4[0x88]; /* 0x78 */
 } __packed;
 
 /* Configuration parameters that can be read and written */
@@ -1588,7 +1588,8 @@ static int scarlett2_update_volumes(struct usb_mixer_interface *mixer)
 	private->master_vol = clamp(
 		volume_status.master_vol + SCARLETT2_VOLUME_BIAS,
 		0, SCARLETT2_VOLUME_BIAS);
-	
+
+	print_hex_dump(KERN_DEBUG, "VOLUME STATUS: ", DUMP_PREFIX_ADDRESS, 16, 1, &volume_status, sizeof(volume_status), true);
 	usb_audio_info(mixer->chip, "  master_vol = %d\n", (int)private->master_vol);
 
 	for (i = 0; i < num_line_out; i++) {
