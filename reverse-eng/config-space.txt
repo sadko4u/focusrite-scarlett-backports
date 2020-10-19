@@ -67,7 +67,7 @@ The mapping of software configuration area:
   - gain values stored as two-dimentional array of f32le values
   - each value encodes the level of -128..+6 dB with 0.5 dB step
   - each mixer output setting cosists of 30 gain values
-  - at least 12 channels
+  - at least 12 output channels
 
 0x1a6c(+0x1980): Checksum:
   - the sum of uint32 values of the whole area except checksum field
