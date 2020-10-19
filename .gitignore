@@ -1,5 +1,5 @@
 /.project
-**/*.log
+**/00-*.log
 **/*.rom
 reverse-eng/decode
 reverse-eng/checksum
