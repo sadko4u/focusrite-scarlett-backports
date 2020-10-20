@@ -9,6 +9,7 @@ custom-mix-talk - switching Custom Mix/Custom Mix + Talkback settings for each m
 custom-mix-talk2 - switching Custom Mix/Custom Mix + Talkback settings for each mixer channel with another mixer configuration
 out-volume-settings - setting output volume for outputs in STEREO mode.
 talkback - setting on and off talkback button via software.
+talkback-settings - setting up different talkback parameters.
 mixer - different mixer settings.
 mixer-all - setting state of all gain levels for the internal mixer (each channel operates in stereo).
 mono-stereo-switch - sequential switching from stereo channels to mono channels and back.

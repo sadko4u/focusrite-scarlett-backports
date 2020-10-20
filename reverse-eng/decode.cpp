@@ -19,6 +19,7 @@
 #define FOCUSRITE_SAVE_CONFIG   0x00000006
 #define FOCUSRITE_GET_METERS    0x00001001
 #define FOCUSRITE_SET_MIX       0x00002002
+#define FOCUSRITE_GET_MUX       0x00003001
 #define FOCUSRITE_SET_MUX       0x00003002
 #define FOCUSRITE_GET_DATA      0x00800000
 #define FOCUSRITE_SET_DATA      0x00800001
@@ -123,6 +124,19 @@ typedef struct
     uint16_t        gain[];
 } set_mix_packet_t;
 
+typedef struct
+{
+    uint16_t        pad;
+    uint16_t        num;
+    uint32_t        data[];
+} set_mux_packet_t;
+
+typedef struct
+{
+    uint16_t        num;
+    uint16_t        count;
+} get_mux_packet_t;
+
 #pragma pack(pop)
 
 typedef struct
@@ -133,6 +147,9 @@ typedef struct
     bool            ctl_setup;      // control setup flag
     size_t          requestType;
     size_t          request;
+
+    ssize_t         rdata_off;      // Requested data offset
+    ssize_t         rdata_size;     // Requested data block
 
     ssize_t         data_off;       // Data offset for GET_DATA request
     size_t          data_size;      // Maximum size of data
@@ -279,6 +296,7 @@ char *decode_focusrite_cmd(char *dst, uint32_t cmd)
         case FOCUSRITE_SAVE_CONFIG:     strcpy(dst, "SAVE_CONFIG"); break;
         case FOCUSRITE_GET_METERS:      strcpy(dst, "GET_METERS"); break;
         case FOCUSRITE_SET_MIX:         strcpy(dst, "SET_MIX"); break;
+        case FOCUSRITE_GET_MUX:         strcpy(dst, "GET_MUX"); break;
         case FOCUSRITE_SET_MUX:         strcpy(dst, "SET_MUX"); break;
         case FOCUSRITE_GET_DATA:        strcpy(dst, "GET_DATA"); break;
         case FOCUSRITE_SET_DATA:        strcpy(dst, "SET_DATA"); break;
@@ -395,6 +413,22 @@ void commit_data_changes(protocol_state_t *pstate, size_t offset, const uint8_t 
         pstate->data_size = offset + bytes;
 }
 
+const char *decode_mux_channel(int channel, char *buf)
+{
+    int num = channel & 0x7f;
+    switch (channel & 0xf80)
+    {
+        case 0x000: sprintf(buf, "OFF-%d", num); break; // OFF
+        case 0x080: sprintf(buf, "ANALOG-%d", num); break; // Analogue
+        case 0x180: sprintf(buf, "SPDIF-%d", num); break; // SPDIF
+        case 0x200: sprintf(buf, "ADAT-%d", num); break; // ADAT
+        case 0x300: sprintf(buf, "MIX-%d", num); break; // MIX
+        case 0x600: sprintf(buf, "PCM-%d", num); break; // PCM
+        default: sprintf(buf, "%03x", channel); break;
+    }
+    return buf;
+}
+
 void decode_focusrite_packet(protocol_state_t *pstate, usb_header_t *hdr, control_header_t *ctl, control_data_t *cdata, uint8_t **buf)
 {
     uint8_t *data       = *buf;
@@ -405,6 +439,9 @@ void decode_focusrite_packet(protocol_state_t *pstate, usb_header_t *hdr, contro
     focusrite_packet_t *fpacket = reinterpret_cast<focusrite_packet_t *>(data);
     data           += sizeof(focusrite_packet_t);
     bool req        = (!pstate->ctl_setup);
+
+    if ((fpacket->error != 0) || (fpacket->pad != 0))
+        return;
 
     // Decode focusrite proprietary protocol
     switch (fpacket->cmd)
@@ -430,20 +467,25 @@ void decode_focusrite_packet(protocol_state_t *pstate, usb_header_t *hdr, contro
             if (req)
             {
                 get_data_packet_t *get_data = reinterpret_cast<get_data_packet_t *>(data);
-                data       += sizeof(set_data_packet_t);
-                pstate->data_off    = get_data->offset;
+                data       += sizeof(get_data_packet_t);
 
-                printf(" GET_DATA[offset=0x%x bytes=%d changes={", get_data->offset, get_data->bytes);
-                commit_data_changes(pstate, get_data->offset, data, get_data->bytes);
-                printf("}]");
+                printf(" GET_DATA[offset=0x%x bytes=%d]", get_data->offset, get_data->bytes);
+                pstate->rdata_off   = get_data->offset;
+                pstate->rdata_size  = get_data->bytes;
             }
             else
             {
-                if (pstate->data_off > 0)
-                    printf(" DATA[offset=0x%x bytes=%d]", int(pstate->data_off), fpacket->size);
+                if (pstate->rdata_off >= 0)
+                {
+                    printf(" DATA[offset=0x%x bytes=%d changes={", int(pstate->rdata_off), fpacket->size);
+                    commit_data_changes(pstate, pstate->rdata_off, data, fpacket->size);
+                    printf("}]");
+                }
                 else
                     printf(" DATA[bytes=%d]", fpacket->size);
-                pstate->data_off    = -1;
+
+                pstate->rdata_off   = -1;
+                pstate->rdata_size  = -1;
             }
             break;
         }
@@ -462,6 +504,56 @@ void decode_focusrite_packet(protocol_state_t *pstate, usb_header_t *hdr, contro
             }
             else
                 printf(" SET_MIX_ACK");
+            break;
+        }
+
+        case FOCUSRITE_SET_MUX:
+        {
+            if (req)
+            {
+                set_mux_packet_t *set_mux = reinterpret_cast<set_mux_packet_t *>(data);
+                size_t items= (fpacket->size - sizeof(set_mux_packet_t)) / sizeof(uint32_t);
+                char s_src[32], s_dst[32];
+
+                printf(" SET_MUX[mux=%d, count=%d, [idx]:src:dst={", set_mux->num, int(items));
+                for (size_t i=0; i<items; ++i) {
+                    int dst = (set_mux->data[i] & 0xfff);
+                    int src = ((set_mux->data[i] >> 12) & 0xfff);
+                    printf(" [%03d]:%s:%s", int(i), decode_mux_channel(src, s_src), decode_mux_channel(dst, s_dst));
+                }
+
+                data       += sizeof(set_mux_packet_t) + items * sizeof(uint32_t);
+                printf(" }]");
+            }
+            else
+                printf(" SET_MUX_ACK");
+            break;
+        }
+
+        case FOCUSRITE_GET_MUX:
+        {
+            if (req)
+            {
+                get_mux_packet_t *get_mux = reinterpret_cast<get_mux_packet_t *>(data);
+                printf(" GET_MUX[mux=%d, count=%d]", get_mux->num, int(get_mux->count));
+                data       += sizeof(get_mux_packet_t);
+            }
+            else
+            {
+                char s_src[32], s_dst[32];
+
+                size_t items    = fpacket->size / sizeof(uint32_t);
+                uint32_t *mux   = reinterpret_cast<uint32_t *>(data);
+                printf(" MUX[count=%d, [idx]:src:dst={", int(items));
+                for (size_t i=0; i<items; ++i) {
+                    int dst = (mux[i] & 0xfff);
+                    int src = ((mux[i] >> 12) & 0xfff);
+                    printf(" [%03d]:%s:%s", int(i), decode_mux_channel(src, s_src), decode_mux_channel(dst, s_dst));
+                }
+
+                data       += items * sizeof(uint32_t);
+                printf(" }]");
+            }
             break;
         }
 
@@ -644,6 +736,8 @@ int main(int argc, const char **argv)
     state.ctl_setup     = false;
     state.requestType   = -1;
     state.request       = -1;
+    state.rdata_off     = -1;
+    state.rdata_size    = -1;
     state.data_off      = -1;
     state.data_size     = 0;
     memset(state.data, 0, DEVICE_DATA_SIZE);
