@@ -415,7 +415,7 @@ void commit_data_changes(protocol_state_t *pstate, size_t offset, const uint8_t 
 
 const char *decode_mux_channel(int channel, char *buf)
 {
-    int num = channel & 0x7f;
+    int num = (channel & 0x7f) + 1;
     switch (channel & 0xf80)
     {
         case 0x000: sprintf(buf, "OFF-%d", num); break; // OFF
@@ -554,6 +554,19 @@ void decode_focusrite_packet(protocol_state_t *pstate, usb_header_t *hdr, contro
                 data       += items * sizeof(uint32_t);
                 printf(" }]");
             }
+            break;
+        }
+
+        case FOCUSRITE_DATA_CMD:
+        {
+            if (req)
+            {
+                uint32_t *cmd = reinterpret_cast<uint32_t *>(data);
+                printf(" DATA_CMD[command=%d]", *cmd);
+                data       += sizeof(uint32_t);
+            }
+            else
+                printf(" DATA_CMD");
             break;
         }
 

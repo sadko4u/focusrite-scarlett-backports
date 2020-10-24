@@ -1,0 +1,128 @@
+-------------------------------------------------------------------------------
+Switching pairs of inputs from STEREO to MONO
+
+Software configuration space checksum changes are not listed in log
+
+Scenario:
+0. All buttons are off.
+1. For all analog inputs (2) perform via UI:
+   a. Toggle LINE -> INST switch
+   b. Toggle AIR on
+   c. Toggle AIR off
+   d. Toggle INST -> LINE switch
+   e. Toggle AIR on
+   f. Toggle AIR off
+2. For each hardware button turn on/off in following order:
+   a. Input 1 INST
+   b. Input 1 AIR
+   c. Input 2 INST
+   d. Input 2 AIR
+   e. Direct Monitor
+   f. 48V
+
+-------------------------------------------------------------------------------
+Step 1
+-------------------------------------------------------------------------------
+
+4.853462: [host -> 2.25.0 OUT] hlen=28, st=0, CONTROL_TRANSFER CONTROL SETUP 0x21[HTD CLASS IFACE] 0x02[UNKNOWN(0x2)] value=0, index=3, length=25 | SET_DATA[offset=0x8 bytes=1 changes={0x0008:[01]->[00]}] 00 "."
+4.858690: [host -> 2.25.0 OUT] hlen=28, st=0, CONTROL_TRANSFER CONTROL SETUP 0x21[HTD CLASS IFACE] 0x02[UNKNOWN(0x2)] value=0, index=3, length=20 | DATA_CMD[command=7] ""
+7.705902: [host -> 2.25.0 OUT] hlen=28, st=0, CONTROL_TRANSFER CONTROL SETUP 0x21[HTD CLASS IFACE] 0x02[UNKNOWN(0x2)] value=0, index=3, length=20 | DATA_CMD[command=6] ""
+
+8.309972: [host -> 2.25.0 OUT] hlen=28, st=0, CONTROL_TRANSFER CONTROL SETUP 0x21[HTD CLASS IFACE] 0x02[UNKNOWN(0x2)] value=0, index=3, length=25 | SET_DATA[offset=0x9 bytes=1 changes={0x0009:[00]->[01]}] 01 "."
+8.315938: [host -> 2.25.0 OUT] hlen=28, st=0, CONTROL_TRANSFER CONTROL SETUP 0x21[HTD CLASS IFACE] 0x02[UNKNOWN(0x2)] value=0, index=3, length=20 | DATA_CMD[command=8] ""
+
+9.651431: [host -> 2.25.0 OUT] hlen=28, st=0, CONTROL_TRANSFER CONTROL SETUP 0x21[HTD CLASS IFACE] 0x02[UNKNOWN(0x2)] value=0, index=3, length=25 | SET_DATA[offset=0x9 bytes=1 changes={0x0009:[01]->[00]}] 00 "."
+9.657019: [host -> 2.25.0 OUT] hlen=28, st=0, CONTROL_TRANSFER CONTROL SETUP 0x21[HTD CLASS IFACE] 0x02[UNKNOWN(0x2)] value=0, index=3, length=20 | DATA_CMD[command=8] ""
+
+11.395402: [host -> 2.25.0 OUT] hlen=28, st=0, CONTROL_TRANSFER CONTROL SETUP 0x21[HTD CLASS IFACE] 0x02[UNKNOWN(0x2)] value=0, index=3, length=25 | SET_DATA[offset=0x8 bytes=1 changes={0x0008:[00]->[01]}] 01 "."
+11.401151: [host -> 2.25.0 OUT] hlen=28, st=0, CONTROL_TRANSFER CONTROL SETUP 0x21[HTD CLASS IFACE] 0x02[UNKNOWN(0x2)] value=0, index=3, length=20 | DATA_CMD[command=7] ""
+
+12.637426: [host -> 2.25.0 OUT] hlen=28, st=0, CONTROL_TRANSFER CONTROL SETUP 0x21[HTD CLASS IFACE] 0x02[UNKNOWN(0x2)] value=0, index=3, length=25 | SET_DATA[offset=0x9 bytes=1 changes={0x0009:[00]->[01]}] 01 "."
+12.643234: [host -> 2.25.0 OUT] hlen=28, st=0, CONTROL_TRANSFER CONTROL SETUP 0x21[HTD CLASS IFACE] 0x02[UNKNOWN(0x2)] value=0, index=3, length=20 | DATA_CMD[command=8] ""
+
+14.147413: [host -> 2.25.0 OUT] hlen=28, st=0, CONTROL_TRANSFER CONTROL SETUP 0x21[HTD CLASS IFACE] 0x02[UNKNOWN(0x2)] value=0, index=3, length=25 | SET_DATA[offset=0x9 bytes=1 changes={0x0009:[01]->[00]}] 00 "."
+14.153371: [host -> 2.25.0 OUT] hlen=28, st=0, CONTROL_TRANSFER CONTROL SETUP 0x21[HTD CLASS IFACE] 0x02[UNKNOWN(0x2)] value=0, index=3, length=20 | DATA_CMD[command=8] ""
+16.728786: [host -> 2.25.0 OUT] hlen=28, st=0, CONTROL_TRANSFER CONTROL SETUP 0x21[HTD CLASS IFACE] 0x02[UNKNOWN(0x2)] value=0, index=3, length=20 | DATA_CMD[command=6] ""
+
+18.409428: [host -> 2.25.0 OUT] hlen=28, st=0, CONTROL_TRANSFER CONTROL SETUP 0x21[HTD CLASS IFACE] 0x02[UNKNOWN(0x2)] value=0, index=3, length=25 | SET_DATA[offset=0x9 bytes=1 changes={0x0009:[00]->[02]}] 02 "."
+18.414634: [host -> 2.25.0 OUT] hlen=28, st=0, CONTROL_TRANSFER CONTROL SETUP 0x21[HTD CLASS IFACE] 0x02[UNKNOWN(0x2)] value=0, index=3, length=20 | DATA_CMD[command=8] ""
+
+19.328411: [host -> 2.25.0 OUT] hlen=28, st=0, CONTROL_TRANSFER CONTROL SETUP 0x21[HTD CLASS IFACE] 0x02[UNKNOWN(0x2)] value=0, index=3, length=25 | SET_DATA[offset=0x9 bytes=1 changes={0x0009:[02]->[00]}] 00 "."
+19.333680: [host -> 2.25.0 OUT] hlen=28, st=0, CONTROL_TRANSFER CONTROL SETUP 0x21[HTD CLASS IFACE] 0x02[UNKNOWN(0x2)] value=0, index=3, length=20 | DATA_CMD[command=8] ""
+
+20.428390: [host -> 2.25.0 OUT] hlen=28, st=0, CONTROL_TRANSFER CONTROL SETUP 0x21[HTD CLASS IFACE] 0x02[UNKNOWN(0x2)] value=0, index=3, length=25 | SET_DATA[offset=0x8 bytes=1 changes={0x0008:[01]->[03]}] 03 "."
+20.433753: [host -> 2.25.0 OUT] hlen=28, st=0, CONTROL_TRANSFER CONTROL SETUP 0x21[HTD CLASS IFACE] 0x02[UNKNOWN(0x2)] value=0, index=3, length=20 | DATA_CMD[command=7] ""
+
+21.977353: [host -> 2.25.0 OUT] hlen=28, st=0, CONTROL_TRANSFER CONTROL SETUP 0x21[HTD CLASS IFACE] 0x02[UNKNOWN(0x2)] value=0, index=3, length=25 | SET_DATA[offset=0x9 bytes=1 changes={0x0009:[00]->[02]}] 02 "."
+21.982858: [host -> 2.25.0 OUT] hlen=28, st=0, CONTROL_TRANSFER CONTROL SETUP 0x21[HTD CLASS IFACE] 0x02[UNKNOWN(0x2)] value=0, index=3, length=20 | DATA_CMD[command=8] ""
+
+23.81697: [host -> 2.25.0 OUT] hlen=28, st=0, CONTROL_TRANSFER CONTROL SETUP 0x21[HTD CLASS IFACE] 0x02[UNKNOWN(0x2)] value=0, index=3, length=25 | SET_DATA[offset=0x9 bytes=1 changes={0x0009:[02]->[00]}] 00 "."
+23.86946: [host -> 2.25.0 OUT] hlen=28, st=0, CONTROL_TRANSFER CONTROL SETUP 0x21[HTD CLASS IFACE] 0x02[UNKNOWN(0x2)] value=0, index=3, length=20 | DATA_CMD[command=8] ""
+25.705754: [host -> 2.25.0 OUT] hlen=28, st=0, CONTROL_TRANSFER CONTROL SETUP 0x21[HTD CLASS IFACE] 0x02[UNKNOWN(0x2)] value=0, index=3, length=20 | DATA_CMD[command=6] ""
+
+46.262347: [host -> 2.25.0 OUT] hlen=28, st=0, CONTROL_TRANSFER CONTROL SETUP 0x21[HTD CLASS IFACE] 0x02[UNKNOWN(0x2)] value=0, index=3, length=25 | SET_DATA[offset=0x8 bytes=1 changes={0x0008:[03]->[02]}] 02 "."
+46.267517: [host -> 2.25.0 OUT] hlen=28, st=0, CONTROL_TRANSFER CONTROL SETUP 0x21[HTD CLASS IFACE] 0x02[UNKNOWN(0x2)] value=0, index=3, length=20 | DATA_CMD[command=7] ""
+
+47.133389: [host -> 2.25.0 OUT] hlen=28, st=0, CONTROL_TRANSFER CONTROL SETUP 0x21[HTD CLASS IFACE] 0x02[UNKNOWN(0x2)] value=0, index=3, length=25 | SET_DATA[offset=0x8 bytes=1 changes={0x0008:[02]->[00]}] 00 "."
+47.138570: [host -> 2.25.0 OUT] hlen=28, st=0, CONTROL_TRANSFER CONTROL SETUP 0x21[HTD CLASS IFACE] 0x02[UNKNOWN(0x2)] value=0, index=3, length=20 | DATA_CMD[command=7] ""
+49.732496: [host -> 2.25.0 OUT] hlen=28, st=0, CONTROL_TRANSFER CONTROL SETUP 0x21[HTD CLASS IFACE] 0x02[UNKNOWN(0x2)] value=0, index=3, length=20 | DATA_CMD[command=6] ""
+
+-------------------------------------------------------------------------------
+Step 2
+-------------------------------------------------------------------------------
+
+171.827174: [2.25.3 -> host IN] hlen=27, st=0, BULK_OR_INTERRUPT INTERRUPT | 00 00 80 00 00 00 00 00 "........"
+171.827248: [host -> 2.25.0 OUT] hlen=28, st=0, CONTROL_TRANSFER CONTROL SETUP 0x21[HTD CLASS IFACE] 0x02[UNKNOWN(0x2)] value=0, index=3, length=24 | GET_DATA[offset=0x8 bytes=2] ""
+171.833045: [2.25.0 -> host IN] hlen=28, st=0, CONTROL_TRANSFER CONTROL COMPLETE | DATA[offset=0x8 bytes=2 changes={0x0008:[00]->[01]}] 01 00 ".."
+
+173.927068: [2.25.3 -> host IN] hlen=27, st=0, BULK_OR_INTERRUPT INTERRUPT | 00 00 80 00 00 00 00 00 "........"
+173.927132: [host -> 2.25.0 OUT] hlen=28, st=0, CONTROL_TRANSFER CONTROL SETUP 0x21[HTD CLASS IFACE] 0x02[UNKNOWN(0x2)] value=0, index=3, length=24 | GET_DATA[offset=0x8 bytes=2] ""
+173.932186: [2.25.0 -> host IN] hlen=28, st=0, CONTROL_TRANSFER CONTROL COMPLETE | DATA[offset=0x8 bytes=2 changes={0x0008:[01]->[00]}] 00 00 ".."
+
+175.497175: [2.25.3 -> host IN] hlen=27, st=0, BULK_OR_INTERRUPT INTERRUPT | 00 00 80 00 00 00 00 00 "........"
+175.497236: [host -> 2.25.0 OUT] hlen=28, st=0, CONTROL_TRANSFER CONTROL SETUP 0x21[HTD CLASS IFACE] 0x02[UNKNOWN(0x2)] value=0, index=3, length=24 | GET_DATA[offset=0x8 bytes=2] ""
+175.502294: [2.25.0 -> host IN] hlen=28, st=0, CONTROL_TRANSFER CONTROL COMPLETE | DATA[offset=0x8 bytes=2 changes={0x0009:[00]->[01]}] 00 01 ".."
+
+177.137161: [2.25.3 -> host IN] hlen=27, st=0, BULK_OR_INTERRUPT INTERRUPT | 00 00 80 00 00 00 00 00 "........"
+177.137230: [host -> 2.25.0 OUT] hlen=28, st=0, CONTROL_TRANSFER CONTROL SETUP 0x21[HTD CLASS IFACE] 0x02[UNKNOWN(0x2)] value=0, index=3, length=24 | GET_DATA[offset=0x8 bytes=2] ""
+177.142405: [2.25.0 -> host IN] hlen=28, st=0, CONTROL_TRANSFER CONTROL COMPLETE | DATA[offset=0x8 bytes=2 changes={0x0009:[01]->[00]}] 00 00 ".."
+
+179.367063: [2.25.3 -> host IN] hlen=27, st=0, BULK_OR_INTERRUPT INTERRUPT | 00 00 80 00 00 00 00 00 "........"
+179.367130: [host -> 2.25.0 OUT] hlen=28, st=0, CONTROL_TRANSFER CONTROL SETUP 0x21[HTD CLASS IFACE] 0x02[UNKNOWN(0x2)] value=0, index=3, length=24 | GET_DATA[offset=0x8 bytes=2] ""
+179.372557: [2.25.0 -> host IN] hlen=28, st=0, CONTROL_TRANSFER CONTROL COMPLETE | DATA[offset=0x8 bytes=2 changes={0x0008:[00]->[02]}] 02 00 ".."
+
+180.417135: [2.25.3 -> host IN] hlen=27, st=0, BULK_OR_INTERRUPT INTERRUPT | 00 00 80 00 00 00 00 00 "........"
+180.417201: [host -> 2.25.0 OUT] hlen=28, st=0, CONTROL_TRANSFER CONTROL SETUP 0x21[HTD CLASS IFACE] 0x02[UNKNOWN(0x2)] value=0, index=3, length=24 | GET_DATA[offset=0x8 bytes=2] ""
+180.422628: [2.25.0 -> host IN] hlen=28, st=0, CONTROL_TRANSFER CONTROL COMPLETE | DATA[offset=0x8 bytes=2 changes={0x0008:[02]->[00]}] 00 00 ".."
+
+182.177129: [2.25.3 -> host IN] hlen=27, st=0, BULK_OR_INTERRUPT INTERRUPT | 00 00 80 00 00 00 00 00 "........"
+182.177194: [host -> 2.25.0 OUT] hlen=28, st=0, CONTROL_TRANSFER CONTROL SETUP 0x21[HTD CLASS IFACE] 0x02[UNKNOWN(0x2)] value=0, index=3, length=24 | GET_DATA[offset=0x8 bytes=2] ""
+182.182748: [2.25.0 -> host IN] hlen=28, st=0, CONTROL_TRANSFER CONTROL COMPLETE | DATA[offset=0x8 bytes=2 changes={0x0009:[00]->[02]}] 00 02 ".."
+
+183.137070: [2.25.3 -> host IN] hlen=27, st=0, BULK_OR_INTERRUPT INTERRUPT | 00 00 80 00 00 00 00 00 "........"
+183.137142: [host -> 2.25.0 OUT] hlen=28, st=0, CONTROL_TRANSFER CONTROL SETUP 0x21[HTD CLASS IFACE] 0x02[UNKNOWN(0x2)] value=0, index=3, length=24 | GET_DATA[offset=0x8 bytes=2] ""
+183.142815: [2.25.0 -> host IN] hlen=28, st=0, CONTROL_TRANSFER CONTROL COMPLETE | DATA[offset=0x8 bytes=2 changes={0x0009:[02]->[00]}] 00 00 ".."
+
+195.717051: [2.25.3 -> host IN] hlen=27, st=0, BULK_OR_INTERRUPT INTERRUPT | 00 00 80 00 00 00 00 00 "........"
+195.717119: [host -> 2.25.0 OUT] hlen=28, st=0, CONTROL_TRANSFER CONTROL SETUP 0x21[HTD CLASS IFACE] 0x02[UNKNOWN(0x2)] value=0, index=3, length=24 | GET_DATA[offset=0x8 bytes=2] ""
+195.722671: [2.25.0 -> host IN] hlen=28, st=0, CONTROL_TRANSFER CONTROL COMPLETE | DATA[offset=0x8 bytes=2 changes={}] 00 00 ".."
+
+187.416987: [2.25.3 -> host IN] hlen=27, st=0, BULK_OR_INTERRUPT INTERRUPT | 00 00 00 01 00 00 00 00 "........"
+187.417016: [host -> 2.25.3 IN] hlen=27, st=0, BULK_OR_INTERRUPT INTERRUPT | ""
+
+188.587066: [2.25.3 -> host IN] hlen=27, st=0, BULK_OR_INTERRUPT INTERRUPT | 00 00 00 01 00 00 00 00 "........"
+188.587093: [host -> 2.25.3 IN] hlen=27, st=0, BULK_OR_INTERRUPT INTERRUPT | ""
+
+192.666970: [2.25.3 -> host IN] hlen=27, st=0, BULK_OR_INTERRUPT INTERRUPT | 00 00 00 01 00 00 00 00 "........"
+192.666999: [host -> 2.25.3 IN] hlen=27, st=0, BULK_OR_INTERRUPT INTERRUPT | ""
+
+197.846945: [2.25.3 -> host IN] hlen=27, st=0, BULK_OR_INTERRUPT INTERRUPT | 00 00 80 00 00 00 00 00 "........"
+197.847010: [host -> 2.25.0 OUT] hlen=28, st=0, CONTROL_TRANSFER CONTROL SETUP 0x21[HTD CLASS IFACE] 0x02[UNKNOWN(0x2)] value=0, index=3, length=24 | GET_DATA[offset=0x8 bytes=2] ""
+197.852817: [2.25.0 -> host IN] hlen=28, st=0, CONTROL_TRANSFER CONTROL COMPLETE | DATA[offset=0x8 bytes=2 changes={}] 00 00 ".."      
+
+Data dump:
+
+      00 01 02 03 | 04 05 06 07 | 08 09 0a 0b | 0c 0d 0e 0f   0123456789abcdef
+      -----------------------------------------------------   ----------------
+0000: e1 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00   ................
+0010: 00 00 00 00 | 00 00 00 00 | 00 00       |               ..........      
