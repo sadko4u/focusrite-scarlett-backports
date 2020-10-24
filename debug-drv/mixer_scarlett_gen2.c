@@ -296,6 +296,7 @@ struct scarlett2_ports {
 };
 
 struct scarlett2_device_info {
+	u32 usb_id; /* USB device identifier */
 	u8 line_out_hw_vol; /* line out hw volume is sw controlled */
 	u8 button_count; /* number of buttons */
 	u8 level_input_count; /* inputs with level selectable */
@@ -377,6 +378,8 @@ static const struct scarlett2_port_name s6i6_gen2_ports[] = {
 };
 
 static const struct scarlett2_device_info s6i6_gen2_info = {
+	.usb_id = USB_ID(0x1235, 0x8203),
+	
 	/* The first two analogue inputs can be switched between line
 	 * and instrument levels.
 	 */
@@ -445,6 +448,8 @@ static const struct scarlett2_port_name s18i8_gen2_port_names[] = {
 };
 
 static const struct scarlett2_device_info s18i8_gen2_info = {
+	.usb_id = USB_ID(0x1235, 0x8204),
+
 	/* The first two analogue inputs can be switched between line
 	 * and instrument levels.
 	 */
@@ -522,6 +527,8 @@ static const struct scarlett2_port_name s18i20_gen2_port_names[] = {
 };
 
 static const struct scarlett2_device_info s18i20_gen2_info = {
+	.usb_id = USB_ID(0x1235, 0x8201),
+
 	/* The analogue line outputs on the 18i20 can be switched
 	 * between software and hardware volume control
 	 */
@@ -605,6 +612,8 @@ static const struct scarlett2_port_name s4i4_gen3_port_names[] = {
 };
 
 static const struct scarlett2_device_info s4i4_gen3_info = {
+	.usb_id = USB_ID(0x1235, 0x8212),
+
 	/* The first two analogue inputs can be switched between line
 	 * and instrument levels.
 	 */
@@ -673,6 +682,8 @@ static const struct scarlett2_port_name s8i6_gen3_port_names[] = {
 };
 
 static const struct scarlett2_device_info s8i6_gen3_info = {
+	.usb_id = USB_ID(0x1235, 0x8213),
+
 	/* The first two analogue inputs can be switched between line
 	 * and instrument levels.
 	 */
@@ -752,6 +763,8 @@ static const struct scarlett2_port_name s18i8_gen3_port_names[] = {
 };
 
 static const struct scarlett2_device_info s18i8_gen3_info = {
+	.usb_id = USB_ID(0x1235, 0x8214),
+
 	/* The analogue line outputs on the 18i8 can be switched
 	 * between software and hardware volume control
 	 */
@@ -855,6 +868,8 @@ static const struct scarlett2_port_name s18i20_gen3_port_names[] = {
 };
 
 static const struct scarlett2_device_info s18i20_gen3_info = {
+	.usb_id = USB_ID(0x1235, 0x8215),
+
 	/* The analogue line outputs on the 18i20 can be switched
 	 * between software and hardware volume control
 	 */
@@ -949,6 +964,21 @@ static const struct scarlett2_device_info s18i20_gen3_info = {
 	},
 };
 
+static const struct scarlett2_device_info *scarlett2_supported_devices[] = {
+	/* Supported Gen2 devices */
+	&s6i6_gen2_info,
+	&s18i8_gen2_info,
+	&s18i20_gen2_info,
+
+	/* Supported Gen3 devices */
+	&s4i4_gen3_info,
+	&s8i6_gen3_info,
+	&s18i8_gen3_info,
+	&s18i20_gen3_info,
+
+	/* End of list */
+	NULL
+};
 
 /*** USB Interactions ***/
 
@@ -3846,36 +3876,19 @@ int snd_scarlett_gen2_controls_create(struct usb_mixer_interface *mixer)
 {
 	struct snd_usb_audio *chip = mixer->chip;
 	const struct scarlett2_device_info *info;
-	int err;
+	int i, err;
 
 	/* only use UAC_VERSION_2 */
 	if (!mixer->protocol)
 		return 0;
 
-	switch (chip->usb_id) {
-	case USB_ID(0x1235, 0x8203):
-		info = &s6i6_gen2_info;
-		break;
-	case USB_ID(0x1235, 0x8204):
-		info = &s18i8_gen2_info;
-		break;
-	case USB_ID(0x1235, 0x8201):
-		info = &s18i20_gen2_info;
-		break;
-	case USB_ID(0x1235, 0x8212):
-		info = &s4i4_gen3_info;
-		break;
-	case USB_ID(0x1235, 0x8213):
-		info = &s8i6_gen3_info;
-		break;
-	case USB_ID(0x1235, 0x8214):
-		info = &s18i8_gen3_info;
-		break;
-	case USB_ID(0x1235, 0x8215):
-		info = &s18i20_gen3_info;
-		break;
-	default: /* device not (yet) supported */
-		return -EINVAL;
+	/* Find actual device descriptor */
+	for (i=0; ; ++i) {
+		info = scarlett2_supported_devices[i];
+		if (info == NULL) /* End of list, device is not (yet) supported */
+			return -EINVAL;
+		if (info->usb_id == chip->usb_id)
+			break;
 	}
 
 	if (!(chip->setup & SCARLETT2_ENABLE)) {
