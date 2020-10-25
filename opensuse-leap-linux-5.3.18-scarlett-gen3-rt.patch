@@ -12,11 +12,12 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer.c linux-5.3.18-custom-rt/s
  	int id;
 diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_quirks.c linux-5.3.18-custom-rt/sound/usb/mixer_quirks.c
 --- linux-5.3.18-custom-rt-orig/sound/usb/mixer_quirks.c	2020-10-04 12:17:41.113670329 +0300
-+++ linux-5.3.18-custom-rt/sound/usb/mixer_quirks.c	2020-10-04 13:51:47.145996149 +0300
-@@ -2267,6 +2267,10 @@
++++ linux-5.3.18-custom-rt/sound/usb/mixer_quirks.c	2020-10-26 00:19:14.013001020 +0300
+@@ -2267,6 +2267,11 @@
  	case USB_ID(0x1235, 0x8203): /* Focusrite Scarlett 6i6 2nd Gen */
  	case USB_ID(0x1235, 0x8204): /* Focusrite Scarlett 18i8 2nd Gen */
  	case USB_ID(0x1235, 0x8201): /* Focusrite Scarlett 18i20 2nd Gen */
++	case USB_ID(0x1235, 0x8210): /* Focusrite Scarlett 2i2 3rd Gen */
 +	case USB_ID(0x1235, 0x8212): /* Focusrite Scarlett 4i4 3rd Gen */
 +	case USB_ID(0x1235, 0x8213): /* Focusrite Scarlett 8i6 3rd Gen */
 +	case USB_ID(0x1235, 0x8214): /* Focusrite Scarlett 18i8 3rd Gen */
@@ -26,7 +27,7 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_quirks.c linux-5.3.18-cust
  
 diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.18-custom-rt/sound/usb/mixer_scarlett_gen2.c
 --- linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c	2020-10-04 12:17:41.115670325 +0300
-+++ linux-5.3.18-custom-rt/sound/usb/mixer_scarlett_gen2.c	2020-10-09 05:03:29.392586275 +0300
++++ linux-5.3.18-custom-rt/sound/usb/mixer_scarlett_gen2.c	2020-10-25 22:22:38.607463431 +0300
 @@ -1,8 +1,10 @@
  // SPDX-License-Identifier: GPL-2.0
  /*
@@ -109,7 +110,80 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.
  /* some gui mixers can't handle negative ctl values */
  #define SCARLETT2_VOLUME_BIAS 127
  
-@@ -141,23 +165,25 @@
+@@ -122,42 +146,84 @@
+  * for dB in 0 .. 172: int(8192 * pow(10, ((dB - 160) / 2 / 20)))
+  */
+ static const u16 scarlett2_mixer_values[173] = {
+-	0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2,
+-	2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 8, 8,
+-	9, 9, 10, 10, 11, 12, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
+-	23, 24, 25, 27, 29, 30, 32, 34, 36, 38, 41, 43, 46, 48, 51,
+-	54, 57, 61, 65, 68, 73, 77, 81, 86, 91, 97, 103, 109, 115,
+-	122, 129, 137, 145, 154, 163, 173, 183, 194, 205, 217, 230,
+-	244, 259, 274, 290, 307, 326, 345, 365, 387, 410, 434, 460,
+-	487, 516, 547, 579, 614, 650, 689, 730, 773, 819, 867, 919,
+-	973, 1031, 1092, 1157, 1225, 1298, 1375, 1456, 1543, 1634,
+-	1731, 1833, 1942, 2057, 2179, 2308, 2445, 2590, 2744, 2906,
+-	3078, 3261, 3454, 3659, 3876, 4105, 4349, 4606, 4879, 5168,
+-	5475, 5799, 6143, 6507, 6892, 7301, 7733, 8192, 8677, 9191,
+-	9736, 10313, 10924, 11571, 12257, 12983, 13752, 14567, 15430,
+-	16345
++	/* 8 items per row */
++	0, 0, 0, 0, 1, 1, 1, 1,
++	1, 1, 1, 1, 1, 1, 1, 1,
++	2, 2, 2, 2, 2, 2, 2, 3,
++	3, 3, 3, 3, 4, 4, 4, 4,
++	5, 5, 5, 6, 6, 6, 7, 7,
++	8, 8, 9, 9, 10, 10, 11, 12,
++	12, 13, 14, 15, 16, 17, 18, 19,
++	20, 21, 23, 24, 25, 27, 29, 30,
++	32, 34, 36, 38, 41, 43, 46, 48,
++	51, 54, 57, 61, 65, 68, 73, 77,
++	81, 86, 91, 97, 103, 109, 115, 122,
++	129, 137, 145, 154, 163, 173, 183, 194,
++	205, 217, 230, 244, 259, 274, 290, 307,
++	326, 345, 365, 387, 410, 434, 460, 487,
++	516, 547, 579, 614, 650, 689, 730, 773,
++	819, 867, 919, 973, 1031, 1092, 1157, 1225,
++	1298, 1375, 1456, 1543, 1634, 1731, 1833, 1942,
++	2057, 2179, 2308, 2445, 2590, 2744, 2906, 3078,
++	3261, 3454, 3659, 3876, 4105, 4349, 4606, 4879,
++	5168, 5475, 5799, 6143, 6507, 6892, 7301, 7733,
++	8192, 8677, 9191, 9736, 10313, 10924, 11571, 12257,
++	12983, 13752, 14567, 15430, 16345
++};
++
++/* This is array of high parts of the 32-bit floating point values
++ * which are matching the -80..+6 dB level with 0.5 dB step
++ * The lowest value is encoded as -128.0f for compatibility with
++ * the original software
++ */
++static const u16 scarlett2_sw_config_mixer_values[173] = {
++	/* 8 items per row */
++	0xc300, 0xc29f, 0xc29e, 0xc29d, 0xc29c, 0xc29b, 0xc29a, 0xc299,
++	0xc298, 0xc297, 0xc296, 0xc295, 0xc294, 0xc293, 0xc292, 0xc291,
++	0xc290, 0xc28f, 0xc28e, 0xc28d, 0xc28c, 0xc28b, 0xc28a, 0xc289,
++	0xc288, 0xc287, 0xc286, 0xc285, 0xc284, 0xc283, 0xc282, 0xc281,
++	0xc280, 0xc27e, 0xc27c, 0xc27a, 0xc278, 0xc276, 0xc274, 0xc272,
++	0xc270, 0xc26e, 0xc26c, 0xc26a, 0xc268, 0xc266, 0xc264, 0xc262,
++	0xc260, 0xc25e, 0xc25c, 0xc25a, 0xc258, 0xc256, 0xc254, 0xc252,
++	0xc250, 0xc24e, 0xc24c, 0xc24a, 0xc248, 0xc246, 0xc244, 0xc242,
++	0xc240, 0xc23e, 0xc23c, 0xc23a, 0xc238, 0xc236, 0xc234, 0xc232,
++	0xc230, 0xc22e, 0xc22c, 0xc22a, 0xc228, 0xc226, 0xc224, 0xc222,
++	0xc220, 0xc21e, 0xc21c, 0xc21a, 0xc218, 0xc216, 0xc214, 0xc212,
++	0xc210, 0xc20e, 0xc20c, 0xc20a, 0xc208, 0xc206, 0xc204, 0xc202,
++	0xc200, 0xc1fc, 0xc1f8, 0xc1f4, 0xc1f0, 0xc1ec, 0xc1e8, 0xc1e4,
++	0xc1e0, 0xc1dc, 0xc1d8, 0xc1d4, 0xc1d0, 0xc1cc, 0xc1c8, 0xc1c4,
++	0xc1c0, 0xc1bc, 0xc1b8, 0xc1b4, 0xc1b0, 0xc1ac, 0xc1a8, 0xc1a4,
++	0xc1a0, 0xc19c, 0xc198, 0xc194, 0xc190, 0xc18c, 0xc188, 0xc184,
++	0xc180, 0xc178, 0xc170, 0xc168, 0xc160, 0xc158, 0xc150, 0xc148,
++	0xc140, 0xc138, 0xc130, 0xc128, 0xc120, 0xc118, 0xc110, 0xc108,
++	0xc100, 0xc0f0, 0xc0e0, 0xc0d0, 0xc0c0, 0xc0b0, 0xc0a0, 0xc090,
++	0xc080, 0xc060, 0xc040, 0xc020, 0xc000, 0xbfc0, 0xbf80, 0xbf00,
++	0x0000, 0x3f00, 0x3f80, 0x3fc0, 0x4000, 0x4020, 0x4040, 0x4060,
++	0x4080, 0x4090, 0x40a0, 0x40b0, 0x40c0
+ };
+ 
  /* Maximum number of analogue outputs */
  #define SCARLETT2_ANALOGUE_MAX 10
  
@@ -142,7 +216,59 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.
   */
  #define SCARLETT2_NUM_METERS 56
  
-@@ -216,6 +242,11 @@
+@@ -170,13 +236,25 @@
+  * - PCM I/O
+  */
+ enum {
+-	SCARLETT2_PORT_TYPE_NONE = 0,
+-	SCARLETT2_PORT_TYPE_ANALOGUE = 1,
+-	SCARLETT2_PORT_TYPE_SPDIF = 2,
+-	SCARLETT2_PORT_TYPE_ADAT = 3,
+-	SCARLETT2_PORT_TYPE_MIX = 4,
+-	SCARLETT2_PORT_TYPE_PCM = 5,
+-	SCARLETT2_PORT_TYPE_COUNT = 6,
++	SCARLETT2_PORT_TYPE_ANALOGUE = 0,       /* Analogue input/output */
++	SCARLETT2_PORT_TYPE_SPDIF = 1,          /* S/PDIF input/oputput  */
++	SCARLETT2_PORT_TYPE_ADAT = 2,           /* ADAT input/output     */
++	SCARLETT2_PORT_TYPE_MIX = 3,            /* Mixer input/output    */
++	SCARLETT2_PORT_TYPE_PCM = 4,            /* PCM input/output      */
++	SCARLETT2_PORT_TYPE_INT_MIC = 5,        /* Internal microphone   */
++	SCARLETT2_PORT_TYPE_TALKBACK = 6,       /* Talkback source       */
++	SCARLETT2_PORT_TYPE_COUNT = 7
++};
++
++enum {
++	SCARLETT2_PORT_ID_NONE = 0,
++	SCARLETT2_PORT_ID_ANALOGUE = 0x80,
++	SCARLETT2_PORT_ID_SPDIF = 0x180,
++	SCARLETT2_PORT_ID_ADAT = 0x200,
++	SCARLETT2_PORT_ID_MIX = 0x300,
++	SCARLETT2_PORT_ID_PCM = 0x600,
++	SCARLETT2_PORT_ID_MASK  = 0x0f80,
++	SCARLETT2_PORT_NUM_MASK = 0x007f
+ };
+ 
+ /* Count of total I/O and number available at each sample rate */
+@@ -196,6 +274,13 @@
+ 	"Mute", "Dim"
+ };
+ 
++struct scarlett2_port_name {
++	s8 direction;  /* Direction of port */
++	s8 type;  /* Type of port - SCARLETT2_PORT_TYPE_* */
++	s8 index; /* Index of port */
++	const char *name; /* The name of port */
++};
++
+ /* Description of each hardware port type:
+  * - id: hardware ID for this port type
+  * - num: number of sources/destinations of this port type
+@@ -212,39 +297,91 @@
+ };
+ 
+ struct scarlett2_device_info {
++	u32 usb_id; /* USB device identifier */
+ 	u8 line_out_hw_vol; /* line out hw volume is sw controlled */
  	u8 button_count; /* number of buttons */
  	u8 level_input_count; /* inputs with level selectable */
  	u8 pad_input_count; /* inputs with pad selectable */
@@ -152,17 +278,30 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.
 +	u8 has_speaker_switching; /* main/alt speaker switching */
 +	u8 has_talkback; /* 18i20 Gen 3 has 'talkback' feature */
  	const char * const line_out_descrs[SCARLETT2_ANALOGUE_MAX];
++	const struct scarlett2_port_name * const port_names; /* Special names of ports */
++	const u8 mux_size[SCARLETT2_PORT_DIRECTIONS]; /* The maximum number of elements per mux */
  	struct scarlett2_ports ports[SCARLETT2_PORT_TYPE_COUNT];
  };
-@@ -226,20 +257,38 @@
+ 
++struct scarlett2_sw_cfg_volume {
++	__le16 volume;  /* volume */
++	u8 changed;     /* change flag */
++	u8 flags;       /* some flags? */
++};
++
+ struct scarlett2_mixer_data {
+ 	struct usb_mixer_interface *mixer;
+ 	struct mutex usb_mutex; /* prevent sending concurrent USB requests */
  	struct mutex data_mutex; /* lock access to this data */
  	struct delayed_work work;
  	const struct scarlett2_device_info *info;
+-	int num_mux_srcs;
 +	__u8 interface; /* vendor-specific interface number */
 +	__u8 endpoint; /* interrupt endpoint address */
 +	__le16 maxpacketsize;
 +	__u8 interval;
- 	int num_mux_srcs;
++	int num_inputs; /* Overall number of inputs */
++	int num_outputs; /* Overall number of outputs */
  	u16 scarlett2_seq;
 -	u8 vol_updated;
 +	u8 vol_updated; /* Flag that indicates that volume has been updated */
@@ -187,15 +326,40 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.
 +	struct snd_kcontrol *level_ctls[SCARLETT2_LEVEL_SWITCH_MAX];
 +	struct snd_kcontrol *pow_ctls[SCARLETT2_48V_SWITCH_MAX];
  	struct snd_kcontrol *button_ctls[SCARLETT2_BUTTON_MAX];
-+	struct snd_kcontrol *mix_talkback_ctls[SCARLETT2_OUTPUT_MIX_MAX]; /* Talkback controls for each mix */
- 	u8 mux[SCARLETT2_MUX_MAX];
+-	u8 mux[SCARLETT2_MUX_MAX];
 -	u8 mix[SCARLETT2_INPUT_MIX_MAX * SCARLETT2_OUTPUT_MIX_MAX];
++	struct snd_kcontrol *mix_talkback_ctls[SCARLETT2_OUTPUT_MIX_MAX]; /* Talkback controls for each mix */
++	s8 mux[SCARLETT2_MUX_MAX];                                        /* Routing of outputs */
 +	u8 mix[SCARLETT2_INPUT_MIX_MAX * SCARLETT2_OUTPUT_MIX_MAX];       /* Matrix mixer */
 +	u8 mix_talkback[SCARLETT2_OUTPUT_MIX_MAX];                        /* Talkback enable for mixer output */
++
++	/* Software configuration */
++	int sw_cfg_offset;                                                /* Software configuration offset */
++	int sw_cfg_size;                                                  /* Software configuration size   */
++	u8 *sw_cfg_data;                                                  /* Software configuration (data) */
++	__le32 *sw_cfg_stereo;                                            /* Bitmask containing flags that output is in STEREO mode */
++	struct scarlett2_sw_cfg_volume *sw_cfg_volume;                    /* Output volumes of the device, f32le */
++	__le32 *sw_cfg_mixer;                                             /* Mixer data stored in the software config, matrix of f32le values */
++	int sw_cfg_mixer_size;                                            /* Size of software mixer area */
++	__le32 *sw_cfg_cksum;                                             /* Software configuration checksum */
  };
  
  /*** Model-specific data ***/
-@@ -254,10 +303,10 @@
++static const struct scarlett2_port_name s6i6_gen2_ports[] = {
++	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 0, "Headphones 1 L" },
++	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 1, "Headphones 1 R" },
++	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 2, "Headphones 2 L" },
++	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 3, "Headphones 2 R" },
++	{ -1, -1, -1, NULL }
++};
+ 
+ static const struct scarlett2_device_info s6i6_gen2_info = {
++	.usb_id = USB_ID(0x1235, 0x8203),
++	
+ 	/* The first two analogue inputs can be switched between line
+ 	 * and instrument levels.
+ 	 */
+@@ -254,51 +391,61 @@
  	.pad_input_count = 2,
  
  	.line_out_descrs = {
@@ -209,56 +373,259 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.
 +		"Headphones 2 R",
  	},
  
++	.port_names = s6i6_gen2_ports,
++
++	.mux_size = { 77, 77, 77, 73, 46 },
++
  	.ports = {
-@@ -265,7 +314,6 @@
- 			.id = 0x000,
- 			.num = { 1, 0, 8, 8, 8 },
- 			.src_descr = "Off",
+-		[SCARLETT2_PORT_TYPE_NONE] = {
+-			.id = 0x000,
+-			.num = { 1, 0, 8, 8, 8 },
+-			.src_descr = "Off",
 -			.src_num_offset = 0,
- 		},
+-		},
  		[SCARLETT2_PORT_TYPE_ANALOGUE] = {
- 			.id = 0x080,
-@@ -321,7 +369,6 @@
- 			.id = 0x000,
- 			.num = { 1, 0, 8, 8, 4 },
- 			.src_descr = "Off",
--			.src_num_offset = 0,
- 		},
- 		[SCARLETT2_PORT_TYPE_ANALOGUE] = {
- 			.id = 0x080,
-@@ -332,10 +379,6 @@
+-			.id = 0x080,
++			.id = SCARLETT2_PORT_ID_ANALOGUE,
+ 			.num = { 4, 4, 4, 4, 4 },
+-			.src_descr = "Analogue %d",
++			.src_descr = "Analogue In %02d",
+ 			.src_num_offset = 1,
+-			.dst_descr = "Analogue Output %02d Playback"
++			.dst_descr = "Analogue Out %02d"
  		},
  		[SCARLETT2_PORT_TYPE_SPDIF] = {
- 			.id = 0x180,
+-			.id = 0x180,
++			.id = SCARLETT2_PORT_ID_SPDIF,
+ 			.num = { 2, 2, 2, 2, 2 },
+-			.src_descr = "S/PDIF %d",
++			.src_descr = "S/PDIF In %d",
+ 			.src_num_offset = 1,
+-			.dst_descr = "S/PDIF Output %d Playback"
++			.dst_descr = "S/PDIF Out %d"
+ 		},
+ 		[SCARLETT2_PORT_TYPE_MIX] = {
+-			.id = 0x300,
++			.id = SCARLETT2_PORT_ID_MIX,
+ 			.num = { 10, 18, 18, 18, 18 },
+-			.src_descr = "Mix %c",
+-			.src_num_offset = 65,
+-			.dst_descr = "Mixer Input %02d Capture"
++			.src_descr = "Mix %c Out",
++			.src_num_offset = 'A',
++			.dst_descr = "Mix In %02d"
+ 		},
+ 		[SCARLETT2_PORT_TYPE_PCM] = {
+-			.id = 0x600,
++			.id = SCARLETT2_PORT_ID_PCM,
+ 			.num = { 6, 6, 6, 6, 6 },
+-			.src_descr = "PCM %d",
++			.src_descr = "PCM In %d",
+ 			.src_num_offset = 1,
+-			.dst_descr = "PCM %02d Capture"
++			.dst_descr = "PCM Out %02d"
+ 		},
+ 	},
+ };
+ 
++static const struct scarlett2_port_name s18i8_gen2_port_names[] = {
++	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 0, "Monitor L" },
++	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 1, "Monitor R" },
++	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 2, "Headphones 1 L" },
++	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 3, "Headphones 1 R" },
++	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 4, "Headphones 2 L" },
++	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 5, "Headphones 2 R" },
++	{ -1, -1, -1, NULL }
++};
++
+ static const struct scarlett2_device_info s18i8_gen2_info = {
++	.usb_id = USB_ID(0x1235, 0x8204),
++
+ 	/* The first two analogue inputs can be switched between line
+ 	 * and instrument levels.
+ 	 */
+@@ -316,55 +463,62 @@
+ 		"Headphones 2 R",
+ 	},
+ 
++	.port_names = s18i8_gen2_port_names,
++
++	.mux_size = { 77, 77, 77, 73, 46 },
++
+ 	.ports = {
+-		[SCARLETT2_PORT_TYPE_NONE] = {
+-			.id = 0x000,
+-			.num = { 1, 0, 8, 8, 4 },
+-			.src_descr = "Off",
+-			.src_num_offset = 0,
+-		},
+ 		[SCARLETT2_PORT_TYPE_ANALOGUE] = {
+-			.id = 0x080,
++			.id = SCARLETT2_PORT_ID_ANALOGUE,
+ 			.num = { 8, 6, 6, 6, 6 },
+-			.src_descr = "Analogue %d",
++			.src_descr = "Analogue In %02d",
+ 			.src_num_offset = 1,
+-			.dst_descr = "Analogue Output %02d Playback"
++			.dst_descr = "Analogue Out %02d"
+ 		},
+ 		[SCARLETT2_PORT_TYPE_SPDIF] = {
+-			.id = 0x180,
 -			/* S/PDIF outputs aren't available at 192KHz
 -			 * but are included in the USB mux I/O
 -			 * assignment message anyway
 -			 */
++			.id = SCARLETT2_PORT_ID_SPDIF,
  			.num = { 2, 2, 2, 2, 2 },
- 			.src_descr = "S/PDIF %d",
+-			.src_descr = "S/PDIF %d",
++			.src_descr = "S/PDIF In %d",
  			.src_num_offset = 1,
-@@ -356,7 +399,7 @@
+-			.dst_descr = "S/PDIF Output %d Playback"
++			.dst_descr = "S/PDIF Out %d"
+ 		},
+ 		[SCARLETT2_PORT_TYPE_ADAT] = {
+-			.id = 0x200,
++			.id = SCARLETT2_PORT_ID_ADAT,
+ 			.num = { 8, 0, 0, 0, 0 },
+-			.src_descr = "ADAT %d",
++			.src_descr = "ADAT In %d",
+ 			.src_num_offset = 1,
++			.dst_descr = "ADAT Out %d",
+ 		},
+ 		[SCARLETT2_PORT_TYPE_MIX] = {
+-			.id = 0x300,
++			.id = SCARLETT2_PORT_ID_MIX,
+ 			.num = { 10, 18, 18, 18, 18 },
+-			.src_descr = "Mix %c",
+-			.src_num_offset = 65,
+-			.dst_descr = "Mixer Input %02d Capture"
++			.src_descr = "Mix %c Out",
++			.src_num_offset = 'A',
++			.dst_descr = "Mix In %02d"
  		},
  		[SCARLETT2_PORT_TYPE_PCM] = {
- 			.id = 0x600,
+-			.id = 0x600,
 -			.num = { 20, 18, 18, 14, 10 },
+-			.src_descr = "PCM %d",
++			.id = SCARLETT2_PORT_ID_PCM,
 +			.num = { 8, 18, 18, 14, 10 },
- 			.src_descr = "PCM %d",
++			.src_descr = "PCM In %02d",
  			.src_num_offset = 1,
- 			.dst_descr = "PCM %02d Capture"
-@@ -391,7 +434,6 @@
- 			.id = 0x000,
- 			.num = { 1, 0, 8, 8, 6 },
- 			.src_descr = "Off",
--			.src_num_offset = 0,
+-			.dst_descr = "PCM %02d Capture"
++			.dst_descr = "PCM Out %02d"
  		},
- 		[SCARLETT2_PORT_TYPE_ANALOGUE] = {
- 			.id = 0x080,
-@@ -435,6 +477,297 @@
  	},
  };
  
++static const struct scarlett2_port_name s18i20_gen2_port_names[] = {
++	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 0, "Monitor L" },
++	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 1, "Monitor R" },
++	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 6, "Headphones 1 L" },
++	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 7, "Headphones 1 R" },
++	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 8, "Headphones 2 L" },
++	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 9, "Headphones 2 R" },
++	{ -1, -1, -1, NULL }
++};
++
+ static const struct scarlett2_device_info s18i20_gen2_info = {
++	.usb_id = USB_ID(0x1235, 0x8201),
++
+ 	/* The analogue line outputs on the 18i20 can be switched
+ 	 * between software and hardware volume control
+ 	 */
+@@ -386,117 +540,478 @@
+ 		"Headphones 2 R",
+ 	},
+ 
++	.port_names = s18i8_gen2_port_names,
++
++	.mux_size = { 77, 77, 77, 73, 46 },
++
+ 	.ports = {
+-		[SCARLETT2_PORT_TYPE_NONE] = {
+-			.id = 0x000,
+-			.num = { 1, 0, 8, 8, 6 },
+-			.src_descr = "Off",
+-			.src_num_offset = 0,
+-		},
+ 		[SCARLETT2_PORT_TYPE_ANALOGUE] = {
+-			.id = 0x080,
++			.id = SCARLETT2_PORT_ID_ANALOGUE,
+ 			.num = { 8, 10, 10, 10, 10 },
+-			.src_descr = "Analogue %d",
++			.src_descr = "Analogue In %02d",
+ 			.src_num_offset = 1,
+-			.dst_descr = "Analogue Output %02d Playback"
++			.dst_descr = "Analogue Out %02d"
+ 		},
+ 		[SCARLETT2_PORT_TYPE_SPDIF] = {
+ 			/* S/PDIF outputs aren't available at 192KHz
+ 			 * but are included in the USB mux I/O
+ 			 * assignment message anyway
+ 			 */
+-			.id = 0x180,
++			.id = SCARLETT2_PORT_ID_SPDIF,
+ 			.num = { 2, 2, 2, 2, 2 },
+-			.src_descr = "S/PDIF %d",
++			.src_descr = "S/PDIF In %d",
+ 			.src_num_offset = 1,
+-			.dst_descr = "S/PDIF Output %d Playback"
++			.dst_descr = "S/PDIF Out %d"
+ 		},
+ 		[SCARLETT2_PORT_TYPE_ADAT] = {
+-			.id = 0x200,
++			.id = SCARLETT2_PORT_ID_ADAT,
+ 			.num = { 8, 8, 8, 4, 0 },
+-			.src_descr = "ADAT %d",
++			.src_descr = "ADAT In %d",
+ 			.src_num_offset = 1,
+-			.dst_descr = "ADAT Output %d Playback"
++			.dst_descr = "ADAT Out %d"
+ 		},
+ 		[SCARLETT2_PORT_TYPE_MIX] = {
+-			.id = 0x300,
++			.id = SCARLETT2_PORT_ID_MIX,
+ 			.num = { 10, 18, 18, 18, 18 },
+-			.src_descr = "Mix %c",
+-			.src_num_offset = 65,
+-			.dst_descr = "Mixer Input %02d Capture"
++			.src_descr = "Mix %c Out",
++			.src_num_offset = 'A',
++			.dst_descr = "Mix In %02d"
+ 		},
+ 		[SCARLETT2_PORT_TYPE_PCM] = {
+-			.id = 0x600,
++			.id = SCARLETT2_PORT_ID_PCM,
+ 			.num = { 20, 18, 18, 14, 10 },
+-			.src_descr = "PCM %d",
++			.src_descr = "PCM In %02d",
+ 			.src_num_offset = 1,
+-			.dst_descr = "PCM %02d Capture"
++			.dst_descr = "PCM Out %02d"
+ 		},
+ 	},
+ };
+ 
+-/* get the starting port index number for a given port type/direction */
+-static int scarlett2_get_port_start_num(const struct scarlett2_ports *ports,
+-					int direction, int port_type)
+-{
+-	int i, num = 0;
++static const struct scarlett2_port_name s4i4_gen3_port_names[] = {
++	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 0, "Monitor L" },
++	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 1, "Monitor R" },
++	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 2, "Headphones L" },
++	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 3, "Headphones R" },
++	{ -1, -1, -1, NULL }
++};
+ 
+-	for (i = 0; i < port_type; i++)
+-		num += ports[i].num[direction];
 +static const struct scarlett2_device_info s4i4_gen3_info = {
++	.usb_id = USB_ID(0x1235, 0x8212),
+ 
+-	return num;
+-}
 +	/* The first two analogue inputs can be switched between line
 +	 * and instrument levels.
 +	 */
@@ -269,7 +636,7 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.
 +
 +	/* The first two analogue inputs have an optional "air" feature. */
 +	.air_input_count = 2,
-+
++	
 +	/* One 48V phantom power switch */
 +	.power_48v_count = 1,
 +
@@ -283,37 +650,46 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.
 +		"Headphones R",
 +	},
 +
++	.port_names = s4i4_gen3_port_names,
++
++	.mux_size = { 77, 77, 77, 73, 46 },
++
 +	.ports = {
-+		[SCARLETT2_PORT_TYPE_NONE] = {
-+			.id = 0x000,
-+			.num = { 1, 0, 16, 16, 16 },
-+			.src_descr = "Off",
-+		},
 +		[SCARLETT2_PORT_TYPE_ANALOGUE] = {
-+			.id = 0x080,
++			.id = SCARLETT2_PORT_ID_ANALOGUE,
 +			.num = { 4, 4, 4, 4, 4 },
-+			.src_descr = "Analogue %d",
++			.src_descr = "Analogue In %02d",
 +			.src_num_offset = 1,
-+			.dst_descr = "Analogue Output %02d Playback"
++			.dst_descr = "Analogue Out %02d"
 +		},
 +		[SCARLETT2_PORT_TYPE_MIX] = {
-+			.id = 0x300,
++			.id = SCARLETT2_PORT_ID_MIX,
 +			.num = { 6, 8, 8, 8, 8 },
-+			.src_descr = "Mix %c",
-+			.src_num_offset = 65,
-+			.dst_descr = "Mixer Input %02d Capture"
++			.src_descr = "Mix %c Out",
++			.src_num_offset = 'A',
++			.dst_descr = "Mix In %02d"
 +		},
 +		[SCARLETT2_PORT_TYPE_PCM] = {
-+			.id = 0x600,
++			.id = SCARLETT2_PORT_ID_PCM,
 +			.num = { 4, 6, 6, 6, 6 },
-+			.src_descr = "PCM %d",
++			.src_descr = "PCM In %02d",
 +			.src_num_offset = 1,
-+			.dst_descr = "PCM %02d Capture"
++			.dst_descr = "PCM Out %02d"
 +		},
 +	},
 +};
 +
++static const struct scarlett2_port_name s8i6_gen3_port_names[] = {
++	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 0, "Headphones 1 L" },
++	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 1, "Headphones 1 R" },
++	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 2, "Headphones 2 L" },
++	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 3, "Headphones 3 R" },
++	{ -1, -1, -1, NULL }
++};
++
 +static const struct scarlett2_device_info s8i6_gen3_info = {
++	.usb_id = USB_ID(0x1235, 0x8213),
++
 +	/* The first two analogue inputs can be switched between line
 +	 * and instrument levels.
 +	 */
@@ -324,7 +700,7 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.
 +
 +	/* The first two analogue inputs have an optional "air" feature. */
 +	.air_input_count = 2,
-+
++	
 +	/* One 48V phantom power switch */
 +	.power_48v_count = 1,
 +
@@ -338,44 +714,57 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.
 +		"Headphones 2 R",
 +	},
 +
++	.port_names = s8i6_gen3_port_names,
++
++	.mux_size = { 77, 77, 77, 73, 46 },
++
 +	.ports = {
-+		[SCARLETT2_PORT_TYPE_NONE] = {
-+			.id = 0x000,
-+			.num = { 1, 0, 18, 18, 18 },
-+			.src_descr = "Off",
-+		},
 +		[SCARLETT2_PORT_TYPE_ANALOGUE] = {
-+			.id = 0x080,
++			.id = SCARLETT2_PORT_ID_ANALOGUE,
 +			.num = { 6, 4, 4, 4, 4 },
-+			.src_descr = "Analogue %d",
++			.src_descr = "Analogue In %02d",
 +			.src_num_offset = 1,
-+			.dst_descr = "Analogue Output %02d Playback"
++			.dst_descr = "Analogue Out %02d"
 +		},
 +		[SCARLETT2_PORT_TYPE_SPDIF] = {
-+			.id = 0x180,
++			.id = SCARLETT2_PORT_ID_SPDIF,
 +			.num = { 2, 2, 2, 2, 2 },
-+			.src_descr = "S/PDIF %d",
++			.src_descr = "S/PDIF In %d",
 +			.src_num_offset = 1,
-+			.dst_descr = "S/PDIF Output %d Playback"
++			.dst_descr = "S/PDIF Out %d"
 +		},
 +		[SCARLETT2_PORT_TYPE_MIX] = {
-+			.id = 0x300,
++			.id = SCARLETT2_PORT_ID_MIX,
 +			.num = { 8, 8, 8, 8, 8 },
-+			.src_descr = "Mix %c",
-+			.src_num_offset = 65,
-+			.dst_descr = "Mixer Input %02d Capture"
++			.src_descr = "Mix %c Out",
++			.src_num_offset = 'A',
++			.dst_descr = "Mix In %02d"
 +		},
 +		[SCARLETT2_PORT_TYPE_PCM] = {
-+			.id = 0x600,
++			.id = SCARLETT2_PORT_ID_PCM,
 +			.num = { 6, 10, 10, 10, 10 },
-+			.src_descr = "PCM %d",
++			.src_descr = "PCM In %02d",
 +			.src_num_offset = 1,
-+			.dst_descr = "PCM %02d Capture"
++			.dst_descr = "PCM Out %02d"
 +		},
 +	},
 +};
 +
++static const struct scarlett2_port_name s18i8_gen3_port_names[] = {
++	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 0, "Monitor 1 L" },
++	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 1, "Monitor 1 R" },
++	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 2, "Headphones 1 L" },
++	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 3, "Headphones 1 R" },
++	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 4, "Headphones 2 L" },
++	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 5, "Headphones 2 R" },
++	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 6, "Monitor 2 L" },
++	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 7, "Monitor 2 R" },
++	{ -1, -1, -1, NULL }
++};
++
 +static const struct scarlett2_device_info s18i8_gen3_info = {
++	.usb_id = USB_ID(0x1235, 0x8214),
++
 +	/* The analogue line outputs on the 18i8 can be switched
 +	 * between software and hardware volume control
 +	 */
@@ -415,51 +804,66 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.
 +		"Monitor 2 R",
 +	},
 +
++	.port_names = s18i8_gen3_port_names,
++
++	.mux_size = { 77, 77, 77, 73, 46 },
++
 +	.ports = {
-+		[SCARLETT2_PORT_TYPE_NONE] = {
-+			.id = 0x000,
-+			.num = { 1, 0, 10, 10, 10 },
-+			.src_descr = "Off",
-+			.src_num_offset = 0,
-+		},
 +		[SCARLETT2_PORT_TYPE_ANALOGUE] = {
-+			.id = 0x080,
++			.id = SCARLETT2_PORT_ID_ANALOGUE,
 +			.num = { 8, 8, 8, 8, 8 },
-+			.src_descr = "Analogue %d",
++			.src_descr = "Analogue In %02d",
 +			.src_num_offset = 1,
-+			.dst_descr = "Analogue Output %02d Playback"
++			.dst_descr = "Analogue Out %02d"
 +		},
 +		[SCARLETT2_PORT_TYPE_SPDIF] = {
-+			.id = 0x180,
++			.id = SCARLETT2_PORT_ID_SPDIF,
 +			.num = { 2, 2, 2, 2, 2 },
-+			.src_descr = "S/PDIF %d",
++			.src_descr = "S/PDIF In %d",
 +			.src_num_offset = 1,
-+			.dst_descr = "S/PDIF Output %d Playback"
++			.dst_descr = "S/PDIF Out %d"
 +		},
 +		[SCARLETT2_PORT_TYPE_ADAT] = {
-+			.id = 0x200,
++			.id = SCARLETT2_PORT_ID_ADAT,
 +			.num = { 8, 0, 0, 0, 0 },
-+			.src_descr = "ADAT %d",
++			.src_descr = "ADAT In %d",
 +			.src_num_offset = 1,
++			.dst_descr = "ADAT Out %d"
 +		},
 +		[SCARLETT2_PORT_TYPE_MIX] = {
-+			.id = 0x300,
++			.id = SCARLETT2_PORT_ID_MIX,
 +			.num = { 10, 20, 20, 20, 20 },
-+			.src_descr = "Mix %c",
-+			.src_num_offset = 65,
-+			.dst_descr = "Mixer Input %02d Capture"
++			.src_descr = "Mix %c Out",
++			.src_num_offset = 'A',
++			.dst_descr = "Mix In %02d"
 +		},
 +		[SCARLETT2_PORT_TYPE_PCM] = {
-+			.id = 0x600,
++			.id = SCARLETT2_PORT_ID_PCM,
 +			.num = { 8, 20, 20, 16, 10 },
-+			.src_descr = "PCM %d",
++			.src_descr = "PCM In %02d",
 +			.src_num_offset = 1,
-+			.dst_descr = "PCM %02d Capture"
++			.dst_descr = "PCM Out %02d"
 +		},
++
 +	},
 +};
 +
++static const struct scarlett2_port_name s18i20_gen3_port_names[] = {
++	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 0, "Monitor 1 L" },
++	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 1, "Monitor 1 R" },
++	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 2, "Monitor 2 L" },
++	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 3, "Monitor 2 R" },
++	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 6, "Headphones 1 L" },
++	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 7, "Headphones 1 R" },
++	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 8, "Headphones 2 L" },
++	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 9, "Headphones 2 R" },
++
++	{ -1, -1, -1, NULL }
++};
++
 +static const struct scarlett2_device_info s18i20_gen3_info = {
++	.usb_id = USB_ID(0x1235, 0x8215),
++
 +	/* The analogue line outputs on the 18i20 can be switched
 +	 * between software and hardware volume control
 +	 */
@@ -478,7 +882,7 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.
 +
 +	/* The first eight analogue inputs have an optional "air" feature. */
 +	.air_input_count = 8,
-+
++	
 +	/* Two 48V phantom power switches */
 +	.power_48v_count = 2,
 +
@@ -487,15 +891,15 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.
 +
 +	/* Has a main/alt speaker switch */
 +	.has_speaker_switching = 1,
-+
++	
 +	/* Has a talkback speaker switch */
 +	.has_talkback = 1,
 +
 +	.line_out_descrs = {
-+		"Monitor L",
-+		"Monitor R",
-+		NULL,
-+		NULL,
++		"Monitor 1 L",
++		"Monitor 1 R",
++		"Monitor 2 L",
++		"Monitor 2 R",
 +		NULL,
 +		NULL,
 +		"Headphones 1 L",
@@ -504,55 +908,74 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.
 +		"Headphones 2 R",
 +	},
 +
++	.port_names = s18i20_gen3_port_names,
++
++	.mux_size = { 77, 77, 77, 73, 46 },
++
 +	.ports = {
-+		[SCARLETT2_PORT_TYPE_NONE] = {
-+			.id = 0x000,
-+			.num = { 1, 0, 13, 11, 0 },
-+			.src_descr = "Off",
-+			.src_num_offset = 0,
-+		},
 +		[SCARLETT2_PORT_TYPE_ANALOGUE] = {
-+			.id = 0x080,
++			.id = SCARLETT2_PORT_ID_ANALOGUE,
 +			.num = { 8, 10, 10, 10, 10 },
-+			.src_descr = "Analogue %d",
++			.src_descr = "Analogue In %02d",
 +			.src_num_offset = 1,
-+			.dst_descr = "Analogue Output %02d Playback"
++			.dst_descr = "Analogue Out %02d"
 +		},
 +		[SCARLETT2_PORT_TYPE_SPDIF] = {
-+			.id = 0x180,
++			.id = SCARLETT2_PORT_ID_SPDIF,
 +			.num = { 2, 2, 2, 2, 2 },
-+			.src_descr = "S/PDIF %d",
++			.src_descr = "S/PDIF In %d",
 +			.src_num_offset = 1,
-+			.dst_descr = "S/PDIF Output %d Playback"
++			.dst_descr = "S/PDIF Out %d"
 +		},
 +		[SCARLETT2_PORT_TYPE_ADAT] = {
-+			.id = 0x200,
++			.id = SCARLETT2_PORT_ID_ADAT,
 +			.num = { 8, 8, 8, 8, 0 },
-+			.src_descr = "ADAT %d",
++			.src_descr = "ADAT In %d",
 +			.src_num_offset = 1,
-+			.dst_descr = "ADAT Output %d Playback"
++			.dst_descr = "ADAT Out %d"
 +		},
 +		[SCARLETT2_PORT_TYPE_MIX] = {
-+			.id = 0x300,
++			.id = SCARLETT2_PORT_ID_MIX,
 +			.num = { 12, 24, 24, 24, 24 },
-+			.src_descr = "Mix %c",
-+			.src_num_offset = 65,
-+			.dst_descr = "Mixer Input %02d Capture"
++			.src_descr = "Mix %c Out",
++			.src_num_offset = 'A',
++			.dst_descr = "Mix In %02d"
 +		},
 +		[SCARLETT2_PORT_TYPE_PCM] = {
-+			.id = 0x600,
++			.id = SCARLETT2_PORT_ID_PCM,
 +			.num = { 20, 20, 20, 18, 10 },
-+			.src_descr = "PCM %d",
++			.src_descr = "PCM In %02d",
 +			.src_num_offset = 1,
-+			.dst_descr = "PCM %02d Capture"
++			.dst_descr = "PCM Out %02d"
++		},
++		[SCARLETT2_PORT_TYPE_INT_MIC] = {
++			.id = SCARLETT2_PORT_ID_ANALOGUE + 8,
++			.num = { 1, 0, 0, 0, 0 },
++			.src_descr = "Internal Mic"
++		},
++		[SCARLETT2_PORT_TYPE_TALKBACK] = {
++			.id = SCARLETT2_PORT_ID_MIX + 24,
++			.num = { 0, 1, 1, 1, 1 },
++			.dst_descr = "Talkback"
 +		},
 +	},
 +};
 +
- /* get the starting port index number for a given port type/direction */
- static int scarlett2_get_port_start_num(const struct scarlett2_ports *ports,
- 					int direction, int port_type)
-@@ -449,28 +782,28 @@
++static const struct scarlett2_device_info *scarlett2_supported_devices[] = {
++	/* Supported Gen2 devices */
++	&s6i6_gen2_info,
++	&s18i8_gen2_info,
++	&s18i20_gen2_info,
++
++	/* Supported Gen3 devices */
++	&s4i4_gen3_info,
++	&s8i6_gen3_info,
++	&s18i8_gen3_info,
++	&s18i20_gen3_info,
++
++	/* End of list */
++	NULL
++};
  
  /*** USB Interactions ***/
  
@@ -578,24 +1001,43 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.
 -#define SCARLETT2_USB_VENDOR_SPECIFIC_CMD_RESP 3
 -
 -#define SCARLETT2_USB_INIT_SEQ 0x00000000
+-#define SCARLETT2_USB_GET_METER_LEVELS 0x00001001
+-#define SCARLETT2_USB_SET_MIX 0x00002002
+-#define SCARLETT2_USB_SET_MUX 0x00003002
+-#define SCARLETT2_USB_GET_DATA 0x00800000
+-#define SCARLETT2_USB_SET_DATA 0x00800001
+-#define SCARLETT2_USB_DATA_CMD 0x00800002
+-#define SCARLETT2_USB_CONFIG_SAVE 6
 +#define SCARLETT2_USB_CMD_INIT 0
 +#define SCARLETT2_USB_CMD_REQ 2
 +#define SCARLETT2_USB_CMD_RESP 3
 +
-+#define SCARLETT2_USB_INIT_1 0x00000000
-+#define SCARLETT2_USB_INIT_2 0x00000002
-+#define SCARLETT2_USB_CONFIG_SAVE 0x00000006
- #define SCARLETT2_USB_GET_METER_LEVELS 0x00001001
- #define SCARLETT2_USB_SET_MIX 0x00002002
- #define SCARLETT2_USB_SET_MUX 0x00003002
- #define SCARLETT2_USB_GET_DATA 0x00800000
- #define SCARLETT2_USB_SET_DATA 0x00800001
- #define SCARLETT2_USB_DATA_CMD 0x00800002
--#define SCARLETT2_USB_CONFIG_SAVE 6
++#define SCARLETT2_USB_INIT_1                     0x00000000
++#define SCARLETT2_USB_INIT_2                     0x00000002
++#define SCARLETT2_USB_CONFIG_SAVE                0x00000006
++#define SCARLETT2_USB_GET_METER_LEVELS           0x00001001
++#define SCARLETT2_USB_SET_MIX                    0x00002002
++#define SCARLETT2_USB_GET_MUX                    0x00003001
++#define SCARLETT2_USB_SET_MUX                    0x00003002
++#define SCARLETT2_USB_GET_DATA                   0x00800000
++#define SCARLETT2_USB_SET_DATA                   0x00800001
++#define SCARLETT2_USB_DATA_CMD                   0x00800002
++
++#define SCARLETT2_USB_VOLUME_STATUS_OFFSET       0x31
++#define SCARLETT2_VOLUMES_BASE                   0x34
++#define SCARLETT2_SW_CONFIG_BASE                 0xec
++
++#define SCARLETT2_SW_CONFIG_PACKET_SIZE          1024     /* The maximum packet size used to transfer data */
++#define SCARLETT2_SW_CONFIG_MIXER_INPUTS         30       /* 30 inputs per one mixer in config */
++
++#define SCARLETT2_SW_CONFIG_SIZE_OFFSET          0x08     /* 0xf4   - 0xec */
++#define SCARLETT2_SW_CONFIG_STEREO_BITS_OFFSET   0x0c8    /* 0x1b4  - 0xec */
++#define SCARLETT2_SW_CONFIG_VOLUMES_OFFSET       0x0d0    /* 0x1bc  - 0xec */
++#define SCARLETT2_SW_CONFIG_MIXER_OFFSET         0xf04    /* 0xff0  - 0xec */
  
- #define SCARLETT2_USB_VOLUME_STATUS_OFFSET 0x31
+-#define SCARLETT2_USB_VOLUME_STATUS_OFFSET 0x31
  #define SCARLETT2_USB_METER_LEVELS_GET_MAGIC 1
-@@ -478,25 +811,26 @@
+ 
  /* volume status is read together (matches scarlett2_config_items[]) */
  struct scarlett2_usb_volume_status {
  	/* mute & dim buttons */
@@ -630,7 +1072,7 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.
  } __packed;
  
  /* Configuration parameters that can be read and written */
-@@ -506,7 +840,16 @@
+@@ -506,7 +1021,16 @@
  	SCARLETT2_CONFIG_SW_HW_SWITCH = 2,
  	SCARLETT2_CONFIG_LEVEL_SWITCH = 3,
  	SCARLETT2_CONFIG_PAD_SWITCH = 4,
@@ -648,7 +1090,16 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.
  };
  
  /* Location, size, and activation command number for the configuration
-@@ -553,6 +896,69 @@
+@@ -541,7 +1065,7 @@
+ 		.activate = 3
+ 	},
+ 
+-	/* Level Switch */
++	/* Inst Switch */
+ 	{
+ 		.offset = 0x7c,
+ 		.size = 1,
+@@ -553,6 +1077,69 @@
  		.offset = 0x84,
  		.size = 1,
  		.activate = 8
@@ -718,16 +1169,148 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.
  	}
  };
  
-@@ -566,8 +972,6 @@
+@@ -566,7 +1153,139 @@
  	u8 data[];
  };
  
 -#define SCARLETT2_USB_PACKET_LEN (sizeof(struct scarlett2_usb_packet))
--
++/* Decode floating-point value into valid scarlett gain
++ * The input floating-point value may be any (including Infs and NaNs)
++ * The output integer value is in range of -160 to 12 (dB with 0.5 step)
++ */
++static int scarlett2_float_to_mixer_level(u32 v)
++{
++	u32 exp, frac;
++	int sign, res;
++
++	exp  = (v >> 23) & 0xff;
++	if (exp < 0x7e) /* abs(v) < 0.5f */
++		return 0;
++
++	sign = (v >> 31);
++	if (exp > 0x85) /* abs(v) > 80.0f ? */
++		return (sign) ? -160 : 12;
++
++	/* Compute the fraction part */
++	frac = (v & 0x007fffffu) | 0x00800000u; /* 24 bits normalized */
++	frac = frac >> (0x95 - exp); /* 0x7f - exp + 22 */
++	res = (sign) ? -frac : frac;
++
++	/* Limit the value and return */
++	if (res < -160)
++		return -160;
++	return (res < 12) ? res : 12;
++}
++
++/* Convert a port number index (per info->ports) to a hardware ID */
++static u32 scarlett2_id_to_mux(const struct scarlett2_ports *ports, int direction, int num)
++{
++	int port_type;
++
++	if ((direction < 0) || (direction >= SCARLETT2_PORT_DIRECTIONS) || (num < 0))
++		return 0;
++
++	for (port_type = 0; port_type < SCARLETT2_PORT_TYPE_COUNT; ++port_type) {
++		if (num < ports[port_type].num[direction])
++			return ports[port_type].id + num;
++		num -= ports[port_type].num[direction];
++	}
++
++	return 0; /* Could not encode port */
++}
++
++static int scarlett2_count_ports(const struct scarlett2_ports *ports, int direction) {
++	int port_type, count = 0;
++
++	for (port_type=0; port_type < SCARLETT2_PORT_TYPE_COUNT; ++port_type)
++		count += ports[port_type].num[direction];
++
++	return count;
++}
++
++/* Convert a hardware ID to port number index (per info->ports) */
++static int scarlett2_mux_to_id(const struct scarlett2_ports *ports, int direction, u32 mux_id)
++{
++	int port_type, port_id, port_num, port_base;
++
++	if ((direction < 0) || (direction >= SCARLETT2_PORT_DIRECTIONS))
++		return -1; /* Could not decode port */
++
++	port_id  = mux_id & SCARLETT2_PORT_ID_MASK;
++	if (port_id == SCARLETT2_PORT_ID_NONE)
++		return -1;
++	
++	port_num = mux_id & SCARLETT2_PORT_NUM_MASK;
++	port_base= 0;
++
++	for (port_type=0; port_type < SCARLETT2_PORT_TYPE_COUNT; ++port_type) {
++		/* Port identifier matches? */
++		if (port_id == (ports[port_type].id & SCARLETT2_PORT_ID_MASK)) {
++			if (port_num < ports[port_type].num[direction])
++				return port_base + port_num;
++			port_num -= ports[port_type].num[direction];
++		}
++
++		port_base += ports[port_type].num[direction];
++	}
++
++	return -1; /* Could not decode port */
++}
++
++/* Format port number to the proper port name */
++static char *scarlett2_fmt_port_name(char *out, int len, const struct scarlett2_device_info *info, int direction, int num)
++{
++	int port_type;
++	const char *fmt;
++	char name[SNDRV_CTL_ELEM_ID_NAME_MAXLEN];
++	const struct scarlett2_ports *ports = info->ports;
++	const struct scarlett2_port_name *port_name;
++
++	strncpy(out, "Off", len);
++	if ((direction < 0) || (direction >= SCARLETT2_PORT_DIRECTIONS) || (num < 0))
++		return out;
++
++	for (port_type = 0; port_type < SCARLETT2_PORT_TYPE_COUNT; ++port_type) {
++		/* The number does match the range ? */
++		if (num < ports[port_type].num[direction]) {
++			/* Is there 'special' name found ? */
++			name[0] = '\0';
++			for (port_name = info->port_names; port_name->name != NULL; ++port_name) {
++				if ((port_name->direction == direction) &&
++				    (port_name->type == port_type) &&
++				    (port_name->index == num)) {
++					snprintf(name, SNDRV_CTL_ELEM_ID_NAME_MAXLEN, " (%s)", port_name->name);
++					break;
++				}
++			}
++
++			/* Format the physical port name */
++			fmt  = (direction == SCARLETT2_PORT_IN) ? ports[port_type].src_descr : ports[port_type].dst_descr;
++			num += (direction == SCARLETT2_PORT_IN) ? ports[port_type].src_num_offset : 1;
++			snprintf(out, len, fmt, num);
++			strncat(out, name, len);
++			return out;
++		}
++
++		num -= ports[port_type].num[direction];
++	}
++
++	return out;
++}
++
++/* get the starting port index number for a given port type/direction */
++static int scarlett2_get_port_num(const struct scarlett2_ports *ports, int direction, int type, int num)
++{
++	int i;
++	for (i = 0; i < type; i++)
++		num += ports[i].num[direction];
++
++	return num;
++}
+ 
  static void scarlett2_fill_request_header(struct scarlett2_mixer_data *private,
  					  struct scarlett2_usb_packet *req,
- 					  u32 cmd, u16 req_size)
-@@ -582,16 +986,84 @@
+@@ -582,16 +1301,90 @@
  	req->pad = 0;
  }
  
@@ -752,6 +1335,12 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.
 +static int scarlett2_usb(
 +	struct usb_mixer_interface *mixer, u32 cmd,
 +	void *req_data, u16 req_size, void *resp_data, u16 resp_size);
++
++static int scarlett2_commit_software_config(
++	struct usb_mixer_interface *mixer,
++	void *ptr, /* the pointer of the first changed byte in the configuration */
++	int bytes /* the actual number of bytes changed in the configuration */
++);
 +
 +/* Cargo cult proprietary initialisation sequence */
 +static int scarlett2_usb_init(struct usb_mixer_interface *mixer)
@@ -814,7 +1403,7 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.
  
  	req = kmalloc(req_buf_size, GFP_KERNEL);
  	if (!req) {
-@@ -614,14 +1086,7 @@
+@@ -614,14 +1407,7 @@
  	if (req_size)
  		memcpy(req->data, req_data, req_size);
  
@@ -830,7 +1419,7 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.
  
  	if (err != req_buf_size) {
  		usb_audio_err(
-@@ -634,28 +1099,25 @@
+@@ -634,28 +1420,25 @@
  
  	/* send a second message to get the response */
  
@@ -867,7 +1456,7 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.
  	    resp_size != le16_to_cpu(resp->size) ||
  	    resp->error ||
  	    resp->pad) {
-@@ -673,7 +1135,7 @@
+@@ -673,7 +1456,7 @@
  		goto unlock;
  	}
  
@@ -876,7 +1465,7 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.
  		memcpy(resp_data, resp->data, resp_size);
  
  unlock:
-@@ -704,7 +1166,7 @@
+@@ -704,7 +1487,7 @@
  }
  
  /* Send a USB message to set a configuration parameter (volume level,
@@ -885,18 +1474,267 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.
   */
  static int scarlett2_usb_set_config(
  	struct usb_mixer_interface *mixer,
-@@ -890,10 +1352,6 @@
- 							ports, private->mux[j]
- 						) << 12
- 					  );
+@@ -814,22 +1597,44 @@
+ 			     NULL, 0);
+ }
+ 
+-/* Convert a port number index (per info->ports) to a hardware ID */
+-static u32 scarlett2_mux_src_num_to_id(const struct scarlett2_ports *ports,
+-				       int num)
++/* Send USB messages to get mux inputs */
++static int scarlett2_usb_get_mux(struct usb_mixer_interface *mixer)
+ {
+-	int port_type;
++	struct scarlett2_mixer_data *private = mixer->private_data;
++	const struct scarlett2_device_info *info = private->info;
++	const struct scarlett2_ports *ports = info->ports;
++	int mux_size, i, src_port, dst_port, err;
++	u32 mux_id;
++	struct {
++		__le16 num;
++		__le16 count;
++	} __packed req;
++
++	__le32 data[SCARLETT2_MUX_MAX];
+ 
+-	for (port_type = 0;
+-	     port_type < SCARLETT2_PORT_TYPE_COUNT;
+-	     port_type++) {
+-		if (num < ports[port_type].num[SCARLETT2_PORT_IN])
+-			return ports[port_type].id | num;
+-		num -= ports[port_type].num[SCARLETT2_PORT_IN];
++	mux_size  = info->mux_size[SCARLETT2_PORT_OUT];
++
++	/* Send the request */
++	req.num   = 0;
++	req.count = cpu_to_le16(mux_size);
++	err = scarlett2_usb(mixer, SCARLETT2_USB_GET_MUX, &req, 2 * sizeof(__le16), data, sizeof(__le32) * mux_size);
++	if (err < 0)
++		return err;
++
++	/* Clear mux state */
++	for (i=0 ; i < SCARLETT2_MUX_MAX; ++i)
++		private->mux[i] = 0;
++
++	for (i=0; i<mux_size; ++i) {
++		/* Decode input and output port indexes, remember mux state for the port */
++		mux_id = le32_to_cpu(data[i]);
++		src_port = scarlett2_mux_to_id(ports, SCARLETT2_PORT_IN, mux_id >> 12);
++		dst_port = scarlett2_mux_to_id(ports, SCARLETT2_PORT_OUT, mux_id);
++		if ((dst_port >= 0) && (dst_port < SCARLETT2_MUX_MAX))
++			private->mux[dst_port] = src_port;
+ 	}
+ 
+-	/* Oops */
+-	return 0;
++	return err;
+ }
+ 
+ /* Send USB messages to set mux inputs */
+@@ -838,15 +1643,16 @@
+ 	struct scarlett2_mixer_data *private = mixer->private_data;
+ 	const struct scarlett2_device_info *info = private->info;
+ 	const struct scarlett2_ports *ports = info->ports;
+-	int rate, port_dir_rate;
++	int direction, conn_id, order, port, port_idx, err = 0;
++	u32 src_mux, dst_mux;
+ 
+-	static const int assignment_order[SCARLETT2_PORT_TYPE_COUNT] = {
++	static const int assignment_order[] = {
+ 		SCARLETT2_PORT_TYPE_PCM,
+ 		SCARLETT2_PORT_TYPE_ANALOGUE,
+ 		SCARLETT2_PORT_TYPE_SPDIF,
+ 		SCARLETT2_PORT_TYPE_ADAT,
+ 		SCARLETT2_PORT_TYPE_MIX,
+-		SCARLETT2_PORT_TYPE_NONE,
++		SCARLETT2_PORT_TYPE_TALKBACK
+ 	};
+ 
+ 	struct {
+@@ -855,55 +1661,40 @@
+ 		__le32 data[SCARLETT2_MUX_MAX];
+ 	} __packed req;
+ 
+-	req.pad = 0;
+-
+ 	/* mux settings for each rate */
+-	for (rate = 0, port_dir_rate = SCARLETT2_PORT_OUT_44;
+-	     port_dir_rate <= SCARLETT2_PORT_OUT_176;
+-	     rate++, port_dir_rate++) {
+-		int order_num, i, err;
+-
+-		req.num = cpu_to_le16(rate);
+-
+-		for (order_num = 0, i = 0;
+-		     order_num < SCARLETT2_PORT_TYPE_COUNT;
+-		     order_num++) {
+-			int port_type = assignment_order[order_num];
+-			int j = scarlett2_get_port_start_num(ports,
+-							     SCARLETT2_PORT_OUT,
+-							     port_type);
+-			int port_id = ports[port_type].id;
+-			int channel;
+-
+-			for (channel = 0;
+-			     channel < ports[port_type].num[port_dir_rate];
+-			     channel++, i++, j++)
+-				/* lower 12 bits for the destination and
+-				 * next 12 bits for the source
+-				 */
+-				req.data[i] = !port_id
+-					? 0
+-					: cpu_to_le32(
+-						port_id |
+-						channel |
+-						scarlett2_mux_src_num_to_id(
+-							ports, private->mux[j]
+-						) << 12
+-					  );
 -
 -			/* skip private->mux[j] entries not output */
 -			j += ports[port_type].num[SCARLETT2_PORT_OUT] -
 -			     ports[port_type].num[port_dir_rate];
++	for (direction = SCARLETT2_PORT_OUT_44; direction <= SCARLETT2_PORT_OUT_176; ++direction) {
++		/* init request */
++		req.pad = 0;
++		req.num = cpu_to_le16(direction - SCARLETT2_PORT_OUT_44);
++
++		/* form the request data */
++		conn_id = 0;
++		for (order = 0; order < sizeof(assignment_order)/sizeof(int); ++order) {
++			int port_type = assignment_order[order];
++
++			for (port = 0; port < ports[port_type].num[direction]; ++port) {
++				port_idx = scarlett2_get_port_num(ports, SCARLETT2_PORT_OUT, port_type, port);
++
++				/* Lower 12 bits for destination, next 12 bits for source */
++				src_mux = scarlett2_id_to_mux(ports, SCARLETT2_PORT_IN, private->mux[port_idx]);
++				dst_mux = scarlett2_id_to_mux(ports, SCARLETT2_PORT_OUT, port_idx);
++				req.data[conn_id++] = cpu_to_le32((src_mux << 12) | dst_mux);
++			}
  		}
  
++		/* Fill rest mux data with zeros */
++		for ( ; conn_id < info->mux_size[direction]; ++conn_id)
++			req.data[conn_id] = 0;
++
++		/* Send the SET_MUX notification */
  		err = scarlett2_usb(mixer, SCARLETT2_USB_SET_MUX,
-@@ -1196,6 +1654,61 @@
+-				    &req, (i + 1) * sizeof(u32),
++				    &req, 2 * sizeof(__le16) + conn_id * sizeof(__le32),
+ 				    NULL, 0);
+ 		if (err < 0)
+ 			return err;
+ 	}
+ 
+-	return 0;
++	return err;
+ }
+ 
+ /* Send USB message to get meter levels */
+@@ -986,20 +1777,27 @@
+ 	int num_line_out =
+ 		ports[SCARLETT2_PORT_TYPE_ANALOGUE].num[SCARLETT2_PORT_OUT];
+ 	int err, i;
++	s16 volume;
+ 
+ 	private->vol_updated = 0;
+ 
+ 	err = scarlett2_usb_get_volume_status(mixer, &volume_status);
+ 	if (err < 0)
+ 		return err;
+-
++	
+ 	private->master_vol = clamp(
+ 		volume_status.master_vol + SCARLETT2_VOLUME_BIAS,
+ 		0, SCARLETT2_VOLUME_BIAS);
+-
++	
+ 	for (i = 0; i < num_line_out; i++) {
+-		if (private->vol_sw_hw_switch[i])
+-			private->vol[i] = private->master_vol;
++		/* If volume is software-controlled, try to read it's value from software configuration */
++		if ((private->sw_cfg_volume) &&
++		    (!private->vol_sw_hw_switch[i])) {
++			volume = le16_to_cpu(private->sw_cfg_volume[i].volume);
++			private->vol[i] = clamp(volume + SCARLETT2_VOLUME_BIAS, 0, SCARLETT2_VOLUME_BIAS); /* Reset to sw-configured volume */
++		}
++		else
++			private->vol[i] = private->master_vol; /* Reset to master volume */
+ 	}
+ 
+ 	for (i = 0; i < private->info->button_count; i++)
+@@ -1064,7 +1862,8 @@
+ 	struct scarlett2_mixer_data *private = mixer->private_data;
+ 	int index = elem->control;
+ 	int oval, val, err = 0;
+-
++	u16 volume;
++	
+ 	mutex_lock(&private->data_mutex);
+ 
+ 	oval = private->vol[index];
+@@ -1074,8 +1873,23 @@
+ 		goto unlock;
+ 
+ 	private->vol[index] = val;
++
++	/* Update volume for the output */
+ 	err = scarlett2_usb_set_config(mixer, SCARLETT2_CONFIG_LINE_OUT_VOLUME,
+ 				       index, val - SCARLETT2_VOLUME_BIAS);
++	if (err != 0)
++		goto unlock;
++
++	/* Update software configuration if possible */
++	if ((private->sw_cfg_volume) &&
++	    (!private->vol_sw_hw_switch[index])) {
++		volume = val - SCARLETT2_VOLUME_BIAS;
++		private->sw_cfg_volume[index].volume  = cpu_to_le16(volume);
++		private->sw_cfg_volume[index].changed = 1;
++		err = scarlett2_commit_software_config(mixer, &private->sw_cfg_volume[index], sizeof(struct scarlett2_sw_cfg_volume));
++		if (err < 0)
++			goto unlock;
++	}
+ 	if (err == 0)
+ 		err = 1;
+ 
+@@ -1140,7 +1954,7 @@
+ 	struct usb_mixer_elem_info *elem = kctl->private_data;
+ 	struct usb_mixer_interface *mixer = elem->head.mixer;
+ 	struct scarlett2_mixer_data *private = mixer->private_data;
+-
++	
+ 	int index = elem->control;
+ 	int oval, val, err = 0;
+ 
+@@ -1153,6 +1967,7 @@
+ 		goto unlock;
+ 
+ 	private->vol_sw_hw_switch[index] = val;
++	private->vol_updated = 1; /* Trigger volumes to be updated */
+ 
+ 	/* Change access mode to RO (hardware controlled volume)
+ 	 * or RW (software controlled volume)
+@@ -1164,9 +1979,6 @@
+ 		private->vol_ctls[index]->vd[0].access |=
+ 			SNDRV_CTL_ELEM_ACCESS_WRITE;
+ 
+-	/* Reset volume to master volume */
+-	private->vol[index] = private->master_vol;
+-
+ 	/* Set SW volume to current HW volume */
+ 	err = scarlett2_usb_set_config(
+ 		mixer, SCARLETT2_CONFIG_LINE_OUT_VOLUME,
+@@ -1175,7 +1987,7 @@
+ 		goto unlock;
+ 
+ 	/* Notify of RO/RW change */
+-	snd_ctl_notify(mixer->chip->card, SNDRV_CTL_EVENT_MASK_INFO,
++	snd_ctl_notify(mixer->chip->card, SNDRV_CTL_EVENT_MASK_INFO | SNDRV_CTL_EVENT_MASK_VALUE,
+ 		       &private->vol_ctls[index]->id);
+ 
+ 	/* Send SW/HW switch change to the device */
+@@ -1196,6 +2008,61 @@
  };
  
  /*** Line Level/Instrument Level Switch Controls ***/
@@ -958,7 +1796,7 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.
  
  static int scarlett2_level_enum_ctl_info(struct snd_kcontrol *kctl,
  					 struct snd_ctl_elem_info *uinfo)
-@@ -1211,7 +1724,14 @@
+@@ -1211,7 +2078,14 @@
  					struct snd_ctl_elem_value *ucontrol)
  {
  	struct usb_mixer_elem_info *elem = kctl->private_data;
@@ -974,7 +1812,16 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.
  
  	ucontrol->value.enumerated.item[0] =
  		private->level_switch[elem->control];
-@@ -1256,12 +1776,18 @@
+@@ -1238,7 +2112,7 @@
+ 
+ 	private->level_switch[index] = val;
+ 
+-	/* Send switch change to the device */
++	/* Send inst change to the device */
+ 	err = scarlett2_usb_set_config(mixer, SCARLETT2_CONFIG_LEVEL_SWITCH,
+ 				       index, val);
+ 
+@@ -1256,12 +2130,18 @@
  };
  
  /*** Pad Switch Controls ***/
@@ -995,7 +1842,7 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.
  
  	ucontrol->value.enumerated.item[0] =
  		private->pad_switch[elem->control];
-@@ -1288,7 +1814,7 @@
+@@ -1288,7 +2168,7 @@
  
  	private->pad_switch[index] = val;
  
@@ -1004,7 +1851,7 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.
  	err = scarlett2_usb_set_config(mixer, SCARLETT2_CONFIG_PAD_SWITCH,
  				       index, val);
  
-@@ -1305,6 +1831,115 @@
+@@ -1305,6 +2185,115 @@
  	.put  = scarlett2_pad_ctl_put,
  };
  
@@ -1120,7 +1967,88 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.
  /*** Mute/Dim Controls ***/
  
  static int scarlett2_button_ctl_get(struct snd_kcontrol *kctl,
-@@ -1432,7 +2067,6 @@
+@@ -1368,14 +2357,14 @@
+ 	struct scarlett2_mixer_data *private = mixer->private_data;
+ 	const struct scarlett2_device_info *info = private->info;
+ 	const struct scarlett2_ports *ports = info->ports;
+-	int num_line_out =
+-		ports[SCARLETT2_PORT_TYPE_ANALOGUE].num[SCARLETT2_PORT_OUT];
++	int num_line_out = ports[SCARLETT2_PORT_TYPE_ANALOGUE].num[SCARLETT2_PORT_OUT];
+ 	int err, i;
++	s16 level;
+ 	char s[SNDRV_CTL_ELEM_ID_NAME_MAXLEN];
+ 
+ 	/* Add R/O HW volume control */
+ 	if (info->line_out_hw_vol) {
+-		snprintf(s, sizeof(s), "Master HW Playback Volume");
++		snprintf(s, sizeof(s), "Master HW Out Volume");
+ 		err = scarlett2_add_new_ctl(mixer,
+ 					    &scarlett2_master_volume_ctl,
+ 					    0, 1, s, &private->master_vol_ctl);
+@@ -1385,32 +2374,33 @@
+ 
+ 	/* Add volume controls */
+ 	for (i = 0; i < num_line_out; i++) {
+-
+ 		/* Fader */
+ 		if (info->line_out_descrs[i])
+-			snprintf(s, sizeof(s),
+-				 "Line %02d (%s) Playback Volume",
+-				 i + 1, info->line_out_descrs[i]);
++			snprintf(s, sizeof(s), "Line Out %02d (%s) Volume", i + 1, info->line_out_descrs[i]);
+ 		else
+-			snprintf(s, sizeof(s),
+-				 "Line %02d Playback Volume",
+-				 i + 1);
++			snprintf(s, sizeof(s), "Line Out %02d Volume", i + 1);
+ 		err = scarlett2_add_new_ctl(mixer,
+ 					    &scarlett2_line_out_volume_ctl,
+ 					    i, 1, s, &private->vol_ctls[i]);
+ 		if (err < 0)
+ 			return err;
+ 
+-		/* Make the fader read-only if the SW/HW switch is set to HW */
+-		if (private->vol_sw_hw_switch[i])
+-			private->vol_ctls[i]->vd[0].access &=
+-				~SNDRV_CTL_ELEM_ACCESS_WRITE;
++		/* Initialize the value with software configuration
++		 * Make the fader read-only if the SW/HW switch is set to HW
++		 */
++		if ((private->sw_cfg_volume) && (!private->vol_sw_hw_switch[i])) {
++			level  = le16_to_cpu(private->sw_cfg_volume[i].volume);
++			private->vol[i] = clamp(level + SCARLETT2_VOLUME_BIAS, 0, SCARLETT2_VOLUME_BIAS);
++			private->vol_ctls[i]->vd[0].access |= SNDRV_CTL_ELEM_ACCESS_WRITE;
++		}
++		else {
++			private->vol[i] = private->master_vol;
++			private->vol_ctls[i]->vd[0].access &= ~SNDRV_CTL_ELEM_ACCESS_WRITE;
++		}
+ 
+ 		/* SW/HW Switch */
+ 		if (info->line_out_hw_vol) {
+-			snprintf(s, sizeof(s),
+-				 "Line Out %02d Volume Control Playback Enum",
+-				 i + 1);
++			snprintf(s, sizeof(s), "Line Out %02d Control", i + 1);
+ 			err = scarlett2_add_new_ctl(mixer,
+ 						    &scarlett2_sw_hw_enum_ctl,
+ 						    i, 1, s, NULL);
+@@ -1428,11 +2418,20 @@
+ 			return err;
+ 	}
+ 
+-	return 0;
++	/* Commite actual volumes */
++	if (private->sw_cfg_volume) {
++		for (i = 0; i < num_line_out; i++) {
++			err = scarlett2_usb_set_config(mixer, SCARLETT2_CONFIG_LINE_OUT_VOLUME,
++			                               i, private->vol[i] - SCARLETT2_VOLUME_BIAS);
++			if (err < 0)
++				return err;
++		}
++	}
++
++	return err;
  }
  
  /*** Create the analogue input controls ***/
@@ -1128,7 +2056,7 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.
  static int scarlett2_add_line_in_ctls(struct usb_mixer_interface *mixer)
  {
  	struct scarlett2_mixer_data *private = mixer->private_data;
-@@ -1442,22 +2076,40 @@
+@@ -1442,22 +2441,40 @@
  
  	/* Add input level (line/inst) controls */
  	for (i = 0; i < info->level_input_count; i++) {
@@ -1172,20 +2100,28 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.
  	return 0;
  }
  
-@@ -1495,18 +2147,19 @@
- 	const struct scarlett2_device_info *info = private->info;
- 	const struct scarlett2_ports *ports = info->ports;
- 	int oval, val, num_mixer_in, mix_num, err = 0;
+@@ -1492,22 +2509,36 @@
+ 	struct usb_mixer_elem_info *elem = kctl->private_data;
+ 	struct usb_mixer_interface *mixer = elem->head.mixer;
+ 	struct scarlett2_mixer_data *private = mixer->private_data;
+-	const struct scarlett2_device_info *info = private->info;
+-	const struct scarlett2_ports *ports = info->ports;
+-	int oval, val, num_mixer_in, mix_num, err = 0;
++	int oval, val, mix_num, input_num, err = 0;
 +	int index = elem->control;
++	int cfg_idx;
++	u32 level;
++	__le32 *gain;
  
  	mutex_lock(&private->data_mutex);
  
 -	oval = private->mix[elem->control];
 +	oval = private->mix[index];
  	val = ucontrol->value.integer.value[0];
- 	num_mixer_in = ports[SCARLETT2_PORT_TYPE_MIX].num[SCARLETT2_PORT_OUT];
+-	num_mixer_in = ports[SCARLETT2_PORT_TYPE_MIX].num[SCARLETT2_PORT_OUT];
 -	mix_num = elem->control / num_mixer_in;
-+	mix_num = index / num_mixer_in;
++	mix_num = index / SCARLETT2_INPUT_MIX_MAX;
++	input_num = index % SCARLETT2_INPUT_MIX_MAX;
  
  	if (oval == val)
  		goto unlock;
@@ -1193,9 +2129,197 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.
 -	private->mix[elem->control] = val;
 +	private->mix[index] = val;
  	err = scarlett2_usb_set_mix(mixer, mix_num);
++	if (err < 0)
++		goto unlock;
++	
++	/* Update software configuration data */
++	cfg_idx = mix_num * SCARLETT2_SW_CONFIG_MIXER_INPUTS + input_num;
++	if (cfg_idx < private->sw_cfg_mixer_size) {
++		level = scarlett2_sw_config_mixer_values[val];
++		gain = &private->sw_cfg_mixer[cfg_idx];
++		*gain = cpu_to_le32(level << 16); /* Convert to F32LE */
++		scarlett2_commit_software_config(mixer, gain, sizeof(__le32));
++	}
++
  	if (err == 0)
  		err = 1;
-@@ -1717,6 +2370,330 @@
+ 
+@@ -1539,59 +2570,69 @@
+ 	struct scarlett2_mixer_data *private = mixer->private_data;
+ 	const struct scarlett2_ports *ports = private->info->ports;
+ 	int err, i, j;
+-	int index;
++	int cfg_idx, mix_idx;
+ 	char s[SNDRV_CTL_ELEM_ID_NAME_MAXLEN];
++	u32 level;
+ 
+ 	int num_inputs = ports[SCARLETT2_PORT_TYPE_MIX].num[SCARLETT2_PORT_OUT];
+ 	int num_outputs = ports[SCARLETT2_PORT_TYPE_MIX].num[SCARLETT2_PORT_IN];
+ 
+-	for (i = 0, index = 0; i < num_outputs; i++) {
+-		for (j = 0; j < num_inputs; j++, index++) {
++	/* For each mixer */
++	for (i=0; i<num_outputs; ++i) {
++		mix_idx   = i * SCARLETT2_INPUT_MIX_MAX;
++		cfg_idx   = i * SCARLETT2_SW_CONFIG_MIXER_INPUTS; /* TODO: This may change, need to verify for other models */
++
++		/* Add Mix control */
++		for (j = 0; j < num_inputs; ++j, ++cfg_idx, ++mix_idx) {
+ 			snprintf(s, sizeof(s),
+-				 "Mix %c Input %02d Playback Volume",
++				 "Mix %c Input %02d Gain",
+ 				 'A' + i, j + 1);
++
++			level = (cfg_idx < private->sw_cfg_mixer_size) ?
++			        le32_to_cpu(private->sw_cfg_mixer[cfg_idx]) : 0;
++
++			private->mix[mix_idx] = scarlett2_float_to_mixer_level(level) -
++			                        (SCARLETT2_MIXER_MIN_DB * 2);
++
+ 			err = scarlett2_add_new_ctl(mixer, &scarlett2_mixer_ctl,
+-						    index, 1, s, NULL);
++						    mix_idx, 1, s, NULL);
+ 			if (err < 0)
+ 				return err;
+ 		}
++
++		/* Commit the actual mix state at startup */
++		err = scarlett2_usb_set_mix(mixer, i);
++		if (err < 0)
++			return err;
+ 	}
+ 
+ 	return 0;
+ }
+ 
+ /*** Mux Source Selection Controls ***/
+-
+ static int scarlett2_mux_src_enum_ctl_info(struct snd_kcontrol *kctl,
+ 					   struct snd_ctl_elem_info *uinfo)
+ {
+ 	struct usb_mixer_elem_info *elem = kctl->private_data;
+-	struct scarlett2_mixer_data *private = elem->head.mixer->private_data;
+-	const struct scarlett2_ports *ports = private->info->ports;
+-	unsigned int item = uinfo->value.enumerated.item;
+-	int items = private->num_mux_srcs;
+-	int port_type;
++	struct usb_mixer_interface *mixer = elem->head.mixer;
++	struct scarlett2_mixer_data *private = mixer->private_data;
++	int item = uinfo->value.enumerated.item;
++	int items = private->num_inputs + 1;
++	int port = clamp(item, 0, private->num_inputs) - 1;
+ 
+-	uinfo->type = SNDRV_CTL_ELEM_TYPE_ENUMERATED;
++	uinfo->type  = SNDRV_CTL_ELEM_TYPE_ENUMERATED;
+ 	uinfo->count = elem->channels;
+ 	uinfo->value.enumerated.items = items;
+-
++	if (!items)
++		return 0;
+ 	if (item >= items)
+ 		item = uinfo->value.enumerated.item = items - 1;
+ 
+-	for (port_type = 0;
+-	     port_type < SCARLETT2_PORT_TYPE_COUNT;
+-	     port_type++) {
+-		if (item < ports[port_type].num[SCARLETT2_PORT_IN]) {
+-			sprintf(uinfo->value.enumerated.name,
+-				ports[port_type].src_descr,
+-				item + ports[port_type].src_num_offset);
+-			return 0;
+-		}
+-		item -= ports[port_type].num[SCARLETT2_PORT_IN];
+-	}
++	scarlett2_fmt_port_name(uinfo->value.enumerated.name,
++	                        sizeof(uinfo->value.enumerated.name), private->info,
++	                        SCARLETT2_PORT_IN, port);
+ 
+-	return -EINVAL;
++	return 0;
+ }
+ 
+ static int scarlett2_mux_src_enum_ctl_get(struct snd_kcontrol *kctl,
+@@ -1599,8 +2640,8 @@
+ {
+ 	struct usb_mixer_elem_info *elem = kctl->private_data;
+ 	struct scarlett2_mixer_data *private = elem->head.mixer->private_data;
+-
+-	ucontrol->value.enumerated.item[0] = private->mux[elem->control];
++	
++	ucontrol->value.enumerated.item[0] = private->mux[elem->control] + 1; /* Element 0 is always 'Off' */
+ 	return 0;
+ }
+ 
+@@ -1616,8 +2657,8 @@
+ 	mutex_lock(&private->data_mutex);
+ 
+ 	oval = private->mux[index];
+-	val = clamp(ucontrol->value.integer.value[0],
+-		    0L, private->num_mux_srcs - 1L);
++	val  = ucontrol->value.integer.value[0];
++	val  = clamp(val, 0, private->num_inputs) - 1;
+ 
+ 	if (oval == val)
+ 		goto unlock;
+@@ -1640,34 +2681,36 @@
+ 	.put  = scarlett2_mux_src_enum_ctl_put,
+ };
+ 
+-static int scarlett2_add_mux_enums(struct usb_mixer_interface *mixer)
++static int scarlett2_init_mux(struct usb_mixer_interface *mixer)
+ {
+ 	struct scarlett2_mixer_data *private = mixer->private_data;
+-	const struct scarlett2_ports *ports = private->info->ports;
+-	int port_type, channel, i;
++	int port, err;
++	char name[SNDRV_CTL_ELEM_ID_NAME_MAXLEN];
+ 
+-	for (i = 0, port_type = 0;
+-	     port_type < SCARLETT2_PORT_TYPE_COUNT;
+-	     port_type++) {
+-		for (channel = 0;
+-		     channel < ports[port_type].num[SCARLETT2_PORT_OUT];
+-		     channel++, i++) {
+-			int err;
+-			char s[SNDRV_CTL_ELEM_ID_NAME_MAXLEN];
+-			const char *const descr = ports[port_type].dst_descr;
++	/* Read MUX settings */
++	err = scarlett2_usb_get_mux(mixer);
++	if (err < 0)
++		return err;
+ 
+-			snprintf(s, sizeof(s) - 5, descr, channel + 1);
+-			strcat(s, " Enum");
++	/* Apply MUX settings */
++	err = scarlett2_usb_set_mux(mixer);
++	if (err < 0)
++		return err;
+ 
+-			err = scarlett2_add_new_ctl(mixer,
+-						    &scarlett2_mux_src_enum_ctl,
+-						    i, 1, s, NULL);
+-			if (err < 0)
+-				return err;
+-		}
++	/* Create mux control ports based on output port list */
++	for (port = 0; port < private->num_outputs; ++port) {
++		/* Create port descriptor */
++		scarlett2_fmt_port_name(name, SNDRV_CTL_ELEM_ID_NAME_MAXLEN, private->info, SCARLETT2_PORT_OUT, port);
++		strncat(name, " Source", SNDRV_CTL_ELEM_ID_NAME_MAXLEN);
++
++		err = scarlett2_add_new_ctl(mixer,
++					    &scarlett2_mux_src_enum_ctl,
++					    port, 1, name, NULL);
++		if (err < 0)
++			return err;
+ 	}
+ 
+-	return 0;
++	return err;
+ }
+ 
+ /*** Meter Controls ***/
+@@ -1717,6 +2760,330 @@
  				     "Level Meter", NULL);
  }
  
@@ -1526,20 +2650,91 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.
  /*** Cleanup/Suspend Callbacks ***/
  
  static void scarlett2_private_free(struct usb_mixer_interface *mixer)
-@@ -1803,12 +2780,42 @@
- 	}
+@@ -1724,6 +3091,8 @@
+ 	struct scarlett2_mixer_data *private = mixer->private_data;
+ 
+ 	cancel_delayed_work_sync(&private->work);
++	if (private->sw_cfg_data != NULL)
++		kfree(private->sw_cfg_data);
+ 	kfree(private);
+ 	mixer->private_data = NULL;
+ }
+@@ -1736,71 +3105,33 @@
+ 		scarlett2_config_save(private->mixer);
  }
  
+-/*** Initialisation ***/
+-
+-static int scarlett2_count_mux_srcs(const struct scarlett2_ports *ports)
+-{
+-	int port_type, count = 0;
+-
+-	for (port_type = 0;
+-	     port_type < SCARLETT2_PORT_TYPE_COUNT;
+-	     port_type++)
+-		count += ports[port_type].num[SCARLETT2_PORT_IN];
+-
+-	return count;
+-}
+-
+-/* Default routing connects PCM outputs and inputs to Analogue,
+- * S/PDIF, then ADAT
 +/* Look through the interface descriptors for the Focusrite Control
 + * interface (bInterfaceClass = 255 Vendor Specific Class) and set the
 + * interface number, endpoint address, packet size, and interval in
 + * private
-+ */
+  */
+-static void scarlett2_init_routing(u8 *mux,
+-				   const struct scarlett2_ports *ports)
+-{
+-	int i, input_num, input_count, port_type;
+-	int output_num, output_count, port_type_connect_num;
+-
+-	static const int connect_order[] = {
+-		SCARLETT2_PORT_TYPE_ANALOGUE,
+-		SCARLETT2_PORT_TYPE_SPDIF,
+-		SCARLETT2_PORT_TYPE_ADAT,
+-		-1
+-	};
 +static int scarlett2_find_fc_interface(struct usb_device *dev,
 +				       struct scarlett2_mixer_data *private) {
 +	struct usb_host_config *config = dev->actconfig;
 +	int i;
-+
+ 
+-	/* Assign PCM inputs (routing outputs) */
+-	output_num = scarlett2_get_port_start_num(ports,
+-						  SCARLETT2_PORT_OUT,
+-						  SCARLETT2_PORT_TYPE_PCM);
+-	output_count = ports[SCARLETT2_PORT_TYPE_PCM].num[SCARLETT2_PORT_OUT];
+-
+-	for (port_type = connect_order[port_type_connect_num = 0];
+-	     port_type >= 0;
+-	     port_type = connect_order[++port_type_connect_num]) {
+-		input_num = scarlett2_get_port_start_num(
+-			ports, SCARLETT2_PORT_IN, port_type);
+-		input_count = ports[port_type].num[SCARLETT2_PORT_IN];
+-		for (i = 0;
+-		     i < input_count && output_count;
+-		     i++, output_count--)
+-			mux[output_num++] = input_num++;
+-	}
+-
+-	/* Assign PCM outputs (routing inputs) */
+-	input_num = scarlett2_get_port_start_num(ports,
+-						 SCARLETT2_PORT_IN,
+-						 SCARLETT2_PORT_TYPE_PCM);
+-	input_count = ports[SCARLETT2_PORT_TYPE_PCM].num[SCARLETT2_PORT_IN];
+-
+-	for (port_type = connect_order[port_type_connect_num = 0];
+-	     port_type >= 0;
+-	     port_type = connect_order[++port_type_connect_num]) {
+-		output_num = scarlett2_get_port_start_num(
+-			ports, SCARLETT2_PORT_OUT, port_type);
+-		output_count = ports[port_type].num[SCARLETT2_PORT_OUT];
+-		for (i = 0;
+-		     i < output_count && input_count;
+-		     i++, input_count--)
+-			mux[output_num++] = input_num++;
 +	for (i = 0; i < config->desc.bNumInterfaces; i++) {
 +		struct usb_interface *intf = config->interface[i];
 +		struct usb_interface_descriptor *desc =
@@ -1554,14 +2749,13 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.
 +			private->interval = epd->bInterval;
 +			return 0;
 +		}
-+	}
+ 	}
 +
 +	return -1;
-+}
-+
+ }
+ 
  /* Initialise private data, routing, sequence number */
- static int scarlett2_init_private(struct usb_mixer_interface *mixer,
- 				  const struct scarlett2_device_info *info)
+@@ -1809,6 +3140,7 @@
  {
  	struct scarlett2_mixer_data *private =
  		kzalloc(sizeof(struct scarlett2_mixer_data), GFP_KERNEL);
@@ -1569,38 +2763,51 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.
  
  	if (!private)
  		return -ENOMEM;
-@@ -1816,19 +2823,25 @@
+@@ -1816,19 +3148,35 @@
  	mutex_init(&private->usb_mutex);
  	mutex_init(&private->data_mutex);
  	INIT_DELAYED_WORK(&private->work, scarlett2_config_save_work);
-+	mixer->private_data = private;
-+	mixer->private_free = scarlett2_private_free;
-+	mixer->private_suspend = scarlett2_private_suspend;
- 	private->info = info;
- 	private->num_mux_srcs = scarlett2_count_mux_srcs(info->ports);
- 	private->scarlett2_seq = 0;
- 	private->mixer = mixer;
--	mixer->private_data = private;
--	mixer->private_free = scarlett2_private_free;
--	mixer->private_suspend = scarlett2_private_suspend;
+-	private->info = info;
+-	private->num_mux_srcs = scarlett2_count_mux_srcs(info->ports);
+-	private->scarlett2_seq = 0;
+-	private->mixer = mixer;
+ 	mixer->private_data = private;
+ 	mixer->private_free = scarlett2_private_free;
+ 	mixer->private_suspend = scarlett2_private_suspend;
++	private->info = info;
++	private->num_inputs = scarlett2_count_ports(info->ports, SCARLETT2_PORT_IN);
++	private->num_outputs = scarlett2_count_ports(info->ports, SCARLETT2_PORT_OUT);
++	private->scarlett2_seq = 0;
++	private->mixer = mixer;
 +	private->vol_updated = 0;
 +	private->line_ctl_updated = 0;
++	private->speaker_updated = 0;
++	private->speaker_switch = 0;
 +	private->talkback_switch = 0;
-+	err = scarlett2_find_fc_interface(mixer->chip->dev, private);
 +
-+	if (err < 0)
-+		return -EINVAL;
++	private->sw_cfg_offset = 0;
++	private->sw_cfg_size = 0;
++	private->sw_cfg_data = NULL;
++	private->sw_cfg_stereo = NULL;
++	private->sw_cfg_volume = NULL;
++	private->sw_cfg_mixer = NULL;
++	private->sw_cfg_mixer_size = 0;
++	private->sw_cfg_cksum = NULL;
  
- 	/* Setup default routing */
- 	scarlett2_init_routing(private->mux, info->ports);
+-	/* Setup default routing */
+-	scarlett2_init_routing(private->mux, info->ports);
++	err = scarlett2_find_fc_interface(mixer->chip->dev, private);
  
 -	/* Initialise the sequence number used for the proprietary commands */
 -	return scarlett2_usb(mixer, SCARLETT2_USB_INIT_SEQ, NULL, 0, NULL, 0);
++	if (err < 0)
++		return -EINVAL;
++
 +	return 0;
  }
  
  /* Read line-in config and line-out volume settings on start */
-@@ -1841,9 +2854,15 @@
+@@ -1841,9 +3189,15 @@
  		ports[SCARLETT2_PORT_TYPE_ANALOGUE].num[SCARLETT2_PORT_OUT];
  	u8 level_switches[SCARLETT2_LEVEL_SWITCH_MAX];
  	u8 pad_switches[SCARLETT2_PAD_SWITCH_MAX];
@@ -1617,7 +2824,7 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.
  	if (info->level_input_count) {
  		err = scarlett2_usb_get_config(
  			mixer,
-@@ -1856,6 +2875,7 @@
+@@ -1856,6 +3210,7 @@
  			private->level_switch[i] = level_switches[i];
  	}
  
@@ -1625,7 +2832,7 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.
  	if (info->pad_input_count) {
  		err = scarlett2_usb_get_config(
  			mixer,
-@@ -1868,6 +2888,84 @@
+@@ -1868,6 +3223,84 @@
  			private->pad_switch[i] = pad_switches[i];
  	}
  
@@ -1655,7 +2862,7 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.
 +			private->pow_switch[i] = !! (pow_switch & (1 << i));
 +	}
 +
-+	/* Mass Storage Device (MSD) settings */
++	/* Mass Storage Device (MSD) mode */
 +	if (info->has_msd_mode) {
 +		err = scarlett2_usb_get_config(
 +			mixer,
@@ -1710,7 +2917,138 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.
  	err = scarlett2_usb_get_volume_status(mixer, &volume_status);
  	if (err < 0)
  		return err;
-@@ -1920,6 +3018,45 @@
+@@ -1897,6 +3330,130 @@
+ 	return 0;
+ }
+ 
++static int scarlett2_read_software_configs(struct usb_mixer_interface *mixer)
++{
++	struct scarlett2_mixer_data *private = mixer->private_data;
++	const struct scarlett2_ports *ports = private->info->ports;
++	int i, chunk, err;
++	__le16 sw_cfg_size;
++	int num_line_out = ports[SCARLETT2_PORT_TYPE_ANALOGUE].num[SCARLETT2_PORT_OUT];
++
++	/* Currently it is static constant, maybe it will be properly detected in the future */
++	private->sw_cfg_offset = SCARLETT2_SW_CONFIG_BASE;
++
++	/* Obtain actual size of sofware config */
++	err = scarlett2_usb_get(mixer, private->sw_cfg_offset + SCARLETT2_SW_CONFIG_SIZE_OFFSET, &sw_cfg_size, sizeof(sw_cfg_size));
++	if (err < 0)
++		return err;
++
++	/* Allocate memory for the configuration space */
++	private->sw_cfg_size  = le16_to_cpu(sw_cfg_size);
++	private->sw_cfg_data  = kmalloc(private->sw_cfg_size, GFP_KERNEL);
++	if (private->sw_cfg_data == NULL)
++		return -ENOMEM;
++
++	/* Associate pointers with their locations, last 4 bytes are checksum */
++	private->sw_cfg_stereo  = (__le32 *)&private->sw_cfg_data[SCARLETT2_SW_CONFIG_STEREO_BITS_OFFSET];
++	private->sw_cfg_volume  = (struct scarlett2_sw_cfg_volume *)&private->sw_cfg_data[SCARLETT2_SW_CONFIG_VOLUMES_OFFSET];
++	private->sw_cfg_mixer   = (__le32 *)&private->sw_cfg_data[SCARLETT2_SW_CONFIG_MIXER_OFFSET];
++	private->sw_cfg_cksum   = (__le32 *)&private->sw_cfg_data[private->sw_cfg_size - sizeof(__le32)];
++
++	private->sw_cfg_mixer_size   = SCARLETT2_OUTPUT_MIX_MAX * SCARLETT2_SW_CONFIG_MIXER_INPUTS;
++
++	/* Check that we don't get out of the configuration space */
++	if (private->sw_cfg_cksum < (__le32 *)&private->sw_cfg_stereo[1])
++		private->sw_cfg_stereo       = NULL;
++	if (private->sw_cfg_cksum < (__le32 *)&private->sw_cfg_volume[num_line_out])
++		private->sw_cfg_volume       = NULL;
++	if (private->sw_cfg_cksum < (__le32 *)&private->sw_cfg_mixer[private->sw_cfg_mixer_size])
++		private->sw_cfg_mixer_size   = 0;
++
++	/* Request the software config with fixed-size data chunks */
++	for (i=0; i<private->sw_cfg_size; ) {
++		chunk = (private->sw_cfg_size - i);
++		if (chunk > SCARLETT2_SW_CONFIG_PACKET_SIZE)
++			chunk = SCARLETT2_SW_CONFIG_PACKET_SIZE;
++
++		/* Request yet another chunk */
++		err = scarlett2_usb_get(mixer, private->sw_cfg_offset + i, &private->sw_cfg_data[i], chunk);
++		if (err < 0)
++			return err;
++		i += chunk;
++	}
++
++	return err;
++}
++
++static int scarlett2_commit_software_config(
++	struct usb_mixer_interface *mixer,
++	void *ptr, /* the pointer of the first changed byte in the configuration */
++	int bytes /* the actual number of bytes changed in the configuration */
++)
++{
++	struct scarlett2_mixer_data *private = mixer->private_data;
++	struct {
++		__le32 offset;
++		__le32 bytes;
++		u8 data[SCARLETT2_SW_CONFIG_PACKET_SIZE];
++	} __packed req;
++	int i, offset, chunk, err = 0;
++	u8 *bptr;
++	const __le32 *ckptr;
++	s32 checksum;
++
++	/* Check bounds, we should not exceed them */
++	bptr = ptr;
++	offset = bptr - private->sw_cfg_data;
++
++	if ((private->sw_cfg_data == NULL) ||
++	    (offset < 0) || 
++	    ((offset + bytes) > private->sw_cfg_size))
++		return -EINVAL;
++
++	/* Re-compute the checksum of the software configuration area */
++	checksum = 0;
++	*(private->sw_cfg_cksum) = 0;
++	ckptr = (__le32 *)private->sw_cfg_data;
++	for (i=0; i<private->sw_cfg_size; i += sizeof(__le32))
++		checksum -= le32_to_cpu(*(ckptr++));
++	*(private->sw_cfg_cksum) = cpu_to_le32(checksum);
++
++	/* Cancel any pending NVRAM save */
++	cancel_delayed_work_sync(&private->work);
++
++	/* Transfer the configuration with fixed-size data chunks */
++	for (i=0; i<bytes; ) {
++		chunk = (bytes - i);
++		if (chunk > SCARLETT2_SW_CONFIG_PACKET_SIZE)
++			chunk = SCARLETT2_SW_CONFIG_PACKET_SIZE;
++
++		/* Send yet another chunk of data */
++		req.offset = cpu_to_le32(SCARLETT2_SW_CONFIG_BASE + offset + i);
++		req.bytes = cpu_to_le32(chunk);
++		memcpy(req.data, &bptr[i], chunk);
++
++		err = scarlett2_usb(mixer, SCARLETT2_USB_SET_DATA, &req, chunk + sizeof(__le32)*2, NULL, 0);
++		if (err < 0)
++			return err;
++
++		i += chunk;
++	}
++
++	/* Transfer the actual checksum */
++	req.offset = cpu_to_le32(SCARLETT2_SW_CONFIG_BASE + private->sw_cfg_size - sizeof(__le32));
++	req.bytes = cpu_to_le32(sizeof(__le32));
++	memcpy(req.data, private->sw_cfg_cksum, sizeof(__le32));
++
++	err = scarlett2_usb(mixer, SCARLETT2_USB_SET_DATA, &req, sizeof(__le32)*3, NULL, 0);
++	if (err < 0)
++		return err;
++
++	/* Schedule the change to be written to NVRAM */
++	schedule_delayed_work(&private->work, msecs_to_jiffies(2000));
++
++	return err;
++}
++
+ /* Notify on volume change */
+ static void scarlett2_mixer_interrupt_vol_change(
+ 	struct usb_mixer_interface *mixer)
+@@ -1920,6 +3477,45 @@
  	}
  }
  
@@ -1756,10 +3094,17 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.
  /* Notify on button change */
  static void scarlett2_mixer_interrupt_button_change(
  	struct usb_mixer_interface *mixer)
-@@ -1934,23 +3071,42 @@
- 			       &private->button_ctls[i]->id);
- }
+@@ -1929,9 +3525,26 @@
  
+ 	private->vol_updated = 1;
+ 
+-	for (i = 0; i < private->info->button_count; i++)
++	for (i = 0; i < private->info->button_count; i++) {
+ 		snd_ctl_notify(mixer->chip->card, SNDRV_CTL_EVENT_MASK_VALUE,
+ 			       &private->button_ctls[i]->id);
++	}
++}
++
 +/* Notify on speaker change */
 +static void scarlett2_mixer_interrupt_speaker_change(
 +	struct usb_mixer_interface *mixer)
@@ -1774,11 +3119,10 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.
 +	if (private->info->has_talkback)
 +		snd_ctl_notify(mixer->chip->card, SNDRV_CTL_EVENT_MASK_VALUE,
 +			       &private->talkback_ctl->id);
-+}
-+
+ }
+ 
  /* Interrupt callback */
- static void scarlett2_mixer_interrupt(struct urb *urb)
- {
+@@ -1940,17 +3553,20 @@
  	struct usb_mixer_interface *mixer = urb->context;
  	int len = urb->actual_length;
  	int ustatus = urb->status;
@@ -1801,7 +3145,16 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.
  	} else {
  		usb_audio_err(mixer->chip,
  			      "scarlett mixer interrupt length %d\n", len);
-@@ -1968,8 +3124,8 @@
+@@ -1961,6 +3577,8 @@
+ 	    ustatus != -ECONNRESET &&
+ 	    ustatus != -ESHUTDOWN) {
+ 		urb->dev = mixer->chip->dev;
++		urb->actual_length = 0;
++		*(u32 *)urb->transfer_buffer = 0;
+ 		usb_submit_urb(urb, GFP_ATOMIC);
+ 	}
+ }
+@@ -1968,8 +3586,8 @@
  static int scarlett2_mixer_status_create(struct usb_mixer_interface *mixer)
  {
  	struct usb_device *dev = mixer->chip->dev;
@@ -1812,7 +3165,7 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.
  	void *transfer_buffer;
  
  	if (mixer->urb) {
-@@ -1985,14 +3141,14 @@
+@@ -1985,14 +3603,14 @@
  	if (!mixer->urb)
  		return -ENOMEM;
  
@@ -1830,48 +3183,47 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.
  
  	return usb_submit_urb(mixer->urb, GFP_KERNEL);
  }
-@@ -2000,6 +3156,7 @@
+@@ -2000,45 +3618,56 @@
  /* Entry point */
  int snd_scarlett_gen2_controls_create(struct usb_mixer_interface *mixer)
  {
 +	struct snd_usb_audio *chip = mixer->chip;
  	const struct scarlett2_device_info *info;
- 	int err;
+-	int err;
++	int i, err;
  
-@@ -2007,7 +3164,7 @@
+ 	/* only use UAC_VERSION_2 */
  	if (!mixer->protocol)
  		return 0;
  
 -	switch (mixer->chip->usb_id) {
-+	switch (chip->usb_id) {
- 	case USB_ID(0x1235, 0x8203):
- 		info = &s6i6_gen2_info;
- 		break;
-@@ -2017,23 +3174,45 @@
- 	case USB_ID(0x1235, 0x8201):
- 		info = &s18i20_gen2_info;
- 		break;
-+	case USB_ID(0x1235, 0x8212):
-+		info = &s4i4_gen3_info;
-+		break;
-+	case USB_ID(0x1235, 0x8213):
-+		info = &s8i6_gen3_info;
-+		break;
-+	case USB_ID(0x1235, 0x8214):
-+		info = &s18i8_gen3_info;
-+		break;
-+	case USB_ID(0x1235, 0x8215):
-+		info = &s18i20_gen3_info;
-+		break;
- 	default: /* device not (yet) supported */
- 		return -EINVAL;
- 	}
- 
+-	case USB_ID(0x1235, 0x8203):
+-		info = &s6i6_gen2_info;
+-		break;
+-	case USB_ID(0x1235, 0x8204):
+-		info = &s18i8_gen2_info;
+-		break;
+-	case USB_ID(0x1235, 0x8201):
+-		info = &s18i20_gen2_info;
+-		break;
+-	default: /* device not (yet) supported */
+-		return -EINVAL;
+-	}
+-
 -	if (!(mixer->chip->setup & SCARLETT2_ENABLE)) {
 -		usb_audio_err(mixer->chip,
 -			"Focusrite Scarlett Gen 2 Mixer Driver disabled; "
 -			"use options snd_usb_audio device_setup=1 "
 -			"to enable and report any issues to g@b4.vu");
++	/* Find actual device descriptor */
++	for (i=0; ; ++i) {
++		info = scarlett2_supported_devices[i];
++		if (info == NULL) /* End of list, device is not (yet) supported */
++			return -EINVAL;
++		if (info->usb_id == chip->usb_id)
++			break;
++	}
++
 +	if (!(chip->setup & SCARLETT2_ENABLE)) {
 +		usb_audio_err(chip,
 +			"Focusrite Scarlett Gen 2/3 Mixer Driver disabled; "
@@ -1898,12 +3250,35 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.
  	/* Read volume levels and controls from the interface */
  	err = scarlett2_read_configs(mixer);
  	if (err < 0)
-@@ -2064,8 +3243,20 @@
+ 		return err;
+ 
++	/* Read software configuration containing mixer gains */
++	err = scarlett2_read_software_configs(mixer);
++	if (err < 0)
++		return err;
++
+ 	/* Create the analogue output controls */
+ 	err = scarlett2_add_line_out_ctls(mixer);
+ 	if (err < 0)
+@@ -2050,7 +3679,7 @@
+ 		return err;
+ 
+ 	/* Create the input, output, and mixer mux input selections */
+-	err = scarlett2_add_mux_enums(mixer);
++	err = scarlett2_init_mux(mixer);
+ 	if (err < 0)
+ 		return err;
+ 
+@@ -2064,12 +3693,20 @@
  	if (err < 0)
  		return err;
  
 -	/* Set up the interrupt polling if there are hardware buttons */
 -	if (info->button_count) {
+-		err = scarlett2_mixer_status_create(mixer);
+-		if (err < 0)
+-			return err;
+-	}
 +	/* Create the MSD control */
 +	err = scarlett2_add_msd_ctl(mixer);
 +	if (err < 0)
@@ -1914,10 +3289,43 @@ diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/mixer_scarlett_gen2.c linux-5.3.
 +	if (err < 0)
 +		return err;
 +
-+	/* Set up the interrupt polling if there is a hardware volume
-+	 * control
-+	 */
-+	if (info->line_out_hw_vol) {
- 		err = scarlett2_mixer_status_create(mixer);
- 		if (err < 0)
- 			return err;
++	/* Set up the interrupt polling */
++	err = scarlett2_mixer_status_create(mixer);
++	if (err < 0)
++		return err;
+ 
+ 	return 0;
+ }
+diff -uNr linux-5.3.18-custom-rt-orig/sound/usb/pcm.c linux-5.3.18-custom-rt/sound/usb/pcm.c
+--- linux-5.3.18-custom-rt-orig/sound/usb/pcm.c	2020-10-04 12:17:41.115670325 +0300
++++ linux-5.3.18-custom-rt/sound/usb/pcm.c	2020-10-26 00:22:30.092312344 +0300
+@@ -357,6 +357,14 @@
+ 		ep = 0x81;
+ 		ifnum = 2;
+ 		goto add_sync_ep_from_ifnum;
++	case USB_ID(0x1235, 0x8210): /* Focusrite Scarlett 2i2 3rd Gen */
++	case USB_ID(0x1235, 0x8212): /* Focusrite Scarlett 4i4 3rd Gen */
++	case USB_ID(0x1235, 0x8213): /* Focusrite Scarlett 8i6 3rd Gen */
++	case USB_ID(0x1235, 0x8214): /* Focusrite Scarlett 18i8 3rd Gen */
++	case USB_ID(0x1235, 0x8215): /* Focusrite Scarlett 18i20 3rd Gen */
++		ep = 0x81;
++		ifnum = 2;
++		goto add_sync_ep_from_ifnum;
+ 	case USB_ID(0x0582, 0x01d8): /* BOSS Katana */
+ 		/* BOSS Katana amplifiers do not need quirks */
+ 		return 0;
+@@ -379,10 +387,11 @@
+ add_sync_ep_from_ifnum:
+ 	iface = usb_ifnum_to_if(dev, ifnum);
+ 
+-	if (!iface || iface->num_altsetting < 2)
+-		return -EINVAL;
++	if (!iface || iface->num_altsetting < 2 ||
++	    altsd->bAlternateSetting >= iface->num_altsetting)
++	return -EINVAL;
+ 
+-	alts = &iface->altsetting[1];
++	alts = usb_altnum_to_altsetting(iface, altsd->bAlternateSetting);
+ 
+ add_sync_ep:
+ 	subs->sync_endpoint = snd_usb_add_endpoint(subs->stream->chip,

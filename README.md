@@ -7,6 +7,7 @@ Linux Kernel 5.3.18 currently used in [openSUSE Leap 15.2](https://www.opensuse.
 
 The supported list of Gen3 devices:
 
+* Focusrite Scarlett 2i2 (experimental)
 * Focusrite Scarlett 4i4
 * Focusrite Scarlett 8i6
 * Focusrite Scarlett 18i8
@@ -106,6 +107,7 @@ after the device is connected to the computer. You need to create additional ```
 
 ```bash
 echo "options snd_usb_audio device_setup=1,1,1,1" > /etc/modprobe.d/scarlett-gen3.conf
+echo "options snd_usb_audio vid=0x1235 pid=0x8210 device_setup=1" >> /etc/modprobe.d/scarlett-gen3.conf
 echo "options snd_usb_audio vid=0x1235 pid=0x8212 device_setup=1" >> /etc/modprobe.d/scarlett-gen3.conf
 echo "options snd_usb_audio vid=0x1235 pid=0x8213 device_setup=1" >> /etc/modprobe.d/scarlett-gen3.conf
 echo "options snd_usb_audio vid=0x1235 pid=0x8214 device_setup=1" >> /etc/modprobe.d/scarlett-gen3.conf
