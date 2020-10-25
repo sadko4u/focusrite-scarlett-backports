@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
- *   Focusrite Scarlett 6i6/18i8/18i20 Gen 2 and 4i4/8i6/18i8/18i20
+ *   Focusrite Scarlett 6i6/18i8/18i20 Gen 2 and 2i2/4i4/8i6/18i8/18i20
  *   Gen 3 Driver for ALSA
  *
  *   Copyright (c) 2018-2020 by Geoffrey D. Bennett <g at b4.vu>
@@ -22,7 +22,7 @@
  */
 
 /* Mixer Interface for the Focusrite Scarlett 6i6/18i8/18i20 Gen 2 and
- * 4i4/8i6/18i8/18i20 Gen 3 audio interfaces. Based on the Gen 1
+ * 2i2/4i4/8i6/18i8/18i20 Gen 3 audio interfaces. Based on the Gen 1
  * driver and rewritten.
  */
 
@@ -42,6 +42,10 @@
  * Scarlett 18i8/18i20 Gen 3 support added in June 2020 (thanks to
  * Darren Jaeckel, Alex Sedlack, and Clovis Lunel for providing usbmon
  * output and testing).
+ *
+ * Scarlett 2i2 Gen 3 support added in November 2020 (thanks to Alexander
+ * Vorona for taking 2i2 USB protocol dumps).
+ *
  *
  * This ALSA mixer gives access to (model-dependent):
  *  - input, output, mixer-matrix muxes
@@ -323,6 +327,8 @@ struct scarlett2_device_info {
 	u8 has_mux; /* MUX (routing) is present */
 	u8 has_mixer; /* Internal Mixer is present */
 	u8 has_sw_config; /* Software configuration is present */
+	u8 has_meters; /* Device has meters */
+	u8 has_hw_volume; /* Has hardware volume control */
 	const char * const line_out_descrs[SCARLETT2_ANALOGUE_MAX];
 	const struct scarlett2_port_name * const port_names; /* Special names of ports */
 	const u8 mux_size[SCARLETT2_PORT_DIRECTIONS]; /* The maximum number of elements per mux */
@@ -442,7 +448,7 @@ static const struct scarlett2_config scarlett2_home_config_items[SCARLETT2_CONFI
 		{ .offset = 0x08, .size = 1, .activate = 7 },
 
 	[SCARLETT2_CONFIG_AIR_SWITCH] =                /* Air Switch */
-		{ .offset = 0x08, .size = 1, .activate = 8 },
+		{ .offset = 0x09, .size = 1, .activate = 8 },
 };
 
 /* proprietary request/response format */
@@ -480,6 +486,10 @@ static const struct scarlett2_device_info s6i6_gen2_info = {
 	.has_mixer = 1,
 
 	.has_sw_config = 1,
+
+	.has_meters = 1,
+
+	.has_hw_volume = 1,
 
 	.line_out_descrs = {
 		"Headphones 1 L",
@@ -552,6 +562,10 @@ static const struct scarlett2_device_info s18i8_gen2_info = {
 	.has_mixer = 1,
 
 	.has_sw_config = 1,
+
+	.has_meters = 1,
+
+	.has_hw_volume = 1,
 
 	.line_out_descrs = {
 		"Monitor L",
@@ -634,6 +648,10 @@ static const struct scarlett2_device_info s18i20_gen2_info = {
 
 	.has_sw_config = 1,
 
+	.has_meters = 1,
+
+	.has_hw_volume = 1,
+
 	.line_out_descrs = {
 		"Monitor L",
 		"Monitor R",
@@ -696,6 +714,23 @@ static const struct scarlett2_device_info s18i20_gen2_info = {
 	.config = scarlett2_pro_config_items
 };
 
+static const struct scarlett2_device_info s2i2_gen3_info = {
+	.usb_id = USB_ID(0x1235, 0x8210),
+
+	/* The first two analogue inputs can be switched between line
+	 * and instrument levels.
+	 */
+	.level_input_count = 2,
+
+	/* The first two analogue inputs have an optional "air" feature. */
+	.air_input_count = 2,
+
+	/* One 48V phantom power switch */
+	/* .power_48v_count = 1, */
+
+	.config = scarlett2_home_config_items
+};
+
 static const struct scarlett2_port_name s4i4_gen3_port_names[] = {
 	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 0, "Monitor L" },
 	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 1, "Monitor R" },
@@ -729,6 +764,10 @@ static const struct scarlett2_device_info s4i4_gen3_info = {
 	.has_mixer = 1,
 
 	.has_sw_config = 1,
+
+	.has_meters = 1,
+
+	.has_hw_volume = 1,
 
 	.line_out_descrs = {
 		"Monitor L",
@@ -801,6 +840,10 @@ static const struct scarlett2_device_info s8i6_gen3_info = {
 	.has_mixer = 1,
 
 	.has_sw_config = 1,
+
+	.has_meters = 1,
+
+	.has_hw_volume = 1,
 
 	.line_out_descrs = {
 		"Headphones 1 L",
@@ -895,6 +938,10 @@ static const struct scarlett2_device_info s18i8_gen3_info = {
 	.has_mixer = 1,
 
 	.has_sw_config = 1,
+
+	.has_meters = 1,
+
+	.has_hw_volume = 1,
 
 	.line_out_descrs = {
 		"Monitor 1 L",
@@ -1005,6 +1052,10 @@ static const struct scarlett2_device_info s18i20_gen3_info = {
 
 	.has_sw_config = 1,
 
+	.has_meters = 1,
+
+	.has_hw_volume = 1,
+
 	.line_out_descrs = {
 		"Monitor 1 L",
 		"Monitor 1 R",
@@ -1080,6 +1131,7 @@ static const struct scarlett2_device_info *scarlett2_supported_devices[] = {
 	&s18i20_gen2_info,
 
 	/* Supported Gen3 devices */
+	&s2i2_gen3_info,
 	&s4i4_gen3_info,
 	&s8i6_gen3_info,
 	&s18i8_gen3_info,
@@ -1259,7 +1311,7 @@ static char *scarlett2_fmt_port_name(char *out, int len, const struct scarlett2_
 		if (num < ports[port_type].num[direction]) {
 			/* Is there 'special' name found ? */
 			name[0] = '\0';
-			for (port_name = info->port_names; port_name->name != NULL; ++port_name) {
+			for (port_name = info->port_names; (port_name != NULL) && (port_name->name != NULL); ++port_name) {
 				if ((port_name->direction == direction) &&
 				    (port_name->type == port_type) &&
 				    (port_name->index == num)) {
@@ -2732,12 +2784,16 @@ static int scarlett2_add_mixer_ctls(struct usb_mixer_interface *mixer)
 	struct scarlett2_mixer_data *private = mixer->private_data;
 	const struct scarlett2_ports *ports = private->info->ports;
 	int err, i, j;
-	int cfg_idx, mix_idx;
+	int cfg_idx, mix_idx, num_inputs, num_outputs;
 	char s[SNDRV_CTL_ELEM_ID_NAME_MAXLEN];
 	u32 level;
 
-	int num_inputs = ports[SCARLETT2_PORT_TYPE_MIX].num[SCARLETT2_PORT_OUT];
-	int num_outputs = ports[SCARLETT2_PORT_TYPE_MIX].num[SCARLETT2_PORT_IN];
+	/* Check that device has mixer */
+	if (!private->info->has_mixer)
+		return 0;
+
+	num_inputs = ports[SCARLETT2_PORT_TYPE_MIX].num[SCARLETT2_PORT_OUT];
+	num_outputs = ports[SCARLETT2_PORT_TYPE_MIX].num[SCARLETT2_PORT_IN];
 
 	usb_audio_info(mixer->chip, "scarlett2_add_mixer_ctls inputs=%d, outputs=%d\n", num_inputs, num_outputs);
 
@@ -2855,6 +2911,10 @@ static int scarlett2_init_mux(struct usb_mixer_interface *mixer)
 	int port, err;
 	char name[SNDRV_CTL_ELEM_ID_NAME_MAXLEN];
 
+	/* Check that device has MUX */
+	if (!private->info->has_mux)
+		return 0;
+
 	/* Read MUX settings */
 	err = scarlett2_usb_get_mux(mixer);
 	if (err < 0)
@@ -2925,6 +2985,12 @@ static const struct snd_kcontrol_new scarlett2_meter_ctl = {
 
 static int scarlett2_add_meter_ctl(struct usb_mixer_interface *mixer)
 {
+	struct scarlett2_mixer_data *private = mixer->private_data;
+
+	/** Ensure the device has level meters */
+	if (!private->info->has_meters)
+		return 0;
+
 	return scarlett2_add_new_ctl(mixer, &scarlett2_meter_ctl,
 				     0, SCARLETT2_NUM_METERS,
 				     "Level Meter", NULL);
@@ -2990,6 +3056,7 @@ static int scarlett2_add_msd_ctl(struct usb_mixer_interface *mixer)
 	struct scarlett2_mixer_data *private = mixer->private_data;
 	const struct scarlett2_device_info *info = private->info;
 
+	/* Check that device has MSD mode */
 	if (!info->has_msd_mode)
 		return 0;
 
@@ -3505,31 +3572,34 @@ static int scarlett2_read_configs(struct usb_mixer_interface *mixer)
 			private->mix_talkback[i] = !!(val & (1 << i));
 	}
 
-	err = scarlett2_usb_get_volume_status(mixer, &volume_status);
-	if (err < 0)
-		return err;
+	/* Hardware-conftrolled volume */
+	if (info->has_hw_volume) {
+		err = scarlett2_usb_get_volume_status(mixer, &volume_status);
+		if (err < 0)
+			return err;
 
-	private->master_vol = clamp(
-		volume_status.master_vol + SCARLETT2_VOLUME_BIAS,
-		0, SCARLETT2_VOLUME_BIAS);
+		private->master_vol = clamp(
+			volume_status.master_vol + SCARLETT2_VOLUME_BIAS,
+			0, SCARLETT2_VOLUME_BIAS);
 
-	for (i = 0; i < num_line_out; i++) {
-		int volume;
+		for (i = 0; i < num_line_out; i++) {
+			int volume;
 
-		private->vol_sw_hw_switch[i] =
-			info->line_out_hw_vol
-				&& volume_status.sw_hw_switch[i];
+			private->vol_sw_hw_switch[i] =
+				info->line_out_hw_vol
+					&& volume_status.sw_hw_switch[i];
 
-		volume = private->vol_sw_hw_switch[i]
-			   ? volume_status.master_vol
-			   : volume_status.sw_vol[i];
-		volume = clamp(volume + SCARLETT2_VOLUME_BIAS,
-			       0, SCARLETT2_VOLUME_BIAS);
-		private->vol[i] = volume;
+			volume = private->vol_sw_hw_switch[i]
+				   ? volume_status.master_vol
+				   : volume_status.sw_vol[i];
+			volume = clamp(volume + SCARLETT2_VOLUME_BIAS,
+				       0, SCARLETT2_VOLUME_BIAS);
+			private->vol[i] = volume;
+		}
+
+		for (i = 0; i < info->button_count; i++)
+			private->buttons[i] = !!volume_status.buttons[i];
 	}
-
-	for (i = 0; i < info->button_count; i++)
-		private->buttons[i] = !!volume_status.buttons[i];
 
 	return 0;
 }
@@ -3540,7 +3610,13 @@ static int scarlett2_read_software_configs(struct usb_mixer_interface *mixer)
 	const struct scarlett2_ports *ports = private->info->ports;
 	int i, chunk, err;
 	__le16 sw_cfg_size;
-	int num_line_out = ports[SCARLETT2_PORT_TYPE_ANALOGUE].num[SCARLETT2_PORT_OUT];
+	int num_line_out;
+
+	/* Check that device has software configuration */
+	if (!private->info->has_sw_config)
+		return 0;
+
+	num_line_out = ports[SCARLETT2_PORT_TYPE_ANALOGUE].num[SCARLETT2_PORT_OUT];
 
 	/* Currently it is static constant, maybe it will be properly detected in the future */
 	private->sw_cfg_offset = SCARLETT2_SW_CONFIG_BASE;
