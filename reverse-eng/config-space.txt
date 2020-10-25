@@ -44,10 +44,13 @@ Matrix MIXER features:
 - Up to 12 outputs
 
 TALKBACK feature:
-- Builtin focusrite Talkback microphone is connected to hidden ANALOG-8 (numbering from 0) channel. 
+- Builtin focusrite Talkback microphone is connected to hidden ANALOG-9 channel. 
 - Talkback is routed to the 24th input of the mixer.
 - For each mixer the corresponding bit in TAL bitmask indicates that talkback is enabled.
 
+LOOPBACK feature:
+- Loopback inputs are mapped as PCM OUT 9 and PCM OUT 10
+- Loopback outputs are mapped as PCM IN 1 and PCM IN 2 
 
 The mapping of software configuration area:
 
