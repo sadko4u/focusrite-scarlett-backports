@@ -237,12 +237,14 @@ static const u16 scarlett2_sw_config_mixer_values[173] = {
  */
 enum {
 	SCARLETT2_PORT_TYPE_NONE = 0,
-	SCARLETT2_PORT_TYPE_ANALOGUE = 1,
-	SCARLETT2_PORT_TYPE_SPDIF = 2,
-	SCARLETT2_PORT_TYPE_ADAT = 3,
-	SCARLETT2_PORT_TYPE_MIX = 4,
-	SCARLETT2_PORT_TYPE_PCM = 5,
-	SCARLETT2_PORT_TYPE_COUNT = 6,
+	SCARLETT2_PORT_TYPE_ANALOGUE = 1,       /* Analogue input/output */
+	SCARLETT2_PORT_TYPE_SPDIF = 2,          /* S/PDIF input/oputput  */
+	SCARLETT2_PORT_TYPE_ADAT = 3,           /* ADAT input/output     */
+	SCARLETT2_PORT_TYPE_MIX = 4,            /* Mixer input/output    */
+	SCARLETT2_PORT_TYPE_PCM = 5,            /* PCM input/output      */
+	SCARLETT2_PORT_TYPE_INT_MIC = 6,        /* Internal microphone   */
+	SCARLETT2_PORT_TYPE_TALKBACK = 7,       /* Talkback source       */
+	SCARLETT2_PORT_TYPE_COUNT = 8
 };
 
 enum {
@@ -252,7 +254,6 @@ enum {
 	SCARLETT2_PORT_ID_ADAT = 0x200,
 	SCARLETT2_PORT_ID_MIX = 0x300,
 	SCARLETT2_PORT_ID_PCM = 0x600,
-
 	SCARLETT2_PORT_ID_MASK  = 0x0f80,
 	SCARLETT2_PORT_NUM_MASK = 0x007f
 };
@@ -275,6 +276,7 @@ static const char *const scarlett2_button_names[SCARLETT2_BUTTON_MAX] = {
 };
 
 struct scarlett2_port_name {
+	s8 direction;  /* Direction of port */
 	s8 type;  /* Type of port - SCARLETT2_PORT_TYPE_* */
 	s8 index; /* Index of port */
 	const char *name; /* The name of port */
@@ -307,7 +309,7 @@ struct scarlett2_device_info {
 	u8 has_speaker_switching; /* main/alt speaker switching */
 	u8 has_talkback; /* 18i20 Gen 3 has 'talkback' feature */
 	const char * const line_out_descrs[SCARLETT2_ANALOGUE_MAX];
-	const struct scarlett2_port_name *port_names; /* Special names of ports */
+	const struct scarlett2_port_name * const port_names; /* Special names of ports */
 	const u8 mux_size[SCARLETT2_PORT_DIRECTIONS]; /* The maximum number of elements per mux */
 	struct scarlett2_ports ports[SCARLETT2_PORT_TYPE_COUNT];
 };
@@ -370,11 +372,11 @@ struct scarlett2_mixer_data {
 
 /*** Model-specific data ***/
 static const struct scarlett2_port_name s6i6_gen2_ports[] = {
-	{ SCARLETT2_PORT_OUT, 0, "Headphones 1 L" },
-	{ SCARLETT2_PORT_OUT, 1, "Headphones 1 R" },
-	{ SCARLETT2_PORT_OUT, 2, "Headphones 2 L" },
-	{ SCARLETT2_PORT_OUT, 3, "Headphones 2 R" },
-	{ -1, -1, NULL }
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 0, "Headphones 1 L" },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 1, "Headphones 1 R" },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 2, "Headphones 2 L" },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 3, "Headphones 2 R" },
+	{ -1, -1, -1, NULL }
 };
 
 static const struct scarlett2_device_info s6i6_gen2_info = {
@@ -402,7 +404,7 @@ static const struct scarlett2_device_info s6i6_gen2_info = {
 	.ports = {
 		[SCARLETT2_PORT_TYPE_NONE] = {
 			.id = SCARLETT2_PORT_ID_NONE,
-			.num = { 1, 1, 1, 1, 1 },
+			.num = { 1, 0, 0, 0, 0 },
 			.src_descr = "Off",
 			.dst_descr = "Off",
 		},
@@ -411,7 +413,7 @@ static const struct scarlett2_device_info s6i6_gen2_info = {
 			.num = { 4, 4, 4, 4, 4 },
 			.src_descr = "Analogue In %d",
 			.src_num_offset = 1,
-			.dst_descr = "Analogue Out %02d"
+			.dst_descr = "Analogue Out %d"
 		},
 		[SCARLETT2_PORT_TYPE_SPDIF] = {
 			.id = SCARLETT2_PORT_ID_SPDIF,
@@ -432,19 +434,19 @@ static const struct scarlett2_device_info s6i6_gen2_info = {
 			.num = { 6, 6, 6, 6, 6 },
 			.src_descr = "PCM In %d",
 			.src_num_offset = 1,
-			.dst_descr = "PCM Out %02d"
+			.dst_descr = "PCM Out %d"
 		},
 	},
 };
 
 static const struct scarlett2_port_name s18i8_gen2_port_names[] = {
-	{ SCARLETT2_PORT_OUT, 0, "Monitor L" },
-	{ SCARLETT2_PORT_OUT, 1, "Monitor R" },
-	{ SCARLETT2_PORT_OUT, 2, "Headphones 1 L" },
-	{ SCARLETT2_PORT_OUT, 3, "Headphones 1 R" },
-	{ SCARLETT2_PORT_OUT, 4, "Headphones 2 L" },
-	{ SCARLETT2_PORT_OUT, 5, "Headphones 2 R" },
-	{ -1, -1, NULL }
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 0, "Monitor L" },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 1, "Monitor R" },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 2, "Headphones 1 L" },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 3, "Headphones 1 R" },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 4, "Headphones 2 L" },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 5, "Headphones 2 R" },
+	{ -1, -1, -1, NULL }
 };
 
 static const struct scarlett2_device_info s18i8_gen2_info = {
@@ -474,7 +476,7 @@ static const struct scarlett2_device_info s18i8_gen2_info = {
 	.ports = {
 		[SCARLETT2_PORT_TYPE_NONE] = {
 			.id = SCARLETT2_PORT_ID_NONE,
-			.num = { 1, 1, 1, 1, 1 },
+			.num = { 1, 0, 0, 0, 0 },
 			.src_descr = "Off",
 			.dst_descr = "Off",
 		},
@@ -517,13 +519,13 @@ static const struct scarlett2_device_info s18i8_gen2_info = {
 };
 
 static const struct scarlett2_port_name s18i20_gen2_port_names[] = {
-	{ SCARLETT2_PORT_OUT, 0, "Monitor L" },
-	{ SCARLETT2_PORT_OUT, 1, "Monitor R" },
-	{ SCARLETT2_PORT_OUT, 6, "Headphones 1 L" },
-	{ SCARLETT2_PORT_OUT, 7, "Headphones 1 R" },
-	{ SCARLETT2_PORT_OUT, 8, "Headphones 2 L" },
-	{ SCARLETT2_PORT_OUT, 9, "Headphones 2 R" },
-	{ -1, -1, NULL }
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 0, "Monitor L" },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 1, "Monitor R" },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 6, "Headphones 1 L" },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 7, "Headphones 1 R" },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 8, "Headphones 2 L" },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 9, "Headphones 2 R" },
+	{ -1, -1, -1, NULL }
 };
 
 static const struct scarlett2_device_info s18i20_gen2_info = {
@@ -557,7 +559,7 @@ static const struct scarlett2_device_info s18i20_gen2_info = {
 	.ports = {
 		[SCARLETT2_PORT_TYPE_NONE] = {
 			.id = SCARLETT2_PORT_ID_NONE,
-			.num = { 1, 1, 1, 1, 1 },
+			.num = { 1, 0, 0, 0, 0 },
 			.src_descr = "Off",
 			.dst_descr = "Off",
 		},
@@ -604,11 +606,11 @@ static const struct scarlett2_device_info s18i20_gen2_info = {
 };
 
 static const struct scarlett2_port_name s4i4_gen3_port_names[] = {
-	{ SCARLETT2_PORT_OUT, 0, "Monitor L" },
-	{ SCARLETT2_PORT_OUT, 1, "Monitor R" },
-	{ SCARLETT2_PORT_OUT, 2, "Headphones L" },
-	{ SCARLETT2_PORT_OUT, 3, "Headphones R" },
-	{ -1, -1, NULL }
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 0, "Monitor L" },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 1, "Monitor R" },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 2, "Headphones L" },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 3, "Headphones R" },
+	{ -1, -1, -1, NULL }
 };
 
 static const struct scarlett2_device_info s4i4_gen3_info = {
@@ -645,7 +647,7 @@ static const struct scarlett2_device_info s4i4_gen3_info = {
 	.ports = {
 		[SCARLETT2_PORT_TYPE_NONE] = {
 			.id = SCARLETT2_PORT_ID_NONE,
-			.num = { 1, 1, 1, 1, 1 },
+			.num = { 1, 0, 0, 0, 0 },
 			.src_descr = "Off",
 			.dst_descr = "Off",
 		},
@@ -654,7 +656,7 @@ static const struct scarlett2_device_info s4i4_gen3_info = {
 			.num = { 4, 4, 4, 4, 4 },
 			.src_descr = "Analogue In %d",
 			.src_num_offset = 1,
-			.dst_descr = "Analogue Out %02d"
+			.dst_descr = "Analogue Out %d"
 		},
 		[SCARLETT2_PORT_TYPE_MIX] = {
 			.id = SCARLETT2_PORT_ID_MIX,
@@ -674,11 +676,11 @@ static const struct scarlett2_device_info s4i4_gen3_info = {
 };
 
 static const struct scarlett2_port_name s8i6_gen3_port_names[] = {
-	{ SCARLETT2_PORT_OUT, 0, "Headphones 1 L" },
-	{ SCARLETT2_PORT_OUT, 1, "Headphones 1 R" },
-	{ SCARLETT2_PORT_OUT, 2, "Headphones 2 L" },
-	{ SCARLETT2_PORT_OUT, 3, "Headphones 3 R" },
-	{ -1, -1, NULL }
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 0, "Headphones 1 L" },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 1, "Headphones 1 R" },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 2, "Headphones 2 L" },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 3, "Headphones 3 R" },
+	{ -1, -1, -1, NULL }
 };
 
 static const struct scarlett2_device_info s8i6_gen3_info = {
@@ -715,7 +717,7 @@ static const struct scarlett2_device_info s8i6_gen3_info = {
 	.ports = {
 		[SCARLETT2_PORT_TYPE_NONE] = {
 			.id = SCARLETT2_PORT_ID_NONE,
-			.num = { 1, 1, 1, 1, 1 },
+			.num = { 1, 0, 0, 0, 0 },
 			.src_descr = "Off",
 			.dst_descr = "Off",
 		},
@@ -751,15 +753,15 @@ static const struct scarlett2_device_info s8i6_gen3_info = {
 };
 
 static const struct scarlett2_port_name s18i8_gen3_port_names[] = {
-	{ SCARLETT2_PORT_OUT, 0, "Monitor 1 L" },
-	{ SCARLETT2_PORT_OUT, 1, "Monitor 1 R" },
-	{ SCARLETT2_PORT_OUT, 2, "Headphones 1 L" },
-	{ SCARLETT2_PORT_OUT, 3, "Headphones 1 R" },
-	{ SCARLETT2_PORT_OUT, 4, "Headphones 2 L" },
-	{ SCARLETT2_PORT_OUT, 5, "Headphones 2 R" },
-	{ SCARLETT2_PORT_OUT, 6, "Monitor 2 L" },
-	{ SCARLETT2_PORT_OUT, 7, "Monitor 2 R" },
-	{ -1, -1, NULL }
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 0, "Monitor 1 L" },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 1, "Monitor 1 R" },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 2, "Headphones 1 L" },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 3, "Headphones 1 R" },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 4, "Headphones 2 L" },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 5, "Headphones 2 R" },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 6, "Monitor 2 L" },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 7, "Monitor 2 R" },
+	{ -1, -1, -1, NULL }
 };
 
 static const struct scarlett2_device_info s18i8_gen3_info = {
@@ -811,7 +813,7 @@ static const struct scarlett2_device_info s18i8_gen3_info = {
 	.ports = {
 		[SCARLETT2_PORT_TYPE_NONE] = {
 			.id = SCARLETT2_PORT_ID_NONE,
-			.num = { 1, 1, 1, 1, 1 },
+			.num = { 1, 0, 0, 0, 0 },
 			.src_descr = "Off",
 			.dst_descr = "Off",
 			.src_num_offset = 0,
@@ -851,20 +853,21 @@ static const struct scarlett2_device_info s18i8_gen3_info = {
 			.src_num_offset = 1,
 			.dst_descr = "PCM Out %d"
 		},
+
 	},
 };
 
 static const struct scarlett2_port_name s18i20_gen3_port_names[] = {
-	{ SCARLETT2_PORT_OUT, 0, "Monitor 1 L" },
-	{ SCARLETT2_PORT_OUT, 1, "Monitor 1 R" },
-	{ SCARLETT2_PORT_OUT, 2, "Monitor 2 L" },
-	{ SCARLETT2_PORT_OUT, 3, "Monitor 2 R" },
-	{ SCARLETT2_PORT_OUT, 6, "Headphones 1 L" },
-	{ SCARLETT2_PORT_OUT, 7, "Headphones 1 R" },
-	{ SCARLETT2_PORT_OUT, 8, "Headphones 2 L" },
-	{ SCARLETT2_PORT_OUT, 9, "Headphones 2 R" },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 0, "Monitor 1 L" },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 1, "Monitor 1 R" },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 2, "Monitor 2 L" },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 3, "Monitor 2 R" },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 6, "Headphones 1 L" },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 7, "Headphones 1 R" },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 8, "Headphones 2 L" },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 9, "Headphones 2 R" },
 
-	{ -1, -1, NULL }
+	{ -1, -1, -1, NULL }
 };
 
 static const struct scarlett2_device_info s18i20_gen3_info = {
@@ -921,7 +924,7 @@ static const struct scarlett2_device_info s18i20_gen3_info = {
 	.ports = {
 		[SCARLETT2_PORT_TYPE_NONE] = {
 			.id = SCARLETT2_PORT_ID_NONE,
-			.num = { 1, 1, 1, 1, 1 },
+			.num = { 1, 0, 0, 0, 0 },
 			.src_descr = "Off",
 			.src_num_offset = 0,
 			.dst_descr = "Off",
@@ -952,7 +955,7 @@ static const struct scarlett2_device_info s18i20_gen3_info = {
 			.num = { 12, 24, 24, 24, 24 },
 			.src_descr = "Mix %c Out",
 			.src_num_offset = 'A',
-			.dst_descr = "Mixer In %02d"
+			.dst_descr = "Mix In %02d"
 		},
 		[SCARLETT2_PORT_TYPE_PCM] = {
 			.id = SCARLETT2_PORT_ID_PCM,
@@ -960,6 +963,16 @@ static const struct scarlett2_device_info s18i20_gen3_info = {
 			.src_descr = "PCM In %d",
 			.src_num_offset = 1,
 			.dst_descr = "PCM Out %d"
+		},
+		[SCARLETT2_PORT_TYPE_INT_MIC] = {
+			.id = SCARLETT2_PORT_ID_ANALOGUE,
+			.num = { 1, 0, 0, 0, 0 },
+			.src_descr = "Internal Mic"
+		},
+		[SCARLETT2_PORT_TYPE_TALKBACK] = {
+			.id = SCARLETT2_PORT_ID_MIX,
+			.num = { 0, 1, 1, 1, 1 },
+			.dst_descr = "Talkback source"
 		},
 	},
 };
@@ -1239,9 +1252,12 @@ static int scarlett2_mux_to_id(const struct scarlett2_ports *ports, int directio
 	int port_type, port_id, port_num, port_base;
 
 	if ((direction < 0) || (direction >= SCARLETT2_PORT_DIRECTIONS))
-		return 0;
+		return -1; /* Could not decode port */
 
 	port_id  = mux_id & SCARLETT2_PORT_ID_MASK;
+	if (port_id == SCARLETT2_PORT_ID_NONE)
+		return -1;
+	
 	port_num = mux_id & SCARLETT2_PORT_NUM_MASK;
 	port_base= 0;
 
@@ -1256,7 +1272,7 @@ static int scarlett2_mux_to_id(const struct scarlett2_ports *ports, int directio
 		port_base += ports[port_type].num[direction];
 	}
 
-	return 0; /* Could not decode port */
+	return -1; /* Could not decode port */
 }
 
 /* Format port number to the proper port name */
@@ -1269,7 +1285,7 @@ static char *scarlett2_fmt_port_name(char *out, int len, const struct scarlett2_
 	const struct scarlett2_port_name *port_name;
 
 	strncpy(out, "Off", len);
-	if ((direction < 0) || (direction >= SCARLETT2_PORT_DIRECTIONS))
+	if ((direction < 0) || (direction >= SCARLETT2_PORT_DIRECTIONS) || (num < 0))
 		return out;
 
 	for (port_type = 0; port_type < SCARLETT2_PORT_TYPE_COUNT; ++port_type) {
@@ -1278,7 +1294,9 @@ static char *scarlett2_fmt_port_name(char *out, int len, const struct scarlett2_
 			/* Is there 'special' name found ? */
 			name[0] = '\0';
 			for (port_name = info->port_names; port_name->name != NULL; ++port_name) {
-				if ((port_name->type == port_type) && (port_name->index == num)) {
+				if ((port_name->direction == direction) &&
+				    (port_name->type == port_type) &&
+				    (port_name->index == num)) {
 					snprintf(name, SNDRV_CTL_ELEM_ID_NAME_MAXLEN, " (%s)", port_name->name);
 					break;
 				}
