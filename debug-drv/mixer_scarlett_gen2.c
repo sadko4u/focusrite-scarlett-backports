@@ -854,7 +854,7 @@ static const struct scarlett2_device_info s8i6_gen3_info = {
 
 	.port_names = s8i6_gen3_port_names,
 
-	.mux_size = { 77, 77, 77, 73, 46 },
+	.mux_size = { 42, 42, 42, 42, 42 },
 
 	.ports = {
 		[SCARLETT2_PORT_TYPE_ANALOGUE] = {
@@ -1264,6 +1264,53 @@ static int scarlett2_count_ports(const struct scarlett2_ports *ports, int direct
 	return count;
 }
 
+void scarlett2_dump_buffer(const void *data, int bytes)
+{
+	char s[0x80];
+	int i, j;
+	const u8 *buf = (const u8 *)data;
+	int off = 0;
+
+	s[off] = '\0';
+	printk("      00 01 02 03 | 04 05 06 07 | 08 09 0a 0b | 0c 0d 0e 0f   0123456789abcdef");
+
+	for (i=0; i<bytes; i += 16) {
+		/* New line */
+		if (!(i&0x0f)) {
+			off += sprintf(&s[off], "\n");
+			printk("%s", s);
+			if (!(i&0xff))
+				printk("      -----------------------------------------------------   ----------------\n");
+
+			off  = 0;
+			off += sprintf(&s[off], "%04x:", i);
+		}
+
+		/* Dump hex codes */
+		for (j=i; j<i+16; ++j) {
+			if (((j & 0x0c) > 0) && (!(j & 0x03)))
+				off += sprintf(&s[off], " |");
+			if (j < bytes)
+				off += sprintf(&s[off], " %02x", buf[j]);
+			else
+				off += sprintf(&s[off], "   ");
+		}
+
+		off += sprintf(&s[off], "   ");
+
+		for (j=i; j<i+16; ++j) {
+			if (j < bytes)
+				s[off++] = ((buf[j] >= 0x20) && (buf[j] < 0x7f)) ? buf[j] : '.';
+			else
+				s[off++] = ' ';
+		}
+	}
+
+	strcpy(&s[off], "\n");
+	printk("%s", s);
+}
+
+
 /* Convert a hardware ID to port number index (per info->ports) */
 static int scarlett2_mux_to_id(const struct scarlett2_ports *ports, int direction, u32 mux_id)
 {
@@ -1605,22 +1652,35 @@ static int scarlett2_usb_set_config(
 	return 0;
 }
 
-/* Send a USB message to get data; result placed in *buf */
+/* Send a USB message to get data; result placed in *data */
 static int scarlett2_usb_get(
 	struct usb_mixer_interface *mixer,
-	int offset, void *buf, int size)
+	int offset, void *data, int bytes)
 {
 	struct {
 		__le32 offset;
 		__le32 size;
 	} __packed req;
 
-	usb_audio_info(mixer->chip, "scarlett2_usb_get offset=%d (0x%x), size=%d\n", offset, offset, size);
+	int i, chunk, err;
+	u8 *buf = (u8 *)data;
 
-	req.offset = cpu_to_le32(offset);
-	req.size = cpu_to_le32(size);
-	return scarlett2_usb(mixer, SCARLETT2_USB_GET_DATA,
-			     &req, sizeof(req), buf, size);
+	/* Request the config space with fixed-size data chunks */
+	for (i=0; i<bytes; i += chunk) {
+		/* Compute the chunk size */
+		chunk = (bytes - i);
+		if (chunk > SCARLETT2_SW_CONFIG_PACKET_SIZE)
+			chunk = SCARLETT2_SW_CONFIG_PACKET_SIZE;
+
+		/* Request yet another chunk */
+		req.offset = cpu_to_le32(offset + i);
+		req.size = cpu_to_le32(chunk);
+		err = scarlett2_usb(mixer, SCARLETT2_USB_GET_DATA, &req, sizeof(req), &buf[i], chunk);
+		if (err < 0)
+			return err;
+	}
+
+	return 0;
 }
 
 /* Send a USB message to get configuration parameters; result placed in *buf */
@@ -3608,7 +3668,7 @@ static int scarlett2_read_software_configs(struct usb_mixer_interface *mixer)
 {
 	struct scarlett2_mixer_data *private = mixer->private_data;
 	const struct scarlett2_ports *ports = private->info->ports;
-	int i, chunk, err;
+	int err;
 	__le16 sw_cfg_size;
 	int num_line_out;
 
@@ -3660,21 +3720,7 @@ static int scarlett2_read_software_configs(struct usb_mixer_interface *mixer)
 	usb_audio_info(mixer->chip, "  configuration checksum=0x%x\n", le32_to_cpu(*(private->sw_cfg_cksum)));
 
 	/* Request the software config with fixed-size data chunks */
-	for (i=0; i<private->sw_cfg_size; ) {
-		chunk = (private->sw_cfg_size - i);
-		if (chunk > SCARLETT2_SW_CONFIG_PACKET_SIZE)
-			chunk = SCARLETT2_SW_CONFIG_PACKET_SIZE;
-
-		/* Request yet another chunk */
-		err = scarlett2_usb_get(mixer, private->sw_cfg_offset + i, &private->sw_cfg_data[i], chunk);
-		if (err < 0)
-			return err;
-		i += chunk;
-	}
-
-	print_hex_dump(KERN_DEBUG, "SOFTWARE CONFIG: ", DUMP_PREFIX_ADDRESS, 16, 1, private->sw_cfg_data, private->sw_cfg_size, true);
-
-	return err;
+	return scarlett2_usb_get(mixer, private->sw_cfg_offset, private->sw_cfg_data, private->sw_cfg_size);
 }
 
 static int scarlett2_commit_software_config(
@@ -3928,6 +3974,38 @@ static int scarlett2_mixer_status_create(struct usb_mixer_interface *mixer)
 	return usb_submit_urb(mixer->urb, GFP_KERNEL);
 }
 
+static int scarlett2_dump_config_space(struct usb_mixer_interface *mixer) {
+	__le32 le_buf_size;
+	int buf_size;
+	int err = 0;
+	u8 *buf;
+
+	/* Estimate the overall size of configuration area */
+	err = scarlett2_usb_get(mixer, 0, &le_buf_size, sizeof(__le32));
+	if (err < 0)
+		return err;
+	buf_size = le32_to_cpu(le_buf_size);
+	if (buf_size > 0x4000)
+		buf_size = 0x4000;
+
+	/* Allocate memory for buffer */
+	buf = kmalloc(buf_size, GFP_KERNEL);
+	if (!buf)
+		return -ENOMEM;
+
+	err = scarlett2_usb_get(mixer, 0, buf, buf_size);
+	if (err < 0)
+		goto error;
+	
+	usb_audio_info(mixer->chip, "Dump of the overall device configuration space:");
+	scarlett2_dump_buffer(buf, buf_size);
+
+error:
+	kfree(buf);
+	return err;
+}
+
+
 /* Entry point */
 int snd_scarlett_gen2_controls_create(struct usb_mixer_interface *mixer)
 {
@@ -3968,6 +4046,11 @@ int snd_scarlett_gen2_controls_create(struct usb_mixer_interface *mixer)
 
 	/* Send proprietary USB initialisation sequence */
 	err = scarlett2_usb_init(mixer);
+	if (err < 0)
+		return err;
+
+	/* Dump configuration space, DEBUG ONLY */
+	err = scarlett2_dump_config_space(mixer);
 	if (err < 0)
 		return err;
 
