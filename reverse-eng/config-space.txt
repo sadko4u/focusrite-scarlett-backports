@@ -2,7 +2,7 @@ The description of configuration space of the 18i20 device:
 
       00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f
       -----------------------------------------------
-0000: ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? [   FWV   ]
+0000: [ CFG SIZE] ?? ?? ?? ?? ?? ?? ?? ?? [   FWV   ]
 0010: [                 MODEL NAME                  ]
 0020: [                 MODEL NAME                  ]
 0030: ?? [DIM] ?? [       SW VOLUME SETTINGS        ]
@@ -19,25 +19,38 @@ The description of configuration space of the 18i20 device:
 00e0: ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? [ SW CFG  ]
 00f0: [ SW CFG  ] [ROM] [         SW CFG            ]
 
-AS:     Air switch (bit mask)
-AT:     ALT/Talkback switches (bit mask)
-DIM:    Dim/Mute buttons (2x)
-FWW:    Firmware version
-GH:     Gain halos
-IS:     Instrument switch (bit mask)
-MS:     Mass Storage Device (MSD) mode
-MSV:    Actual master volume knob value (front panel)
-PP:     Phantom power (48V) switch (bit mask)
-PS:     Pad switch (bit mask)
-ROM:    The size of ROM data used by application
-SP:     S/PDIF volume source
-SS:     Speaker switching function
-SW CFG: Software configuration area
-TAL:    Talkback mixer output enable (bit mask, 12 bits)
-TV:     Talkback volume (minimum: 0x19, maximum: 0)
-VS:     Software/hardware controlled volume switch
+Offset  Short       Description
+---------------------------------------------
+0x0000  CFG SIZE    The overall configuration area size (very probably)
+0x000c  FWV         Firmware version	
+0x0010  MODEL NAME  Model name
+0x0031  DIM         Dim/Mute buttons (2x)
+0x0034  SWVS        Software Volume Settings
+0x0048  HWVS        Hardware Volume Settings
+0x005c  MUTES       Monitoring mutes
+0x0066  VS          Software/hardware controlled volume switch
+0x0076  MSV         Actual master volume hardware knob value (front panel)
+0x007c  IS          Instrument button switches (bit mask)
+0x0084  PS:         Pad switches (bit mask)
+0x008c  AS:         Air switches (bit mask)
+0x008e  ??          Unknown area, not zero
+0x0094  SP          S/PDIF volume source
+0x0098  ??          Unknown area, not zero
+0x009a  ??          Unknown area, not zero
+0x009c  PP          Phantom power (48V) switch (bit mask)
+0x009d  MS          Mass Storage Device (MSD) mode
+0x009f  AT          ALT/Talkback switches (bit mask)
+0x00a0  SS          Speaker switching function
+0x00a1  GH          Gain halos (?)
+0x00af  TV          Talkback volume (minimum: 0x19, maximum: 0)
+0x00b0  TAL         Enable talkback for mixer channel (bit mask, 12 bits)
+0x00b8  ??          Unknown area, not zero
+0x00c1  ??          Unknown area, not zero
+0x00c9  ??          Unknown area, not zero
+0x00e8  SWCFG       Start of the software configuration area
+0x00f4  ROM         The size of software configuration area used by application
 
-XX:		Still undiscovered meaning of values
+
 
 Matrix MIXER features:
 - Up to 25 inputs (24 for custom mix and 1 for talkback)
@@ -58,7 +71,7 @@ The mapping of software configuration area:
 
 0x00f4(+0x0008): The size of software configuration area (2 bytes)
   - includes size of checksum
-  - 18i20 device has value of 0x1984
+  - 18i20, 8i6 devices have value of 0x1984
 
 0x01b4(+0x00c8): Mono/Stereo switch for output channels:
   - it's a bitmask

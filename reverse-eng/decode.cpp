@@ -28,6 +28,7 @@
 #define DEVICE_DATA_SIZE        0x10000
 
 typedef uint8_t UCHAR;
+typedef uint8_t u8;
 typedef uint16_t USHORT;
 typedef uint32_t UINT32;
 typedef uint64_t UINT64;
@@ -680,38 +681,55 @@ void dump_packet(pcap_packet_t *packet, protocol_state_t *pstate, uint8_t *data)
     printf("\n");
 }
 
-void dump_buffer(const uint8_t *buf, size_t bytes)
+void dump_buffer(const void *data, int bytes)
 {
-    printf("      00 01 02 03 | 04 05 06 07 | 08 09 0a 0b | 0c 0d 0e 0f   0123456789abcdef");
-    for (size_t i=0; i<bytes; i += 16)
-    {
-        if (!(i&0xff))
-            printf("\n      -----------------------------------------------------   ----------------");
-        if (!(i&0x0f))
-            printf("\n%04x:", int(i));
+    char s[0x80];
+    int i, j;
+    const u8 *buf = (const u8 *)data;
+    int off = 0;
 
-        // Dump hex codes
-        for (size_t j=i; j<i+16; ++j)
+    s[off] = '\0';
+    printf("      00 01 02 03 | 04 05 06 07 | 08 09 0a 0b | 0c 0d 0e 0f   0123456789abcdef\n");
+
+    for (i=0; i<bytes; i += 16)
+    {
+        /* New line */
+        if (!(i&0x0f))
+        {
+            off += sprintf(&s[off], "\n");
+            printf("%s", s);
+            if (!(i&0xff))
+                printf("      -----------------------------------------------------   ----------------\n");
+
+            off  = 0;
+            off += sprintf(&s[off], "%04x:", i);
+        }
+
+        /* Dump hex codes */
+        for (j=i; j<i+16; ++j)
         {
             if (((j & 0x0c) > 0) && (!(j & 0x03)))
-                printf(" |");
+                off += sprintf(&s[off], " |");
             if (j < bytes)
-                printf(" %02x", buf[j]);
+                off += sprintf(&s[off], " %02x", buf[j]);
             else
-                printf("   ");
+                off += sprintf(&s[off], "   ");
         }
 
-        printf("   ");
+        off += sprintf(&s[off], "   ");
 
-        for (size_t j=i; j<i+16; ++j)
+        /* Dump characters */
+        for (j=i; j<i+16; ++j)
         {
             if (j < bytes)
-                putchar(((buf[j] >= 0x20) && (buf[j] < 0x7f)) ? buf[j] : '.');
+                s[off++] = ((buf[j] >= 0x20) && (buf[j] < 0x7f)) ? buf[j] : '.';
             else
-                putchar(' ');
+                s[off++] = ' ';
         }
     }
-    printf("\n");
+
+    strcpy(&s[off], "\n");
+    printf("%s", s);
 }
 
 int main(int argc, const char **argv)

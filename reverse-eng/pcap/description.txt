@@ -13,4 +13,7 @@ talkback-settings - setting up different talkback parameters.
 mixer - different mixer settings.
 mixer-all - setting state of all gain levels for the internal mixer (each channel operates in stereo).
 mono-stereo-switch - sequential switching from stereo channels to mono channels and back.
-scarlett-2i2 - the protocol dump for Scarlett 2i2 interface.
+
+2i2/scarlett-2i2 - the protocol dump for Scarlett 2i2 interface.
+8i6/8i6-init.pcap - the 8i6 device connected to USB port.
+8i6/8i6-full.pcap - the protocol dump for the 8i6 device.
