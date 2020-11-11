@@ -284,7 +284,7 @@ char *decode_request(char *dst, control_data_t *cdata)
     else
         sprintf(cmd, "UNKNOWN(0x%x)", cdata->request);
 
-    sprintf(dst, "0x%02x[%s %s %s] 0x%02x[%s]", cdata->requestType,phase, type, recv,  cdata->request, cmd);
+    sprintf(dst, "0x%02x[%s %s %s] 0x%02x[%s]", cdata->requestType, phase, type, recv,  cdata->request, cmd);
     return dst;
 }
 

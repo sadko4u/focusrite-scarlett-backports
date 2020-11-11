@@ -9,9 +9,9 @@ The description of configuration space of the 18i20 device:
 0040: [  SW VOLUME SETTINGS ] [  HW VOLUME SETTINGS ]
 0050: [       HW VOLUME SETTINGS        ] [  MUTES  ]
 0060: [     MUTES     ] VS ?? ?? ?? ?? ?? ?? ?? ?? ??
-0070: ?? ?? ?? ?? ?? ?? [   MSV   ] ?? ?? IS ?? ?? ??
-0080: ?? ?? ?? ?? PS ?? ?? ?? ?? ?? ?? ?? AS ?? XX XX
-0090: XX XX ?? ?? SP ?? ?? ?? XX ?? XX ?? PP MS ?? AT
+0070: ?? ?? ?? ?? ?? ?? [   MSV   ] ?? ?? [INS] ?? ??
+0080: ?? ?? ?? ?? [    PAD SWITCHES     ] [ AIR SW  ]
+0090: [  AIR SW ] SP ?? ?? ?? XX ?? XX ?? PP MS ?? AT
 00a0: SS GH ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? TV
 00b0: [TAL] ?? ?? ?? ?? ?? ?? XX XX ?? ?? ?? ?? ?? ??
 00c0: ?? XX XX ?? ?? ?? ?? ?? ?? XX XX ?? ?? ?? ?? ??
@@ -19,36 +19,42 @@ The description of configuration space of the 18i20 device:
 00e0: ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? [ SW CFG  ]
 00f0: [ SW CFG  ] [ROM] [         SW CFG            ]
 
-Offset  Short       Description
+Offset  Size    Short       Description
 ---------------------------------------------
-0x0000  CFG SIZE    The overall configuration area size (very probably)
-0x000c  FWV         Firmware version	
-0x0010  MODEL NAME  Model name
-0x0031  DIM         Dim/Mute buttons (2x)
-0x0034  SWVS        Software Volume Settings
-0x0048  HWVS        Hardware Volume Settings
-0x005c  MUTES       Monitoring mutes
-0x0066  VS          Software/hardware controlled volume switch
-0x0076  MSV         Actual master volume hardware knob value (front panel)
-0x007c  IS          Instrument button switches (bit mask)
-0x0084  PS:         Pad switches (bit mask)
-0x008c  AS:         Air switches (bit mask)
-0x008e  ??          Unknown area, not zero
-0x0094  SP          S/PDIF volume source
-0x0098  ??          Unknown area, not zero
-0x009a  ??          Unknown area, not zero
-0x009c  PP          Phantom power (48V) switch (bit mask)
-0x009d  MS          Mass Storage Device (MSD) mode
-0x009f  AT          ALT/Talkback switches (bit mask)
-0x00a0  SS          Speaker switching function
-0x00a1  GH          Gain halos (?)
-0x00af  TV          Talkback volume (minimum: 0x19, maximum: 0)
-0x00b0  TAL         Enable talkback for mixer channel (bit mask, 12 bits)
-0x00b8  ??          Unknown area, not zero
-0x00c1  ??          Unknown area, not zero
-0x00c9  ??          Unknown area, not zero
-0x00e8  SWCFG       Start of the software configuration area
-0x00f4  ROM         The size of software configuration area used by application
+0x0000     4    CFG SIZE    The overall configuration area size (very probably)
+0x000c     4    FWV         Firmware version	
+0x0010    32    MODEL NAME  Model name
+0x0031     2    DIM         Dim/Mute buttons (2x)
+0x0034    20    SWVS        Software Volume Settings
+0x0048    20    HWVS        Hardware Volume Settings
+0x005c    10    MUTES       Monitoring mutes
+0x0066     1    VS          Software/hardware controlled volume switch
+0x0076     4    MSV         Actual master volume hardware knob value (front panel)
+0x007c     2    INS         Line/Instrument switches: array of bytes, 1 byte per input:
+                              - 0 = line mode
+                              - 1 = inst mode 
+0x0084     8    PAD SW      Pad switches: array of bytes, 1 byte per input:
+                              - 0 = off
+                              - 1 = on
+0x008c     8    AIR SW      Air switches: array of bytes, 1 byte per input:
+                              - 0 = off
+                              - 1 = on
+0x008e     2    ??          Unknown area, not zero
+0x0094     1    SP          S/PDIF volume source
+0x0098     1    ??          Unknown area, not zero
+0x009a     1    ??          Unknown area, not zero
+0x009c     1    PP          Phantom power (48V) switch (bit mask)
+0x009d     1    MS          Mass Storage Device (MSD) mode
+0x009f     1    AT          ALT/Talkback switches (bit mask)
+0x00a0     1    SS          Speaker switching function
+0x00a1     ?    GH          Gain halos (?)
+0x00af     1    TV          Talkback volume (minimum: 0x19, maximum: 0)
+0x00b0     2    TAL         Enable talkback for mixer channel (bit mask, 12 bits)
+0x00b8     2    ??          Unknown area, not zero
+0x00c1     2    ??          Unknown area, not zero
+0x00c9     2    ??          Unknown area, not zero
+0x00e8          SWCFG       Start of the software configuration area
+0x00f4     2    ROM         The size of software configuration area used by application
 
 
 
