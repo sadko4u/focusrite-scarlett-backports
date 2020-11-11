@@ -3538,7 +3538,7 @@ static int scarlett2_read_configs(struct usb_mixer_interface *mixer)
 		if (err < 0)
 			return err;
 		for (i = 0; i < info->level_input_count; i++)
-			private->level_switch[i] = level_switches[i];
+			private->level_switch[i] = !! level_switches[i];
 	}
 
 	/* PAD buttons */
@@ -3551,7 +3551,7 @@ static int scarlett2_read_configs(struct usb_mixer_interface *mixer)
 		if (err < 0)
 			return err;
 		for (i = 0; i < info->pad_input_count; i++)
-			private->pad_switch[i] = pad_switches[i];
+			private->pad_switch[i] = !! pad_switches[i];
 	}
 
 	/* AIR input settings */
@@ -3564,7 +3564,7 @@ static int scarlett2_read_configs(struct usb_mixer_interface *mixer)
 		if (err < 0)
 			return err;
 		for (i = 0; i < info->air_input_count; i++)
-			private->air_switch[i] = air_switches[i];
+			private->air_switch[i] = !! air_switches[i];
 	}
 
 	/* Phantom power settings */
