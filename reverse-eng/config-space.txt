@@ -21,7 +21,7 @@ LOOPBACK feature:
 0030: ?? [DIM] ?? [       SW VOLUME SETTINGS        ]
 0040: [  SW VOLUME SETTINGS ] [  HW VOLUME SETTINGS ]
 0050: [       HW VOLUME SETTINGS        ] [  MUTES  ]
-0060: [     MUTES     ] VS ?? ?? ?? ?? ?? ?? ?? ?? ??
+0060: [     MUTES     ] [      VOLUME SWITCHES      ]
 0070: ?? ?? ?? ?? ?? ?? [   MSV   ] ?? ?? [INS] ?? ??
 0080: ?? ?? ?? ?? [    PAD SWITCHES     ] [ AIR SW  ]
 0090: [  AIR SW ] SP ?? ?? ?? XX ?? XX ?? PP MS RP AT
@@ -43,7 +43,10 @@ HARDWARE CONFIGURATION AREA
 0034      20    SWVS        Software Volume Settings
 0048      20    HWVS        Hardware Volume Settings
 005c      10    MUTES       Monitoring mutes
-0066       1    VS          Software/hardware controlled volume switch
+0066      10    VOL SW      Software/hardware controlled volume switches for each analog
+                            output, 1 byte per input:
+                              - 0 = software mode
+                              - 1 = hardware mode 
 0076       4    MSV         Actual master volume hardware knob value (front panel)
 007c       2    INS         Line/Instrument switches: array of bytes, 1 byte per input:
                               - 0 = line mode
