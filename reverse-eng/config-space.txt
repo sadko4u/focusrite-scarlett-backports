@@ -96,11 +96,11 @@ SOFTWARE CONFIGURATION AREA
                                 - uint8 some unknown data
                               - volume changes only for first output in pair in STEREO mode
                               - 10 values for 18i20 device
-03c0      90    +02d8       Array of input symbolic names:
+03c0      90    +02d8       Array of symbolic names for inputs:
                               - 12 bytes per string
                               - NULL-terminated ASCII only
                               - Overall up to 8 strings
-09f0     312    +02d8       Array of output symbolic names:
+09f0     312    +0908       Array of symbolic names for outputs:
                               - 12 bytes per string
                               - NULL-terminated ASCII only
                               - Overall up to 8 strings
