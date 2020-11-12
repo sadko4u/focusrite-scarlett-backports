@@ -671,7 +671,7 @@ static const struct scarlett2_device_info s18i20_gen2_info = {
 		"Headphones 2 R",
 	},
 
-	.port_names = s18i8_gen2_port_names,
+	.port_names = s18i20_gen2_port_names,
 
 	.mux_size = { 77, 77, 77, 73, 46 },
 
@@ -899,12 +899,12 @@ static const struct scarlett2_device_info s8i6_gen3_info = {
 static const struct scarlett2_port_name s18i8_gen3_port_names[] = {
 	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 0, "Monitor 1 L" },
 	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 1, "Monitor 1 R" },
-	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 2, "Headphones 1 L" },
-	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 3, "Headphones 1 R" },
-	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 4, "Headphones 2 L" },
-	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 5, "Headphones 2 R" },
-	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 6, "Monitor 2 L" },
-	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 7, "Monitor 2 R" },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 2, "Monitor 2 L" },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 3, "Monitor 2 R" },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 4, "Headphones 1 L" },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 5, "Headphones 1 R" },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 6, "Headphones 2 L" },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 7, "Headphones 2 R" },
 	{ -1, -1, -1, NULL }
 };
 
@@ -952,17 +952,17 @@ static const struct scarlett2_device_info s18i8_gen3_info = {
 	.line_out_descrs = {
 		"Monitor 1 L",
 		"Monitor 1 R",
+		"Monitor 2 L",
+		"Monitor 2 R",
 		"Headphones 1 L",
 		"Headphones 1 R",
 		"Headphones 2 L",
 		"Headphones 2 R",
-		"Monitor 2 L",
-		"Monitor 2 R",
 	},
 
 	.port_names = s18i8_gen3_port_names,
 
-	.mux_size = { 77, 77, 77, 73, 46 },
+	.mux_size = { 60, 60, 60, 56, 50 },
 
 	.ports = {
 		[SCARLETT2_PORT_TYPE_ANALOGUE] = {
