@@ -21,6 +21,9 @@ mono-stereo-switch - sequential switching from stereo channels to mono channels 
   8i6-init - the 8i6 device connected to USB port.
   8i6-full - the protocol dump for the 8i6 device.
 
+18i8/
+  init - the 18i8 device connected to USB port.
+
 18i20/
   connect-no-alt - the 18i20 device connected to USB port, ALT switching is disabled.
   disable-alt-switching - disable ALT switching
