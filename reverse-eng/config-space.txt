@@ -1,5 +1,18 @@
 The description of configuration space of the 18i20 device:
 
+Matrix MIXER features:
+- Up to 25 inputs (24 for custom mix and 1 for talkback)
+- Up to 12 outputs
+
+TALKBACK feature:
+- Builtin focusrite Talkback microphone is connected to hidden ANALOG-9 channel. 
+- Talkback is routed to the 24th input of the mixer.
+- For each mixer the corresponding bit in TAL bitmask indicates that talkback is enabled.
+
+LOOPBACK feature:
+- Loopback inputs are mapped as PCM OUT 9 and PCM OUT 10
+- Loopback outputs are mapped as PCM IN 1 and PCM IN 2 
+
       00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f
       -----------------------------------------------
 0000: [ CFG SIZE] ?? ?? ?? ?? ?? ?? ?? ?? [   FWV   ]
@@ -20,104 +33,93 @@ The description of configuration space of the 18i20 device:
 00f0: [ SW CFG  ] [ROM] [         SW CFG            ]
 
 Offset  Size    Short       Description
----------------------------------------------
-0x0000     4    CFG SIZE    The overall configuration area size (very probably)
-0x000c     4    FWV         Firmware version	
-0x0010    32    MODEL NAME  Model name
-0x0031     2    DIM         Dim/Mute buttons (2x)
-0x0034    20    SWVS        Software Volume Settings
-0x0048    20    HWVS        Hardware Volume Settings
-0x005c    10    MUTES       Monitoring mutes
-0x0066     1    VS          Software/hardware controlled volume switch
-0x0076     4    MSV         Actual master volume hardware knob value (front panel)
-0x007c     2    INS         Line/Instrument switches: array of bytes, 1 byte per input:
+-------------------------------------------------------------------------------
+HARDWARE CONFIGURATION AREA
+-------------------------------------------------------------------------------
+0000       4    CFG SIZE    The overall configuration area size (very probably)
+000c       4    FWV         Firmware version	
+0010      32    MODEL NAME  Model name
+0031       2    DIM         Dim/Mute buttons (2x)
+0034      20    SWVS        Software Volume Settings
+0048      20    HWVS        Hardware Volume Settings
+005c      10    MUTES       Monitoring mutes
+0066       1    VS          Software/hardware controlled volume switch
+0076       4    MSV         Actual master volume hardware knob value (front panel)
+007c       2    INS         Line/Instrument switches: array of bytes, 1 byte per input:
                               - 0 = line mode
                               - 1 = inst mode 
-0x0084     8    PAD SW      Pad switches: array of bytes, 1 byte per input:
+0084       8    PAD SW      Pad switches: array of bytes, 1 byte per input:
                               - 0 = off
                               - 1 = on
-0x008c     8    AIR SW      Air switches: array of bytes, 1 byte per input:
+008c       8    AIR SW      Air switches: array of bytes, 1 byte per input:
                               - 0 = off
                               - 1 = on
-0x008e     2    ??          Unknown area, not zero
-0x0094     1    SP          S/PDIF volume source
-0x0098     1    ??          Unknown area, not zero
-0x009a     1    ??          Unknown area, not zero
-0x009c     1    PP          Phantom power (48V) switch (bit mask)
-0x009d     1    MS          Mass Storage Device (MSD) mode
-0x009f     1    AT          ALT/Talkback switches (bit mask)
-0x00a0     1    SS          Speaker switching function
-0x00a1     ?    GH          Gain halos (?)
-0x00af     1    TV          Talkback volume (minimum: 0x19, maximum: 0)
-0x00b0     2    TAL         Enable talkback for mixer channel (bit mask, 12 bits)
-0x00b8     2    ??          Unknown area, not zero
-0x00c1     2    ??          Unknown area, not zero
-0x00c9     2    ??          Unknown area, not zero
-0x00e8          SWCFG       Start of the software configuration area
-0x00f4     2    ROM         The size of software configuration area used by application
+008e       2    ??          Unknown area, not zero
+0094       1    SP          S/PDIF volume source
+0098       1    ??          Unknown area, not zero
+009a       1    ??          Unknown area, not zero
+009c       1    PP          Phantom power (48V) switch (bit mask)
+009d       1    MS          Mass Storage Device (MSD) mode
+009e       1    RP          Retain 48V switch:
+                              - 0 = retain is disabled
+                              - 1 = retain is enabled
+009f       1    AT          ALT/Talkback switches (bit mask)
+00a0       1    SS          Speaker switching function
+00a1       ?    GH          Gain halos (?)
+00af       1    TV          Talkback volume (minimum: 0x19, maximum: 0)
+00b0       2    TAL         Enable talkback for mixer channel (bit mask, 12 bits)
+00b8       2    ??          Unknown area, not zero
+00c1       2    ??          Unknown area, not zero
+00c9       2    ??          Unknown area, not zero
+-------------------------------------------------------------------------------
+SOFTWARE CONFIGURATION AREA
+-------------------------------------------------------------------------------
+00e8            +0000       Start of the software configuration area
+00f4       2    +0008       The size of software configuration area used by application
+                              - includes size of checksum
+                              - 18i20, 8i6 devices have value of 0x1984
+01b4            +00c8       Mono/Stereo switch for output channels:
+                              - it's a bitmask
+                              - bits are set/cleared by pairs, for example: 0xff -> 0xfc
+                              - bit encoding:
+                                - 0..9   - outputs 1-10
+                                - 10..11 - SPDIF 1-2
+                                - 12..19 - ADAT 1.1-1.8
+                                - 20..23 - ADAT 2.1-2.4 ???
+                                - 24..25 - Loopback 1-2
+01bc            +00d0       Volume settings of each output:
+                              - stored as array of structures:
+                                - uint16le byte gain value (same will be written to SW VOLUME SETTINGS):
+                                - 0x0000 means -127 dB
+                                - 0xff81 means 0 dB
+                                - uint8 change flag
+                                - uint8 some unknown data
+                              - volume changes only for first output in pair in STEREO mode
+                              - 10 values for 18i20 device
+03c0      90    +02d8       Array of input symbolic names:
+                              - 12 bytes per string
+                              - NULL-terminated ASCII only
+                              - Overall up to 8 strings
+09f0     312    +02d8       Array of output symbolic names:
+                              - 12 bytes per string
+                              - NULL-terminated ASCII only
+                              - Overall up to 8 strings
+                              - Order:
+                                - Line Outputs 1-10
+                                - S/PDIF Outputs 1-2
+                                - ADAT Outputs 1-8
+                                - 4 uknnown (ADAT 2?)
+                                - Loopback 1-2
+10dc            +0ff0       Matrix mixer settings:
+                              - gain values stored as two-dimentional array of f32le values
+                              - each value encodes the level of -128..+6 dB with 0.5 dB step
+                              - each mixer output setting cosists of 30 gain values and is stored
+                                as a corresponding row in the two-dimentional array
+                              - at least 12 output channels
+1a6c            +1980       Checksum:
+                              - the sum of uint32 values of the whole area except checksum field
+                              - stored with inversed sign
+                              - the final sum with checksum area should give 0
 
 
 
-Matrix MIXER features:
-- Up to 25 inputs (24 for custom mix and 1 for talkback)
-- Up to 12 outputs
-
-TALKBACK feature:
-- Builtin focusrite Talkback microphone is connected to hidden ANALOG-9 channel. 
-- Talkback is routed to the 24th input of the mixer.
-- For each mixer the corresponding bit in TAL bitmask indicates that talkback is enabled.
-
-LOOPBACK feature:
-- Loopback inputs are mapped as PCM OUT 9 and PCM OUT 10
-- Loopback outputs are mapped as PCM IN 1 and PCM IN 2 
-
-The mapping of software configuration area:
-
-0x00e8(+0x0000): Start of the software configuration area
-
-0x00f4(+0x0008): The size of software configuration area (2 bytes)
-  - includes size of checksum
-  - 18i20, 8i6 devices have value of 0x1984
-
-0x01b4(+0x00c8): Mono/Stereo switch for output channels:
-  - it's a bitmask
-  - bits are set/cleared by pairs, for example: 0xff -> 0xfc
-  - bit encoding:
-    - 0..9   - outputs 1-10
-    - 10..11 - SPDIF 1-2
-    - 12..19 - ADAT 1.1-1.8
-    - 20..23 - ADAT 2.1-2.4 ???
-    - 24..25 - Loopback 1-2
-
-0x01bc(+0x00d0): Volume settings of each output:
-  - stored as array of structures:
-    - uint16le byte gain value (same will be written to SW VOLUME SETTINGS):
-      - 0x0000 means -127 dB
-      - 0xff81 means 0 dB
-    - uint8 change flag
-    - uint8 some unknown data
-  - volume changes only for first output in pair in STEREO mode
-  - 10 values for 18i20 device
-
-0x10dc(+0x0ff0): Matrix mixer settings:
-  - gain values stored as two-dimentional array of f32le values
-  - each value encodes the level of -128..+6 dB with 0.5 dB step
-  - each mixer output setting cosists of 30 gain values and is stored
-    as a corresponding row in the two-dimentional array
-  - at least 12 output channels
-
-0x1a6c(+0x1980): Checksum:
-  - the sum of uint32 values of the whole area except checksum field
-  - stored with inversed sign
-  - the final sum with checksum area should give 0
-
-Mixer settings start in configuration space from 0xff0 offset.
-It's part of APP ROM data and is stored as plain float32le values:
-24 floats for each mixer channel (overall 12 mixer channels).
-
-The ROM is check-sumed from the beginning address 0xec up to the
-end address. The overall ROM size is stored in [ROM] variable.
-Last 4 bytes are little-endian sign-reversed sum of all previous data.
-So actually the checksum should always give 0 as a result.
-
-Software 

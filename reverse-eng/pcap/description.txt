@@ -14,6 +14,18 @@ mixer - different mixer settings.
 mixer-all - setting state of all gain levels for the internal mixer (each channel operates in stereo).
 mono-stereo-switch - sequential switching from stereo channels to mono channels and back.
 
-2i2/scarlett-2i2 - the protocol dump for Scarlett 2i2 interface.
-8i6/8i6-init.pcap - the 8i6 device connected to USB port.
-8i6/8i6-full.pcap - the protocol dump for the 8i6 device.
+2i2/
+  scarlett-2i2 - the protocol dump for Scarlett 2i2 interface.
+
+8i6/
+  8i6-init - the 8i6 device connected to USB port.
+  8i6-full - the protocol dump for the 8i6 device.
+
+18i20/
+  connect-no-alt - the 18i20 device connected to USB port, ALT switching is disabled.
+  disable-alt-switching - disable ALT switching
+  enable-alt-switching - enable ALT switching
+  retain-48v - set "Retain 48V" OFF -> ON -> OFF -> ON
+  select-clock-source - change clock source Internal -> SPDIF -> ADAT -> Internal
+  set-input-names - configure name for each input of the maximum length
+
