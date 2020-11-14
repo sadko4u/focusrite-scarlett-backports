@@ -14,7 +14,7 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug" cleanCommand="rm -rf" description="" id="cdt.managedbuild.config.gnu.exe.debug.1192990093" name="Debug" parent="cdt.managedbuild.config.gnu.exe.debug">
+				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug" cleanCommand="rm -rf" description="" id="cdt.managedbuild.config.gnu.exe.debug.1192990093" name="Debug" optionalBuildProperties="" parent="cdt.managedbuild.config.gnu.exe.debug">
 					<folderInfo id="cdt.managedbuild.config.gnu.exe.debug.1192990093." name="/" resourcePath="">
 						<toolChain id="cdt.managedbuild.toolchain.gnu.exe.debug.529301289" name="Linux GCC" superClass="cdt.managedbuild.toolchain.gnu.exe.debug">
 							<targetPlatform id="cdt.managedbuild.target.gnu.platform.exe.debug.2057907097" name="Debug Platform" superClass="cdt.managedbuild.target.gnu.platform.exe.debug"/>
@@ -42,11 +42,11 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
-					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1192990093.916368874" name="gen_levels.cpp" rcbsApplicability="disable" resourcePath="reverse-eng/gen_levels.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.1422061414.174056532">
-						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.1422061414.174056532" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.1422061414"/>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.debug.1192990093.363733829" name="check-alignment.cpp" rcbsApplicability="disable" resourcePath="reverse-eng/check-alignment.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.1422061414.1598179972">
+						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.1422061414.1598179972" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.1422061414"/>
 					</fileInfo>
 					<sourceEntries>
-						<entry excluding="reverse-eng/gen_levels.cpp|reverse-eng/mixer_level.cpp|reverse-eng/checksum.cpp|debug-drv/mixer_scarlett_gen2.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="reverse-eng/check-alignment.cpp|reverse-eng/gen_levels.cpp|reverse-eng/mixer_level.cpp|reverse-eng/checksum.cpp|debug-drv/mixer_scarlett_gen2.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -93,11 +93,11 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
-					<fileInfo id="cdt.managedbuild.config.gnu.exe.release.930194647.861041940" name="gen_levels.cpp" rcbsApplicability="disable" resourcePath="reverse-eng/gen_levels.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.release.1276414846.2076109059">
-						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.release.1276414846.2076109059" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.release.1276414846"/>
+					<fileInfo id="cdt.managedbuild.config.gnu.exe.release.930194647.1803616396" name="check-alignment.cpp" rcbsApplicability="disable" resourcePath="reverse-eng/check-alignment.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.exe.release.1276414846.1066511543">
+						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.release.1276414846.1066511543" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.release.1276414846"/>
 					</fileInfo>
 					<sourceEntries>
-						<entry excluding="reverse-eng/gen_levels.cpp|reverse-eng/mixer_level.cpp|reverse-eng/checksum.cpp|debug-drv/mixer_scarlett_gen2.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="reverse-eng/check-alignment.cpp|reverse-eng/gen_levels.cpp|reverse-eng/mixer_level.cpp|reverse-eng/checksum.cpp|debug-drv/mixer_scarlett_gen2.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -124,4 +124,12 @@
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
+	<storageModule moduleId="refreshScope" versionNumber="2">
+		<configuration configurationName="Debug">
+			<resource resourceType="PROJECT" workspacePath="/focusrite-scarlett-backports"/>
+		</configuration>
+		<configuration configurationName="Release">
+			<resource resourceType="PROJECT" workspacePath="/focusrite-scarlett-backports"/>
+		</configuration>
+	</storageModule>
 </cproject>

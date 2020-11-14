@@ -36,54 +36,58 @@ Offset  Size    Short       Description
 -------------------------------------------------------------------------------
 HARDWARE CONFIGURATION AREA
 -------------------------------------------------------------------------------
-0000       4    CFG SIZE    The overall configuration area size (very probably)
-000c       4    FWV         Firmware version	
-0010      32    MODEL NAME  Model name
-0031       2    DIM         Dim/Mute buttons (2x)
-0034      20    SWVS        Software Volume Settings
-0048      20    HWVS        Hardware Volume Settings
-005c      10    MUTES       Mute settings for analog outputs, 1 byte per output:
+0000    0004    CFG SIZE    The overall configuration area size (very probably)
+000c    0004    FWV         Firmware version	
+0010    0020    MODEL NAME  Model name
+0031    0002    DIM         Dim/Mute buttons (2x)
+0034    0014    SWVS        Software Volume Settings
+0048    0014    HWVS        Hardware Volume Settings
+005c    000a    MUTES       Mute settings for analog outputs, 1 byte per output:
                               - 0 = mute unset
                               - 1 = mute set 
-0066      10    VOL SW      Software/hardware controlled volume switches for each analog
+0066    000a    VOL SW      Software/hardware controlled volume switches for each analog
                             output, 1 byte per input:
                               - 0 = software mode
                               - 1 = hardware mode 
-0076       4    MSV         Actual master volume hardware knob value (front panel)
-007c       2    INS         Line/Instrument switches: array of bytes, 1 byte per input:
+0076    0004    MSV         Actual master volume hardware knob value (front panel)
+007c    0002    INS         Line/Instrument switches: array of bytes, 1 byte per input:
                               - 0 = line mode
                               - 1 = inst mode 
-0084       8    PAD SW      Pad switches: array of bytes, 1 byte per input:
+0084    0008    PAD SW      Pad switches: array of bytes, 1 byte per input:
                               - 0 = off
                               - 1 = on
-008c       8    AIR SW      Air switches: array of bytes, 1 byte per input:
+008c    0008    AIR SW      Air switches: array of bytes, 1 byte per input:
                               - 0 = off
                               - 1 = on
-008e       2    ??          Unknown area, not zero
-0094       1    SP          S/PDIF volume source
-0098       1    ??          Unknown area, not zero
-009a       1    ??          Unknown area, not zero
-009c       1    PP          Phantom power (48V) switch (bit mask)
-009d       1    MS          Mass Storage Device (MSD) mode
-009e       1    RP          Retain 48V switch:
+008e    0002    ??          Unknown area, not zero
+0094    0001    SP          S/PDIF volume source
+0098    0001    ??          Unknown area, not zero
+009a    0001    ??          Unknown area, not zero
+009c    0001    PP          Phantom power (48V) switch (bit mask)
+009d    0001    MS          Mass Storage Device (MSD) mode
+009e    0001    RP          Retain 48V switch:
                               - 0 = retain is disabled
                               - 1 = retain is enabled
-009f       1    AT          ALT/Talkback switches (bit mask)
-00a0       1    SS          Speaker switching function
+009f    0001    AT          ALT/Talkback switches (bit mask)
+00a0    0001    SS          Speaker switching function
 00a1       ?    GH          Gain halos (?)
-00af       1    TV          Talkback volume (minimum: 0x19, maximum: 0)
-00b0       2    TAL         Enable talkback for mixer channel (bit mask, 12 bits)
-00b8       2    ??          Unknown area, not zero
-00c1       2    ??          Unknown area, not zero
-00c9       2    ??          Unknown area, not zero
+00af    0001    TV          Talkback volume (minimum: 0x19, maximum: 0)
+00b0    0002    TAL         Enable talkback for mixer channel (bit mask, 12 bits)
+00b8    0002    ??          Unknown area, not zero
+00c1    0002    ??          Unknown area, not zero
+00c9    0002    ??          Unknown area, not zero
 -------------------------------------------------------------------------------
 SOFTWARE CONFIGURATION AREA (same for 8i6, 18i8, 18i20 devices)
 -------------------------------------------------------------------------------
-00e8            +0000       Start of the software configuration area
-00f4       2    +0008       The size of software configuration area used by application
+00ec    0002    +0000       Overall size of block (?)
+00ee    0002    +0002       Magic number (?) - 0x3006 for all devices
+00f0    0004    +0004       Version (?) - 0x5 for all devices
+00f4    0002    +0008       The size of software configuration area used by application
                               - includes size of checksum
                               - 18i20, 8i6 devices have value of 0x1984
-01b4            +00c8       Mono/Stereo switch for output channels:
+00f6    0002    +000a       Padding (?) - always zero
+00f8    00bc    +000c       ????????
+01b4    0004    +00c8       Mono/Stereo switch for output channels:
                               - it's a bitmask
                               - bits are set/cleared by pairs, for example: 0xff -> 0xfc
                               - bit encoding:
@@ -92,7 +96,7 @@ SOFTWARE CONFIGURATION AREA (same for 8i6, 18i8, 18i20 devices)
                                 - 12..19 - ADAT 1.1-1.8
                                 - 20..23 - ADAT 2.1-2.4 ???
                                 - 24..25 - Loopback 1-2
-01b8       4    +0xd0       Logic Mutes for outputs:
+01b8    0004    +0xd0       Logic Mutes for outputs:
                               - 1 bit per output
                               - bit encoding:
                                 - 0..9   - line outputs 1-10
@@ -100,20 +104,22 @@ SOFTWARE CONFIGURATION AREA (same for 8i6, 18i8, 18i20 devices)
                                 - 12..19 - ADAT 1.1-1.8
                                 - 20..23 - ADAT 2.1-2.4 ???
                                 - 24..25 - Loopback 1-2
-01bc            +00d0       Volume settings of each output:
-                              - stored as array of structures:
+01bc    0028    +00d0       Volume settings of each output:
+                              - stored as array of 4-byte structures:
                                 - uint16le byte gain value (same will be written to SW VOLUME SETTINGS):
-                                - 0x0000 means -127 dB
-                                - 0xff81 means 0 dB
+                                  - 0x0000 means -127 dB
+                                  - 0xff81 means 0 dB
                                 - uint8 change flag
                                 - uint8 some unknown data
                               - volume changes only for first output in pair in STEREO mode
                               - 10 values for 18i20 device
-03c0      90    +02d8       Array of symbolic names for inputs:
+01e4    01dc    +00f8       ????????
+03c0    0060    +02d8       Array of symbolic names for inputs:
                               - 12 bytes per string
                               - NULL-terminated ASCII only
                               - Overall up to 8 strings
-09f0     312    +0908       Array of symbolic names for outputs:
+0420    05d0    +0338       ????????
+09f0    0138    +0908       Array of symbolic names for outputs:
                               - 12 bytes per string
                               - NULL-terminated ASCII only
                               - Overall up to 8 strings
@@ -123,13 +129,15 @@ SOFTWARE CONFIGURATION AREA (same for 8i6, 18i8, 18i20 devices)
                                 - ADAT Outputs 1-8
                                 - 4 uknnown (ADAT 2?)
                                 - Loopback 1-2
-10dc            +0ff0       Matrix mixer settings:
+0b28    05b4    +0a3c       ????????
+10dc    05a0    +0ff0       Matrix mixer settings:
                               - gain values stored as two-dimentional array of f32le values
                               - each value encodes the level of -128..+6 dB with 0.5 dB step
                               - each mixer output setting cosists of 30 gain values and is stored
                                 as a corresponding row in the two-dimentional array
                               - at least 12 output channels
-1a6c            +1980       Checksum:
+167c    03f0    +1590       ????????
+1a6c    0004    +1980       Checksum:
                               - the sum of uint32 values of the whole area except checksum field
                               - stored with inversed sign
                               - the final sum with checksum area should give 0
