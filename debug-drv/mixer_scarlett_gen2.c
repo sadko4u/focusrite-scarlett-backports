@@ -1790,8 +1790,7 @@ static int scarlett2_usb_get_volume_status(
 {
 	usb_audio_info(mixer->chip, "scarlett2_usb_get_volume_status\n");
 
-	return scarlett2_usb_get(mixer, /*SCARLETT2_USB_VOLUME_STATUS_OFFSET*/ 0,
-				 buf, sizeof(*buf));
+	return scarlett2_usb_get(mixer, 0, buf, sizeof(*buf));
 }
 
 /* Send a USB message to set the volumes for all inputs of one mix
@@ -3516,7 +3515,7 @@ static const struct snd_kcontrol_new scarlett2_talkback_switch_ctl = {
 static const struct snd_kcontrol_new scarlett2_mix_talkback_switch_ctl = {
 	.iface = SNDRV_CTL_ELEM_IFACE_MIXER,
 	.name = "",
-	.info = scarlett2_bool_enum_ctl_info,
+	.info = snd_ctl_boolean_mono_info,
 	.get  = scarlett2_mix_talkback_switch_ctl_get,
 	.put  = scarlett2_mix_talkback_switch_ctl_put,
 };
