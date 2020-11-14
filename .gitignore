@@ -1,6 +1,7 @@
 /.project
 **/00-*.log
 **/*.rom
+**/*.out
 reverse-eng/decode
 reverse-eng/checksum
 /Debug/

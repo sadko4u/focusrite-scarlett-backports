@@ -114,11 +114,17 @@ SOFTWARE CONFIGURATION AREA (same for 8i6, 18i8, 18i20 devices)
                               - volume changes only for first output in pair in STEREO mode
                               - 10 values for 18i20 device
 01e4    01dc    +00f8       ????????
-03c0    0060    +02d8       Array of symbolic names for inputs:
+03c0    01f8    +02d8       Array of symbolic names for inputs:
                               - 12 bytes per string
                               - NULL-terminated ASCII only
-                              - Overall up to 8 strings
-0420    05d0    +0338       ????????
+                              - Order:
+                                - 8 line inputs
+                                - S/PDIF 1-2
+                                - ADAT 1-8
+                                - ADAT2 1-4
+                                - Playback 1-20
+                              - Overall 42 strings
+05b8    0438    +0338       ????????
 09f0    0138    +0908       Array of symbolic names for outputs:
                               - 12 bytes per string
                               - NULL-terminated ASCII only
@@ -127,16 +133,16 @@ SOFTWARE CONFIGURATION AREA (same for 8i6, 18i8, 18i20 devices)
                                 - Line Outputs 1-10
                                 - S/PDIF Outputs 1-2
                                 - ADAT Outputs 1-8
-                                - 4 uknnown (ADAT 2?)
+                                - 4 uknown (ADAT 2?)
                                 - Loopback 1-2
-0b28    05b4    +0a3c       ????????
-10dc    05a0    +0ff0       Matrix mixer settings:
+0b28    04c8    +0a3c       ????????
+0ff0    05a0    +0f04       Matrix mixer settings:
                               - gain values stored as two-dimentional array of f32le values
                               - each value encodes the level of -128..+6 dB with 0.5 dB step
                               - each mixer output setting cosists of 30 gain values and is stored
                                 as a corresponding row in the two-dimentional array
                               - at least 12 output channels
-167c    03f0    +1590       ????????
+1590    04dc    +14a4       ????????
 1a6c    0004    +1980       Checksum:
                               - the sum of uint32 values of the whole area except checksum field
                               - stored with inversed sign
