@@ -42,7 +42,9 @@ HARDWARE CONFIGURATION AREA
 0031       2    DIM         Dim/Mute buttons (2x)
 0034      20    SWVS        Software Volume Settings
 0048      20    HWVS        Hardware Volume Settings
-005c      10    MUTES       Monitoring mutes
+005c      10    MUTES       Mute settings for analog outputs, 1 byte per output:
+                              - 0 = mute unset
+                              - 1 = mute set 
 0066      10    VOL SW      Software/hardware controlled volume switches for each analog
                             output, 1 byte per input:
                               - 0 = software mode
@@ -75,7 +77,7 @@ HARDWARE CONFIGURATION AREA
 00c1       2    ??          Unknown area, not zero
 00c9       2    ??          Unknown area, not zero
 -------------------------------------------------------------------------------
-SOFTWARE CONFIGURATION AREA
+SOFTWARE CONFIGURATION AREA (same for 8i6, 18i8, 18i20 devices)
 -------------------------------------------------------------------------------
 00e8            +0000       Start of the software configuration area
 00f4       2    +0008       The size of software configuration area used by application
@@ -85,7 +87,15 @@ SOFTWARE CONFIGURATION AREA
                               - it's a bitmask
                               - bits are set/cleared by pairs, for example: 0xff -> 0xfc
                               - bit encoding:
-                                - 0..9   - outputs 1-10
+                                - 0..9   - line outputs 1-10
+                                - 10..11 - SPDIF 1-2
+                                - 12..19 - ADAT 1.1-1.8
+                                - 20..23 - ADAT 2.1-2.4 ???
+                                - 24..25 - Loopback 1-2
+01b8       4    +0xd0       Logic Mutes for outputs:
+                              - 1 bit per output
+                              - bit encoding:
+                                - 0..9   - line outputs 1-10
                                 - 10..11 - SPDIF 1-2
                                 - 12..19 - ADAT 1.1-1.8
                                 - 20..23 - ADAT 2.1-2.4 ???
