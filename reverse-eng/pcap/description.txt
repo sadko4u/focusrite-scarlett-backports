@@ -31,4 +31,7 @@ mono-stereo-switch - sequential switching from stereo channels to mono channels 
   retain-48v - set "Retain 48V" OFF -> ON -> OFF -> ON
   select-clock-source - change clock source Internal -> SPDIF -> ADAT -> Internal
   set-input-names - configure name for each input of the maximum length
+  set-mutes - set mute settings for each output channel
+  unset-mutes - clear mute settings for each output channel
+
 
