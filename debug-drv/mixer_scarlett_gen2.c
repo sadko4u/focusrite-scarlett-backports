@@ -2405,11 +2405,9 @@ static int scarlett2_level_enum_ctl_get(struct snd_kcontrol *kctl,
 	usb_audio_info(elem->head.mixer->chip, "scarlett2_levl_enum_ctl_get index=%d\n", (int)elem->control);
 	
 	if (private->line_ctl_updated) {
-		usb_audio_info(mixer->chip, "mutex_lock(data)\n");
 		mutex_lock(&private->data_mutex);
 		scarlett2_update_line_ctl_switches(mixer);
 		mutex_unlock(&private->data_mutex);
-		usb_audio_info(mixer->chip, "mutex_unlock(data)\n");
 	}
 
 	ucontrol->value.enumerated.item[0] =
@@ -2428,8 +2426,6 @@ static int scarlett2_level_enum_ctl_put(struct snd_kcontrol *kctl,
 	int oval, val, err = 0;
 	
 	usb_audio_info(mixer->chip, "scarlett2_level_enum_ctl_put\n");
-
-	usb_audio_info(mixer->chip, "mutex_lock(data)\n");
 	mutex_lock(&private->data_mutex);
 
 	oval = private->level_switch[index];
@@ -2448,7 +2444,6 @@ static int scarlett2_level_enum_ctl_put(struct snd_kcontrol *kctl,
 
 unlock:
 	mutex_unlock(&private->data_mutex);
-	usb_audio_info(mixer->chip, "mutex_unlock(data)\n");
 	return err;
 }
 
@@ -2471,11 +2466,9 @@ static int scarlett2_pad_ctl_get(struct snd_kcontrol *kctl,
 	usb_audio_info(elem->head.mixer->chip, "scarlett2_pad_ctl_get index=%d\n", (int)elem->control);
 	
 	if (private->line_ctl_updated) {
-		usb_audio_info(mixer->chip, "mutex_lock(data)\n");
 		mutex_lock(&private->data_mutex);
 		scarlett2_update_line_ctl_switches(mixer);
 		mutex_unlock(&private->data_mutex);
-		usb_audio_info(mixer->chip, "mutex_unlock(data)\n");
 	}
 
 	ucontrol->value.enumerated.item[0] =
@@ -2494,7 +2487,6 @@ static int scarlett2_pad_ctl_put(struct snd_kcontrol *kctl,
 	int oval, val, err = 0;
 
 	usb_audio_info(mixer->chip, "scarlett2_pad_ctl_put\n");
-	usb_audio_info(mixer->chip, "mutex_lock(data)\n");
 	mutex_lock(&private->data_mutex);
 
 	oval = private->pad_switch[index];
@@ -2513,7 +2505,6 @@ static int scarlett2_pad_ctl_put(struct snd_kcontrol *kctl,
 
 unlock:
 	mutex_unlock(&private->data_mutex);
-	usb_audio_info(mixer->chip, "mutex_unlock(data)\n");
 	return err;
 }
 
@@ -2549,7 +2540,6 @@ static int scarlett2_air_ctl_put(struct snd_kcontrol *kctl,
 	int oval, val, err = 0;
 
 	usb_audio_info(mixer->chip, "scarlett2_air_ctl_put\n");
-	usb_audio_info(mixer->chip, "mutex_lock(data)\n");
 	mutex_lock(&private->data_mutex);
 
 	oval = private->air_switch[index];
@@ -2568,7 +2558,6 @@ static int scarlett2_air_ctl_put(struct snd_kcontrol *kctl,
 
 unlock:
 	mutex_unlock(&private->data_mutex);
-	usb_audio_info(mixer->chip, "mutex_unlock(data)\n");
 	return err;
 }
 
@@ -2591,11 +2580,9 @@ static int scarlett2_48v_ctl_get(struct snd_kcontrol *kctl,
 	usb_audio_info(elem->head.mixer->chip, "scarlett2_48v_ctl_get index=%d\n", (int)elem->control);
 	
 	if (private->line_ctl_updated) {
-		usb_audio_info(mixer->chip, "mutex_lock(data)\n");
 		mutex_lock(&private->data_mutex);
 		scarlett2_update_line_ctl_switches(mixer);
 		mutex_unlock(&private->data_mutex);
-		usb_audio_info(mixer->chip, "mutex_unlock(data)\n");
 	}
 
 	ucontrol->value.enumerated.item[0] =
@@ -2709,11 +2696,9 @@ static int scarlett2_button_ctl_get(struct snd_kcontrol *kctl,
 	usb_audio_info(mixer->chip, "scarlett2_button_ctl_get\n");
 
 	if (private->vol_updated) {
-		usb_audio_info(mixer->chip, "mutex_unlock(data)\n");
 		mutex_lock(&private->data_mutex);
 		scarlett2_update_volumes(mixer);
 		mutex_unlock(&private->data_mutex);
-		usb_audio_info(mixer->chip, "mutex_unlock(data)\n");
 	}
 
 	ucontrol->value.enumerated.item[0] = private->buttons[elem->control];
@@ -2731,7 +2716,6 @@ static int scarlett2_button_ctl_put(struct snd_kcontrol *kctl,
 	int oval, val, err = 0;
 
 	usb_audio_info(mixer->chip, "scarlett2_button_ctl_put\n");
-	usb_audio_info(mixer->chip, "mutex_lock(data)\n");
 	mutex_lock(&private->data_mutex);
 
 	oval = private->buttons[index];
@@ -2750,7 +2734,6 @@ static int scarlett2_button_ctl_put(struct snd_kcontrol *kctl,
 
 unlock:
 	mutex_unlock(&private->data_mutex);
-	usb_audio_info(mixer->chip, "mutex_unlock(data)\n");
 	return err;
 }
 
@@ -2776,7 +2759,7 @@ static int scarlett2_add_line_out_ctls(struct usb_mixer_interface *mixer)
 
 	/* Add R/O HW volume control */
 	if (info->line_out_hw_vol) {
-		snprintf(s, sizeof(s), "Monitor HW Out Volume");
+		snprintf(s, sizeof(s), "Master Playback Volume");
 		err = scarlett2_add_new_ctl(mixer,
 					    &scarlett2_master_volume_ctl,
 					    0, 1, s, &private->master_vol_ctl);
@@ -2937,7 +2920,6 @@ static int scarlett2_mixer_ctl_put(struct snd_kcontrol *kctl,
 	__le32 *gain;
 
 	usb_audio_info(mixer->chip, "scarlett2_mixer_ctl_put\n");
-	usb_audio_info(mixer->chip, "mutex_lock(data)\n");
 	mutex_lock(&private->data_mutex);
 
 	oval = private->mix[index];
@@ -2968,7 +2950,6 @@ static int scarlett2_mixer_ctl_put(struct snd_kcontrol *kctl,
 
 unlock:
 	mutex_unlock(&private->data_mutex);
-	usb_audio_info(mixer->chip, "mutex_unlock(data)\n");
 	return err;
 }
 
@@ -3231,7 +3212,6 @@ static int scarlett2_msd_ctl_put(struct snd_kcontrol *kctl,
 	int oval, val, err = 0;
 
 	usb_audio_info(mixer->chip, "scarlett2_msd_ctl_put\n");
-	usb_audio_info(mixer->chip, "mutex_lock(data)\n");
 	mutex_lock(&private->data_mutex);
 
 	oval = private->msd_switch;
@@ -3250,7 +3230,6 @@ static int scarlett2_msd_ctl_put(struct snd_kcontrol *kctl,
 
 unlock:
 	mutex_unlock(&private->data_mutex);
-	usb_audio_info(mixer->chip, "mutex_unlock(data)\n");
 	return err;
 }
 
@@ -3340,11 +3319,9 @@ static int scarlett2_speaker_switch_enum_ctl_get(
 	usb_audio_info(elem->head.mixer->chip, "scarlett2_speaker_switch_enum_ctl_get index=%d\n", (int)elem->control);
 	
 	if (private->speaker_updated) {
-		usb_audio_info(mixer->chip, "mutex_lock(data)\n");
 		mutex_lock(&private->data_mutex);
 		scarlett2_update_speaker_switch_enum_ctl(mixer);
 		mutex_unlock(&private->data_mutex);
-		usb_audio_info(mixer->chip, "mutex_unlock(data)\n");
 	}
 
 	ucontrol->value.enumerated.item[0] =
@@ -3362,11 +3339,9 @@ static int scarlett2_talkback_switch_ctl_get(
 	usb_audio_info(elem->head.mixer->chip, "scarlett2_talkback_switch_ctl_get index=%d\n", (int)elem->control);
 	
 	if (private->speaker_updated) {
-		usb_audio_info(mixer->chip, "mutex_lock(data)\n");
 		mutex_lock(&private->data_mutex);
 		scarlett2_update_speaker_switch_enum_ctl(mixer);
 		mutex_unlock(&private->data_mutex);
-		usb_audio_info(mixer->chip, "mutex_unlock(data)\n");
 	}
 
 	ucontrol->value.enumerated.item[0] =
@@ -3394,7 +3369,6 @@ static int scarlett2_speaker_switch_update_state(struct usb_mixer_interface *mix
 	int old_alt, old_talk, err = 0;
 
 	usb_audio_info(mixer->chip, "scarlett2_speaker_switch_enum_ctl_put\n");
-	usb_audio_info(mixer->chip, "mutex_lock(data)\n");
 	mutex_lock(&private->data_mutex);
 
 	old_alt = private->speaker_switch;
@@ -3426,7 +3400,6 @@ static int scarlett2_speaker_switch_update_state(struct usb_mixer_interface *mix
 
 unlock:
 	mutex_unlock(&private->data_mutex);
-	usb_audio_info(mixer->chip, "mutex_unlock(data)\n");
 	return err;
 }
 
@@ -3468,7 +3441,6 @@ static int scarlett2_mix_talkback_switch_ctl_put(
 	int i, val, old_val, num_mixes, err = 0;
 
 	usb_audio_info(mixer->chip, "scarlett2_mix_talkback_switch_ctl_put\n");
-	usb_audio_info(mixer->chip, "mutex_lock(data)\n");
 	mutex_lock(&private->data_mutex);
 
 	old_val  = private->mix_talkback[elem->control];
@@ -3492,7 +3464,6 @@ static int scarlett2_mix_talkback_switch_ctl_put(
 
 unlock:
 	mutex_unlock(&private->data_mutex);
-	usb_audio_info(mixer->chip, "mutex_unlock(data)\n");
 	return err;
 }
 
