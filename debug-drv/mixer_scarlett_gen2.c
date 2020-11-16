@@ -988,12 +988,12 @@ static const struct scarlett2_device_info s18i8_gen3_info = {
 	.line_out_descrs = {
 		"Monitor 1 L",
 		"Monitor 1 R",
-		"Monitor 2 L",
-		"Monitor 2 R",
 		"Headphones 1 L",
 		"Headphones 1 R",
 		"Headphones 2 L",
 		"Headphones 2 R",
+		"Monitor 2 L",
+		"Monitor 2 R",
 	},
 
 	.port_names = s18i8_gen3_port_names,
