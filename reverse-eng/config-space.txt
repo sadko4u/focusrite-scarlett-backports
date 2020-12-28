@@ -162,12 +162,12 @@ SOFTWARE CONFIGURATION AREA (same for 8i6, 18i8, 18i20 devices)
                                 as a corresponding row in the two-dimentional array
                               - at least 12 output channels
 1590    01e0    +14a4       ????????
-1770    0168    +168c       Pan settings of each mixer line:
+1770    0168    +1684       Pan settings of each mixer line:
                               - 1 byte per each input
                               - values in range of -100 (left channel) to 100 (right channel)
                               - overall up to 30 inputs per line
                               - up to 12 mixer lines
-18d8    0194    +17ec       ????????
+18d8    0078    +17ec       ????????
 1950    0030    +1864       Mute settings for each mixer channel:
                               - 4 bytes per each mixer channel
                               - bitmask: 1 bit per each input
