@@ -86,7 +86,26 @@ SOFTWARE CONFIGURATION AREA (same for 8i6, 18i8, 18i20 devices)
                               - includes size of checksum
                               - 18i20, 8i6 devices have value of 0x1984
 00f6    0002    +000a       Padding (?) - always zero
-00f8    00bc    +000c       ????????
+00f8    0080    +000c       ????????
+0178    001e    +008c       Mixer input routing:
+                              - 1 byte per input indicating the input
+                              - Overall 30 inputs
+                              - input numbering:
+                                - 1-8: Analog inputs 1-8
+                                - 9-10: SPDIF 1-2
+                                - 11-18: ADAT 1.1-1.8
+                                - 19-22: ADAT 2.1-2.4 ???
+                                - 23-42: Playback 1-20
+0196    001e    +00aa       Stereo mixer configuration:
+                              - 2 bytes per mixer stereo pair
+                              - both bytes have bit 7 set when using stereo mode
+                              - the even byte referers to the input number
+                              - input numbering:
+                                - 1-8: Analog inputs 1-8
+                                - 9-10: SPDIF 1-2
+                                - 11-18: ADAT 1.1-1.8
+                                - 19-22: ADAT 2.1-2.4 ???
+                                - 23-42: Playback 1-20
 01b4    0004    +00c8       Mono/Stereo switch for output channels:
                               - it's a bitmask
                               - bits are set/cleared by pairs, for example: 0xff -> 0xfc
@@ -109,7 +128,7 @@ SOFTWARE CONFIGURATION AREA (same for 8i6, 18i8, 18i20 devices)
                                 - uint16le byte gain value (same will be written to SW VOLUME SETTINGS):
                                   - 0x0000 means -127 dB
                                   - 0xff81 means 0 dB
-                                - uint8 change flag
+                                - uint8 change flag?
                                 - uint8 some unknown data
                               - volume changes only for first output in pair in STEREO mode
                               - 10 values for 18i20 device
@@ -121,7 +140,7 @@ SOFTWARE CONFIGURATION AREA (same for 8i6, 18i8, 18i20 devices)
                                 - 8 line inputs
                                 - S/PDIF 1-2
                                 - ADAT 1-8
-                                - ADAT2 1-4
+                                - ADAT2 1-4 ???
                                 - Playback 1-20
                               - Overall 42 strings
 05b8    0438    +0338       ????????
@@ -142,7 +161,22 @@ SOFTWARE CONFIGURATION AREA (same for 8i6, 18i8, 18i20 devices)
                               - each mixer output setting cosists of 30 gain values and is stored
                                 as a corresponding row in the two-dimentional array
                               - at least 12 output channels
-1590    04dc    +14a4       ????????
+1590    01e0    +14a4       ????????
+1770    0168    +168c       Pan settings of each mixer line:
+                              - 1 byte per each input
+                              - values in range of -100 (left channel) to 100 (right channel)
+                              - overall up to 30 inputs per line
+                              - up to 12 mixer lines
+18d8    0194    +17ec       ????????
+1950    0030    +1864       Mute settings for each mixer channel:
+                              - 4 bytes per each mixer channel
+                              - bitmask: 1 bit per each input
+                              - up to 12 bixer lines
+1980    0030    +1894       Solo settings for each mixer channel:
+                              - 4 bytes per each mixer channel
+                              - bitmask: 1 bit per each input
+                              - up to 12 bixer lines
+19b0    00bc    +18c4       ????????
 1a6c    0004    +1980       Checksum:
                               - the sum of uint32 values of the whole area except checksum field
                               - stored with inversed sign

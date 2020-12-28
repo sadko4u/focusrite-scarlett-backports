@@ -28,10 +28,23 @@ mono-stereo-switch - sequential switching from stereo channels to mono channels 
   connect-no-alt - the 18i20 device connected to USB port, ALT switching is disabled.
   disable-alt-switching - disable ALT switching
   enable-alt-switching - enable ALT switching
+  mixer-mute - mute all inputs in the mixer (stereo mode)
+  mixer-mute-mono - mute all inputs in the mixer (mono mode)
+  mixer-pan - pan all inputs in the mixer to the left, then to the right (stereo mode)
+  mixer-pan-mono - pan all inputs in the mixer to the left, then to the right (mono mode)
+  mixer-solo - solo all inputs in the mixer (stereo mode)
+  mixer-solo-mono - solo all inputs in the mixer (mono mode)
   retain-48v - set "Retain 48V" OFF -> ON -> OFF -> ON
   select-clock-source - change clock source Internal -> SPDIF -> ADAT -> Internal
   set-input-names - configure name for each input of the maximum length
   set-mutes - set mute settings for each output channel
   unset-mutes - clear mute settings for each output channel
-
+  custom-mix-1 - add all possible inputs (analog 1-8, SPDIF 1-2, ADAT 1-8) to custom mix in stereo mode
+  custom-mix-2 - add all possible PCM inputs (1-20) to custom mix in stereo mode
+  custom-mix-3 - add all possible inputs (analog 1-8, SPDIF 1-2, ADAT 1-8) to custom mix in mono mode
+  custom-mix-4 - add all possible PCM inputs (1-20) to custom mix in mono mode
+  custom-mix-5 - add all possible inputs (analog 1-8, SPDIF 1-2, ADAT 1-8) to custom mix in stereo mode PCM inputs 1-6
+  custom-mixes-mute - mute custom mixes
+  custom-mixes-pan - pan the first channel in all custom mixes to left, then to right
+  custom-mixes-solo - solo custom mixes
 
