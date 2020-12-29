@@ -244,13 +244,13 @@ static const u16 scarlett2_sw_config_mixer_values[173] = {
  * - PCM I/O
  */
 enum {
-	SCARLETT2_PORT_TYPE_ANALOGUE = 0,       /* Analogue input/output */
-	SCARLETT2_PORT_TYPE_SPDIF = 1,          /* S/PDIF input/oputput  */
-	SCARLETT2_PORT_TYPE_ADAT = 2,           /* ADAT input/output     */
-	SCARLETT2_PORT_TYPE_MIX = 3,            /* Mixer input/output    */
-	SCARLETT2_PORT_TYPE_PCM = 4,            /* PCM input/output      */
-	SCARLETT2_PORT_TYPE_INT_MIC = 5,        /* Internal microphone   */
-	SCARLETT2_PORT_TYPE_TALKBACK = 6,       /* Talkback source       */
+	SCARLETT2_PORT_TYPE_ANALOGUE = 0,       /* Analogue input/output        */
+	SCARLETT2_PORT_TYPE_SPDIF = 1,          /* S/PDIF input/oputput         */
+	SCARLETT2_PORT_TYPE_ADAT = 2,           /* ADAT input/output            */
+	SCARLETT2_PORT_TYPE_MIX = 3,            /* Mixer input/output           */
+	SCARLETT2_PORT_TYPE_PCM = 4,            /* PCM input/output             */
+	SCARLETT2_PORT_TYPE_INT_MIC = 5,        /* Internal microphone          */
+	SCARLETT2_PORT_TYPE_TALKBACK = 6,       /* Talkback source              */
 	SCARLETT2_PORT_TYPE_COUNT = 7
 };
 
@@ -349,7 +349,6 @@ struct scarlett2_device_info {
 	u8 has_sw_config; /* Software configuration is present */
 	u8 has_meters; /* Device has meters */
 	u8 has_hw_volume; /* Has hardware volume control */
-	const char * const line_out_descrs[SCARLETT2_ANALOGUE_OUT_MAX];
 	const struct scarlett2_port_name * const port_names; /* Special names of ports */
 	const u8 mux_size[SCARLETT2_PORT_DIRECTIONS]; /* The maximum number of elements per mux */
 	struct scarlett2_ports ports[SCARLETT2_PORT_TYPE_COUNT];
@@ -544,13 +543,6 @@ static const struct scarlett2_device_info s6i6_gen2_info = {
 
 	.has_hw_volume = 1,
 
-	.line_out_descrs = {
-		"Headphones 1 L",
-		"Headphones 1 R",
-		"Headphones 2 L",
-		"Headphones 2 R",
-	},
-
 	.port_names = s6i6_gen2_ports,
 
 	.mux_size = { 77, 77, 77, 73, 46 },
@@ -619,15 +611,6 @@ static const struct scarlett2_device_info s18i8_gen2_info = {
 	.has_meters = 1,
 
 	.has_hw_volume = 1,
-
-	.line_out_descrs = {
-		"Monitor L",
-		"Monitor R",
-		"Headphones 1 L",
-		"Headphones 1 R",
-		"Headphones 2 L",
-		"Headphones 2 R",
-	},
 
 	.port_names = s18i8_gen2_port_names,
 
@@ -704,19 +687,6 @@ static const struct scarlett2_device_info s18i20_gen2_info = {
 	.has_meters = 1,
 
 	.has_hw_volume = 1,
-
-	.line_out_descrs = {
-		"Monitor L",
-		"Monitor R",
-		NULL,
-		NULL,
-		NULL,
-		NULL,
-		"Headphones 1 L",
-		"Headphones 1 R",
-		"Headphones 2 L",
-		"Headphones 2 R",
-	},
 
 	.port_names = s18i20_gen2_port_names,
 
@@ -822,13 +792,6 @@ static const struct scarlett2_device_info s4i4_gen3_info = {
 
 	.has_hw_volume = 1,
 
-	.line_out_descrs = {
-		"Monitor L",
-		"Monitor R",
-		"Headphones L",
-		"Headphones R",
-	},
-
 	.port_names = s4i4_gen3_port_names,
 
 	.mux_size = { 77, 77, 77, 73, 46 },
@@ -900,13 +863,6 @@ static const struct scarlett2_device_info s8i6_gen3_info = {
 	.has_meters = 1,
 
 	.has_hw_volume = 1,
-
-	.line_out_descrs = {
-		"Headphones 1 L",
-		"Headphones 1 R",
-		"Headphones 2 L",
-		"Headphones 2 R",
-	},
 
 	.port_names = s8i6_gen3_port_names,
 
@@ -1002,17 +958,6 @@ static const struct scarlett2_device_info s18i8_gen3_info = {
 
 	.has_hw_volume = 1,
 
-	.line_out_descrs = {
-		"Main Monitor L",
-		"Main Monitor R",
-		"Headphones 1 L",
-		"Headphones 1 R",
-		"Headphones 2 L",
-		"Headphones 2 R",
-		"Alt Monitor L",
-		"Alt Monitor R",
-	},
-
 	.port_names = s18i8_gen3_port_names,
 
 	.mux_size = { 60, 60, 60, 56, 50 },
@@ -1068,6 +1013,9 @@ static const struct scarlett2_port_name s18i20_gen3_port_names[] = {
 	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 8, "Headphones 2 L" },
 	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 9, "Headphones 2 R" },
 
+	{ SCARLETT2_PORT_OUT,  SCARLETT2_PORT_TYPE_PCM, 8, "Loopback L" },
+	{ SCARLETT2_PORT_OUT,  SCARLETT2_PORT_TYPE_PCM, 9, "Loopback R" },
+
 	{ -1, -1, -1, NULL }
 };
 
@@ -1117,19 +1065,6 @@ static const struct scarlett2_device_info s18i20_gen3_info = {
 	.has_meters = 1,
 
 	.has_hw_volume = 1,
-
-	.line_out_descrs = {
-		"Main Monitor L",
-		"Main Monitor R",
-		"Alt Monitor L",
-		"Alt Monitor R",
-		NULL,
-		NULL,
-		"Headphones 1 L",
-		"Headphones 1 R",
-		"Headphones 2 L",
-		"Headphones 2 R",
-	},
 
 	.port_names = s18i20_gen3_port_names,
 
@@ -1418,11 +1353,12 @@ static int scarlett2_output_index(struct usb_mixer_interface *mixer, int port_ty
 }
 
 /* Format port number to the proper port name */
-static char *scarlett2_fmt_port_name(char *out, int len, const struct scarlett2_device_info *info, int direction, int num)
+static char *scarlett2_fmt_port_name(char *out, int len, const char *fmt, const struct scarlett2_device_info *info, int direction, int num)
 {
 	int port_type;
-	const char *fmt;
+	const char *xfmt;
 	char name[SNDRV_CTL_ELEM_ID_NAME_MAXLEN];
+	char full[SNDRV_CTL_ELEM_ID_NAME_MAXLEN];
 	const struct scarlett2_ports *ports = info->ports;
 	const struct scarlett2_port_name *port_name;
 
@@ -1445,10 +1381,13 @@ static char *scarlett2_fmt_port_name(char *out, int len, const struct scarlett2_
 			}
 
 			/* Format the physical port name */
-			fmt  = (direction == SCARLETT2_PORT_IN) ? ports[port_type].src_descr : ports[port_type].dst_descr;
+			xfmt = (direction == SCARLETT2_PORT_IN) ? ports[port_type].src_descr : ports[port_type].dst_descr;
 			num += (direction == SCARLETT2_PORT_IN) ? ports[port_type].src_num_offset : 1;
-			snprintf(out, len, fmt, num);
-			strncat(out, name, len);
+			snprintf(full, SNDRV_CTL_ELEM_ID_NAME_MAXLEN, xfmt, num);
+			strncat(full, name, SNDRV_CTL_ELEM_ID_NAME_MAXLEN - strlen(full) - 1);
+
+			/* Output the final format */
+			snprintf(out, len, fmt, full);
 			return out;
 		}
 
@@ -1881,8 +1820,8 @@ static void scarlett2_dump_mux(struct usb_mixer_interface *mixer, __le32 *data, 
 		dst_port = scarlett2_mux_to_id(ports, SCARLETT2_PORT_OUT, mux_id);
 
 		/* Format port name */
-		scarlett2_fmt_port_name(src, SNDRV_CTL_ELEM_ID_NAME_MAXLEN, info, SCARLETT2_PORT_IN,  src_port);
-		scarlett2_fmt_port_name(dst, SNDRV_CTL_ELEM_ID_NAME_MAXLEN, info, SCARLETT2_PORT_OUT, dst_port);
+		scarlett2_fmt_port_name(src, SNDRV_CTL_ELEM_ID_NAME_MAXLEN, "%s", info, SCARLETT2_PORT_IN,  src_port);
+		scarlett2_fmt_port_name(dst, SNDRV_CTL_ELEM_ID_NAME_MAXLEN, "%s", info, SCARLETT2_PORT_OUT, dst_port);
 
 		usb_audio_info(mixer->chip, "  [%02d]:  [0x%08x]: %s[%d] -> %s[%d]\n", i, (int)mux_id, src, src_port, dst, dst_port);
 	}
@@ -2898,7 +2837,7 @@ static int scarlett2_add_mute_ctls(struct usb_mixer_interface *mixer)
 	int num_line_out  = info->ports[SCARLETT2_PORT_TYPE_ANALOGUE].num[SCARLETT2_PORT_OUT];
 	int num_spdif_out = info->ports[SCARLETT2_PORT_TYPE_SPDIF].num[SCARLETT2_PORT_OUT];
 	int num_adat_out  = info->ports[SCARLETT2_PORT_TYPE_ADAT].num[SCARLETT2_PORT_OUT];
-	int err, i, index = 0;
+	int err, i, port, index = 0;
 
 	/* Add mutes for line outputs */
 	if (info->has_hw_volume) {
@@ -2908,14 +2847,15 @@ static int scarlett2_add_mute_ctls(struct usb_mixer_interface *mixer)
 			return err;
 
 		for (i=0; i<num_line_out; ++i, ++index) {
-			private->mutes[index] = !! hw_mutes[i]; /* Read hardware mute settings */
-			usb_audio_info(mixer->chip, "  hw mute[%d] = %d (Analogue)\n", index, private->mutes[index]);
+			/* Read hardware mute settings */
+			private->mutes[index] = !! hw_mutes[i];
 
-			/* Format the name of analog output switch */
-			if (info->line_out_descrs[i])
-				snprintf(s, sizeof(s), "Line Out %02d (%s) Mute", i + 1, info->line_out_descrs[i]);
-			else
-				snprintf(s, sizeof(s), "Line Out %02d Mute", i + 1);
+			/* Format the mute switch name */
+			port = scarlett2_get_port_num(info->ports, SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, i);
+			scarlett2_fmt_port_name(s, SNDRV_CTL_ELEM_ID_NAME_MAXLEN, "%s Mute", info, SCARLETT2_PORT_OUT, port);
+			usb_audio_info(mixer->chip, "  hw mute[%d] = %d -> %s\n", index, private->mutes[index], s);
+
+			/* Add port to list */
 			err = scarlett2_add_new_ctl(mixer,
 					    &scarlett2_mute_ctl,
 					    index, 1, s, &private->mute_ctls[index]);
@@ -2933,10 +2873,13 @@ static int scarlett2_add_mute_ctls(struct usb_mixer_interface *mixer)
 		for (i=0; i<num_spdif_out; ++i, ++index) {
 			/* Read software mute settings */
 			private->mutes[index] = !! (sw_mutes & (1 << index));
-			usb_audio_info(mixer->chip, "  sw mute[%d] = %d (S/PDIF)\n", index, private->mutes[index]);
 
-			/* Format the name of analog output switch */
-			snprintf(s, sizeof(s), "S/PDIF %d Mute", i + 1);
+			/* Format the mute switch name */
+			port = scarlett2_get_port_num(info->ports, SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_SPDIF, i);
+			scarlett2_fmt_port_name(s, SNDRV_CTL_ELEM_ID_NAME_MAXLEN, "%s Mute", info, SCARLETT2_PORT_OUT, port);
+			usb_audio_info(mixer->chip, "  sw mute[%d] = %d -> %s\n", index, private->mutes[index], s);
+
+			/* Add port to list */
 			err = scarlett2_add_new_ctl(mixer,
 					    &scarlett2_mute_ctl,
 					    index, 1, s, &private->mute_ctls[index]);
@@ -2948,9 +2891,13 @@ static int scarlett2_add_mute_ctls(struct usb_mixer_interface *mixer)
 		for (i=0; i<num_adat_out; ++i, ++index) {
 			/* Read software mute settings */
 			private->mutes[index] = !! (sw_mutes & (1 << index));
-			usb_audio_info(mixer->chip, "  sw mute[%d] = %d (ADAT)\n", index, private->mutes[index]);
 
-			/* Format the name of analog output switch */
+			/* Format the mute switch name */
+			port = scarlett2_get_port_num(info->ports, SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ADAT, i);
+			scarlett2_fmt_port_name(s, SNDRV_CTL_ELEM_ID_NAME_MAXLEN, "%s Mute", info, SCARLETT2_PORT_OUT, port);
+			usb_audio_info(mixer->chip, "  sw mute[%d] = %d -> %s\n", index, private->mutes[index], s);
+
+			/* Add port to list */
 			snprintf(s, sizeof(s), "ADAT %02d Mute", i + 1);
 			err = scarlett2_add_new_ctl(mixer,
 						    &scarlett2_mute_ctl,
@@ -2970,7 +2917,7 @@ static int scarlett2_add_line_out_ctls(struct usb_mixer_interface *mixer)
 	const struct scarlett2_device_info *info = private->info;
 	const struct scarlett2_ports *ports = info->ports;
 	int num_line_out = ports[SCARLETT2_PORT_TYPE_ANALOGUE].num[SCARLETT2_PORT_OUT];
-	int err, i;
+	int err, i, port;
 	s16 level;
 	char s[SNDRV_CTL_ELEM_ID_NAME_MAXLEN];
 
@@ -2986,11 +2933,10 @@ static int scarlett2_add_line_out_ctls(struct usb_mixer_interface *mixer)
 
 	/* Add volume controls */
 	for (i = 0; i < num_line_out; i++) {
-		/* Fader */
-		if (info->line_out_descrs[i])
-			snprintf(s, sizeof(s), "Line Out %02d (%s) Volume", i + 1, info->line_out_descrs[i]);
-		else
-			snprintf(s, sizeof(s), "Line Out %02d Volume", i + 1);
+		/* Volume Fader */
+		port = scarlett2_get_port_num(info->ports, SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, i);
+		scarlett2_fmt_port_name(s, SNDRV_CTL_ELEM_ID_NAME_MAXLEN, "%s Volume", info, SCARLETT2_PORT_OUT, port);
+
 		err = scarlett2_add_new_ctl(mixer,
 					    &scarlett2_line_out_volume_ctl,
 					    i, 1, s, &private->vol_ctls[i]);
@@ -3259,7 +3205,9 @@ static int scarlett2_mux_src_enum_ctl_info(struct snd_kcontrol *kctl,
 		item = uinfo->value.enumerated.item = items - 1;
 
 	scarlett2_fmt_port_name(uinfo->value.enumerated.name,
-	                        sizeof(uinfo->value.enumerated.name), private->info,
+	                        sizeof(uinfo->value.enumerated.name),
+	                        "%s",
+	                        private->info,
 	                        SCARLETT2_PORT_IN, port);
 
 	return 0;
@@ -3336,9 +3284,7 @@ static int scarlett2_init_mux(struct usb_mixer_interface *mixer)
 	/* Create mux control ports based on output port list */
 	for (port = 0; port < private->num_outputs; ++port) {
 		/* Create port descriptor */
-		scarlett2_fmt_port_name(name, SNDRV_CTL_ELEM_ID_NAME_MAXLEN, private->info, SCARLETT2_PORT_OUT, port);
-		strncat(name, " Source", SNDRV_CTL_ELEM_ID_NAME_MAXLEN);
-
+		scarlett2_fmt_port_name(name, SNDRV_CTL_ELEM_ID_NAME_MAXLEN, "%s Source", private->info, SCARLETT2_PORT_OUT, port);
 		err = scarlett2_add_new_ctl(mixer,
 					    &scarlett2_mux_src_enum_ctl,
 					    port, 1, name, NULL);
