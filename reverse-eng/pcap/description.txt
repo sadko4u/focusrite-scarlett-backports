@@ -24,7 +24,7 @@ mono-stereo-switch - sequential switching from stereo channels to mono channels 
 18i8/
   init - the 18i8 device connected to USB port.
   add-hw-inputs-to-mixer-18i8-3gen - add all possible inputs (analog 1-8, SPDIF 1-2, ADAT 1-8) to custom mix in mono mode
-  add-sw-inputs-to-mixer-18i8-3gen - add all possible PCM inputs (1-20) to custom mix in mono mode
+  add-sw-inputs-to-mixer-18i8-3gen - add all possible PCM inputs (1-8) to custom mix in mono mode
 
 18i20/
   connect-no-alt - the 18i20 device connected to USB port, ALT switching is disabled.
