@@ -229,6 +229,7 @@ static const u16 scarlett2_sw_config_mixer_values[173] = {
 
 #define SCARLETT2_SW_CONFIG_MIXER_INPUTS         30       /* 30 inputs per one mixer in config */
 #define SCARLETT2_SW_CONFIG_MIXER_OUTPUTS        12       /* 12 outputs in config */
+#define SCARLETT2_SW_CONFIG_OUTPUT_MAX           26       /* Maximum number of outputs */
 #define SCARLETT2_SW_CONFIG_SIZE_OFFSET          0x08     /* 0xf4   - 0xec */
 #define SCARLETT2_SW_CONFIG_STEREO_BITS_OFFSET   0x0c8    /* 0x1b4  - 0xec */
 #define SCARLETT2_SW_CONFIG_VOLUMES_OFFSET       0x0d0    /* 0x1bc  - 0xec */
@@ -368,7 +369,8 @@ struct scarlett2_sw_cfg {
 	__le32 version;                                                     /* +0x0004: probably version */
 	__le16 szof;                                                        /* +0x0008: the overall size, 0x1984 for all devices  */
 	__le16 __pad0;                                                      /* +0x000a: ???????? */
-	u8 __pad1[0x0080];                                                  /* +0x000c: ???????? */
+	u8 out_mux[SCARLETT2_SW_CONFIG_OUTPUT_MAX];                         /* +0x00f8: output routing */
+	u8 __pad1[0x0066];                                                  /* +0x0112: ???????? */
 	u8 mixer_in_mux[SCARLETT2_SW_CONFIG_MIXER_INPUTS];                  /* +0x008c: 'custom mix' input routing                    */
 	u8 mixer_in_map[SCARLETT2_SW_CONFIG_MIXER_INPUTS];                  /* +0x00aa: 'custom mix' input mapping                    */
 	__le32 stereo_sw;                                                   /* +0x01b4: stereo configuration for each port (bit mask) */
@@ -385,7 +387,9 @@ struct scarlett2_sw_cfg {
 	u8 __pad6[0x0078];                                                  /* +0x17ec: ???????? */
 	__le32 mixer_mute[SCARLETT2_SW_CONFIG_MIXER_OUTPUTS];               /* +0x1950: Mute settings for mixer inputs */
 	__le32 mixer_solo[SCARLETT2_SW_CONFIG_MIXER_OUTPUTS];               /* +0x1980: Solo settings for mixer inputs */
-	u8 __pad7[0x00bc];                                                  /* +0x19b0: ???????? */
+	u8 __pad7[0x004a];                                                  /* +0x19b0: ???????? */
+	__le32 mixer_bind;                                                  /* +0x19fa: output to 'custom mix' routing bitmap */
+	u8 __pad8[0x006e];                                                  /* +0x19fe: ???????? */
 	__le32 checksum;                                                    /* +0x1a6c: checksum of the area */
 } __packed;
 
