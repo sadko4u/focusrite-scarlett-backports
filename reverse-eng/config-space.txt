@@ -110,6 +110,7 @@ SOFTWARE CONFIGURATION AREA (same for 8i6, 18i8, 18i20 devices)
                                 - SPDIF inputs 1-2
                                 - ADAT 1.1-1.8
                                 - ADAT 2.1-2.4 ???
+                                - Playback 1-20
                               - The Numbering of mixer lines:
                                 - 1-c - mixer lines 1-12
                                 - only even numbers are used in configuration
