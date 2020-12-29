@@ -89,7 +89,31 @@ SOFTWARE CONFIGURATION AREA (same for 8i6, 18i8, 18i20 devices)
                               - includes size of checksum
                               - 18i20, 8i6 devices have value of 0x1984
 00f6    0002    +000a       Padding (?) - always zero
-00f8    0080    +000c       ????????
+00f8    0080    +000c       Output routing:
+                              - 1 byte per output
+                              - Each output is routed to Input OR Mixer Line
+                              - Mixer Line is enabled if:
+                                - Custom mixer routing is cleared (see 19fa offset)
+                                - The mixer line number is valid
+                                - The channel is of odd number and the corresponding channel with even number:
+                                  - is in stereo mode
+                                  - has enabled mixer line
+                              - For stereo mode, only even inputs are changed
+                              - The order of outputs:
+                                - Line outputs 1-10
+                                - SPDIF 1-2
+                                - ADAT 1.1-1.8
+                                - ADAT 2.1-2.4 ???
+                                - Loopback 1-2
+                              - The numbering of inputs:
+                                - Analog inputs 1-8
+                                - SPDIF inputs 1-2
+                                - ADAT 1.1-1.8
+                                - ADAT 2.1-2.4 ???
+                              - The Numbering of mixer lines:
+                                - 1-c - mixer lines 1-12
+                                - only even numbers are used in configuration
+0112    0066    +00ec       ????????
 0178    001e    +008c       Mixer input routing:
                               - 1 byte per input indicating the input
                               - Overall 30 inputs
@@ -113,7 +137,7 @@ SOFTWARE CONFIGURATION AREA (same for 8i6, 18i8, 18i20 devices)
                               - it's a bitmask
                               - bits are set/cleared by pairs, for example: 0xff -> 0xfc
                               - bit encoding:
-                                - 0..9   - line outputs 1-10
+                                - 0..9   - Line outputs 1-10
                                 - 10..11 - SPDIF 1-2
                                 - 12..19 - ADAT 1.1-1.8
                                 - 20..23 - ADAT 2.1-2.4 ???
@@ -179,7 +203,16 @@ SOFTWARE CONFIGURATION AREA (same for 8i6, 18i8, 18i20 devices)
                               - 4 bytes per each mixer channel
                               - bitmask: 1 bit per each input
                               - up to 12 bixer lines
-19b0    00bc    +18c4       ????????
+19b0    004a    +18c4       ????????
+19fa    0004    +190e       Custom mixer routing bit mask
+                              - 1 bit per output (1 = mixer disabled, 0 = mixer enabled)
+                              - bit encoding:
+                                - 0..9   - line outputs 1-10
+                                - 10..11 - SPDIF 1-2
+                                - 12..19 - ADAT 1.1-1.8
+                                - 20..23 - ADAT 2.1-2.4 ???
+                                - 24..25 - Loopback 1-2
+19fe    006e    +1912       ????????
 1a6c    0004    +1980       Checksum:
                               - the sum of uint32 values of the whole area except checksum field
                               - stored with inversed sign
