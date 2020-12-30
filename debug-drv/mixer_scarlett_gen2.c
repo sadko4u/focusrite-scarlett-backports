@@ -247,6 +247,7 @@ enum {
 	SCARLETT2_PORT_TYPE_ANALOGUE = 0,       /* Analogue input/output        */
 	SCARLETT2_PORT_TYPE_SPDIF = 1,          /* S/PDIF input/oputput         */
 	SCARLETT2_PORT_TYPE_ADAT = 2,           /* ADAT input/output            */
+	SCARLETT2_PORT_TYPE_ADAT2 = 3,          /* ADAT2 input/output (mapping) */
 	SCARLETT2_PORT_TYPE_MIX = 3,            /* Mixer input/output           */
 	SCARLETT2_PORT_TYPE_PCM = 4,            /* PCM input/output             */
 	SCARLETT2_PORT_TYPE_INT_MIC = 5,        /* Internal microphone          */
@@ -301,10 +302,17 @@ static const char *const scarlett2_button_names[SCARLETT2_BUTTON_MAX] = {
 };
 
 struct scarlett2_port_name {
-	s8 direction;  /* Direction of port */
+	s8 direction;  /* Direction of port - SCARLETT2_PORT_* */
 	s8 type;  /* Type of port - SCARLETT2_PORT_TYPE_* */
 	s8 index; /* Index of port */
 	const char *name; /* The name of port */
+};
+
+struct scarlett2_sw_port_mapping {
+	s8 direction; /* Direction of port - SCARLETT2_PORT_* */
+	s8 type;      /* Type of port - SCARLETT2_PORT_TYPE_* */
+	s8 index;     /* The start index of routed port */
+	s8 count;     /* Number of ports */
 };
 
 /* Description of each hardware port type:
@@ -350,6 +358,7 @@ struct scarlett2_device_info {
 	u8 has_meters; /* Device has meters */
 	u8 has_hw_volume; /* Has hardware volume control */
 	const struct scarlett2_port_name * const port_names; /* Special names of ports */
+	const struct scarlett2_sw_port_mapping * const sw_port_mapping; /* Software port mapping */
 	const u8 mux_size[SCARLETT2_PORT_DIRECTIONS]; /* The maximum number of elements per mux */
 	struct scarlett2_ports ports[SCARLETT2_PORT_TYPE_COUNT];
 	const struct scarlett2_config * const config;
@@ -1019,6 +1028,22 @@ static const struct scarlett2_port_name s18i20_gen3_port_names[] = {
 	{ -1, -1, -1, NULL }
 };
 
+static const struct scarlett2_sw_port_mapping s18i20_gen3_sw_port_mapping[] = {
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 0, 10 },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_SPDIF,    0, 2  },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ADAT,     0, 8  },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ADAT2,    0, 4  },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_PCM,      8, 2  },
+
+	{ SCARLETT2_PORT_IN,  SCARLETT2_PORT_TYPE_ANALOGUE, 0, 8  },
+	{ SCARLETT2_PORT_IN,  SCARLETT2_PORT_TYPE_SPDIF,    0, 2  },
+	{ SCARLETT2_PORT_IN,  SCARLETT2_PORT_TYPE_ADAT,     0, 8  },
+	{ SCARLETT2_PORT_IN,  SCARLETT2_PORT_TYPE_ADAT2,    0, 4  },
+	{ SCARLETT2_PORT_IN,  SCARLETT2_PORT_TYPE_PCM,      0, 20 },
+
+	{ -1, -1, -1, -1}
+};
+
 static const struct scarlett2_device_info s18i20_gen3_info = {
 	.usb_id = USB_ID(0x1235, 0x8215),
 
@@ -1067,6 +1092,8 @@ static const struct scarlett2_device_info s18i20_gen3_info = {
 	.has_hw_volume = 1,
 
 	.port_names = s18i20_gen3_port_names,
+
+	.sw_port_mapping = s18i20_gen3_sw_port_mapping,
 
 	.mux_size = { 77, 77, 77, 73, 46 },
 
@@ -1405,6 +1432,43 @@ static int scarlett2_get_port_num(const struct scarlett2_ports *ports, int direc
 		num += ports[i].num[direction];
 
 	return num;
+}
+
+static int scarlett2_get_sw_port_num(const struct scarlett2_sw_port_mapping *mapping, int direction, int type, int num)
+{
+	int base;
+
+	for (base = 0 ; mapping->direction >= 0; ++mapping) {
+		if (direction != mapping->direction)
+			continue;
+		if (type == mapping->type) {
+			num -= mapping->index;
+			return (num >= 0) && (num < mapping->count) ? base + num : -1;
+		}
+		base += mapping->count;
+	}
+
+	return -1;
+}
+
+static int scarlett2_get_port_num_from_sw(const struct scarlett2_ports *ports, const struct scarlett2_sw_port_mapping *mapping, int direction, int num)
+{
+	int base;
+
+	if ((num--) == 0)
+		return 0;
+
+	for (base = 0; mapping->direction >= 0; ++mapping) {
+		if (direction != mapping->direction)
+			continue;
+		if (num < mapping->count)
+			return base + num;
+
+		num -= mapping->count;
+		base += ports[mapping->type].num[direction];
+	}
+
+	return -1;
 }
 
 static void scarlett2_fill_request_header(struct scarlett2_mixer_data *private,
@@ -3261,18 +3325,101 @@ static const struct snd_kcontrol_new scarlett2_mux_src_enum_ctl = {
 	.put  = scarlett2_mux_src_enum_ctl_put,
 };
 
+static int scarlett2_parse_sw_mux(struct usb_mixer_interface *mixer)
+{
+	struct scarlett2_mixer_data *private = mixer->private_data;
+	const struct scarlett2_device_info *info = private->info;
+	const struct scarlett2_sw_port_mapping *sw_mapping = info->sw_port_mapping;
+	struct scarlett2_sw_cfg *sw_cfg = private->sw_cfg;
+	char src[SNDRV_CTL_ELEM_ID_NAME_MAXLEN], dst[SNDRV_CTL_ELEM_ID_NAME_MAXLEN];
+
+	int port_type, port_count;
+	int dst_port, src_port, mix_bit;
+	int sw_idx, sp_idx;
+	u32 st_map, mix_map;
+	int i, j;
+
+	static const int sw_list[] = {
+		SCARLETT2_PORT_TYPE_ANALOGUE,
+		SCARLETT2_PORT_TYPE_SPDIF,
+		SCARLETT2_PORT_TYPE_ADAT,
+		SCARLETT2_PORT_TYPE_PCM
+	};
+
+	/* If we have software configuration and port mapping - apply them */
+	if ((sw_mapping == NULL) || (sw_cfg == NULL))
+		return 0;
+
+	/* Apply physical output routing */
+	st_map = le32_to_cpu(sw_cfg->stereo_sw);
+	mix_map = le32_to_cpu(sw_cfg->mixer_bind);
+
+	for (i = 0; i < sizeof(sw_list)/sizeof(int); ++i) {
+		port_type = sw_list[i];
+		port_count = info->ports[port_type].num[SCARLETT2_PORT_OUT];
+
+		for (j=0; j<port_count; ++j) {
+			sw_idx = scarlett2_get_sw_port_num(info->sw_port_mapping, SCARLETT2_PORT_OUT, port_type, j);
+			if (sw_idx < 0) /* Skip port if it is not mapped in software configuration */
+				continue;
+
+			/* Check that destination port is valid */
+			dst_port = scarlett2_get_port_num(info->ports, SCARLETT2_PORT_OUT, port_type, j);
+			if ((dst_port < 0) || (dst_port >= SCARLETT2_MUX_MAX))
+				continue;
+
+			/* Check whether output is in stereo or mono mode and fetch the source port number */
+			sp_idx = sw_idx & (~1); /* Index of byte for the corresponding stereo (even) channel */
+
+			if (st_map & ((1 << sw_idx) | (1 << sp_idx))) {
+				src_port = (sw_idx & 1) ? sw_cfg->out_mux[sp_idx] : sw_cfg->out_mux[sp_idx] + 1;
+				mix_bit  = 1 << sp_idx;
+			}
+			else {
+				src_port = sw_cfg->out_mux[sw_idx];
+				mix_bit  = 1 << sw_idx;
+			}
+
+			/* Check that channel is routed to mixer */
+			if (mix_map & mix_bit) /* Bit is set - not routed, it is a physical port number */
+				src_port = scarlett2_get_port_num_from_sw(info->ports, info->sw_port_mapping, SCARLETT2_PORT_IN, src_port);
+			else if (src_port > 0) /* Bit not set and source number is greater than zero - routed */
+				src_port = scarlett2_get_port_num(info->ports, SCARLETT2_PORT_IN, SCARLETT2_PORT_TYPE_MIX, src_port - 1);
+
+			/* Check that source port is valid */
+			if (src_port < 0)
+				continue;
+
+			/* DEBUG: output routing information */
+			scarlett2_fmt_port_name(src, SNDRV_CTL_ELEM_ID_NAME_MAXLEN, "%s", info, SCARLETT2_PORT_IN,  src_port);
+			scarlett2_fmt_port_name(dst, SNDRV_CTL_ELEM_ID_NAME_MAXLEN, "%s", info, SCARLETT2_PORT_OUT, dst_port);
+			usb_audio_info(mixer->chip, "  SW routing: %s[%d] -> %s[%d]\n", src, src_port, dst, dst_port);
+		}
+	}
+
+	/* TODO: apply mixer routing */
+	return 0;
+}
+
 static int scarlett2_init_mux(struct usb_mixer_interface *mixer)
 {
 	struct scarlett2_mixer_data *private = mixer->private_data;
+	const struct scarlett2_device_info *info = private->info;
+
 	int port, err;
 	char name[SNDRV_CTL_ELEM_ID_NAME_MAXLEN];
 
 	/* Check that device has MUX */
-	if (!private->info->has_mux)
+	if (!info->has_mux)
 		return 0;
 
 	/* Read MUX settings */
 	err = scarlett2_usb_get_mux(mixer);
+	if (err < 0)
+		return err;
+
+	/* Parse software MUX configuration if present */
+	err = scarlett2_parse_sw_mux(mixer);
 	if (err < 0)
 		return err;
 
@@ -3284,7 +3431,7 @@ static int scarlett2_init_mux(struct usb_mixer_interface *mixer)
 	/* Create mux control ports based on output port list */
 	for (port = 0; port < private->num_outputs; ++port) {
 		/* Create port descriptor */
-		scarlett2_fmt_port_name(name, SNDRV_CTL_ELEM_ID_NAME_MAXLEN, "%s Source", private->info, SCARLETT2_PORT_OUT, port);
+		scarlett2_fmt_port_name(name, SNDRV_CTL_ELEM_ID_NAME_MAXLEN, "%s Source", info, SCARLETT2_PORT_OUT, port);
 		err = scarlett2_add_new_ctl(mixer,
 					    &scarlett2_mux_src_enum_ctl,
 					    port, 1, name, NULL);
