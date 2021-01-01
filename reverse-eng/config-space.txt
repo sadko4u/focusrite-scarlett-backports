@@ -127,7 +127,7 @@ SOFTWARE CONFIGURATION AREA (same for 8i6, 18i8, 18i20 devices)
 0196    001e    +00aa       Stereo mixer configuration:
                               - 2 bytes per mixer stereo pair
                               - both bytes have bit 7 set when using stereo mode
-                              - the even byte referers to the input number
+                              - the even byte refers to the input number
                               - input numbering:
                                 - 1-8: Analog inputs 1-8
                                 - 9-10: SPDIF 1-2
