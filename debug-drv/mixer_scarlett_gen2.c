@@ -1455,7 +1455,9 @@ static int scarlett2_get_port_num_from_sw(const struct scarlett2_ports *ports, c
 {
 	int base;
 
-	if ((num--) == 0)
+	if ((num--) < 0)
+		return -1;
+	if (!num)
 		return 0;
 
 	for (base = 0; mapping->direction >= 0; ++mapping) {
@@ -3333,7 +3335,7 @@ static int scarlett2_parse_sw_mux(struct usb_mixer_interface *mixer)
 	struct scarlett2_sw_cfg *sw_cfg = private->sw_cfg;
 	char src[SNDRV_CTL_ELEM_ID_NAME_MAXLEN], dst[SNDRV_CTL_ELEM_ID_NAME_MAXLEN];
 
-	int port_type, port_count;
+	int port_type, port_count, num_mix_in;
 	int dst_port, src_port, mix_bit;
 	int sw_idx, sp_idx;
 	u32 st_map, mix_map;
@@ -3386,10 +3388,6 @@ static int scarlett2_parse_sw_mux(struct usb_mixer_interface *mixer)
 			else if (src_port > 0) /* Bit not set and source number is greater than zero - routed */
 				src_port = scarlett2_get_port_num(info->ports, SCARLETT2_PORT_IN, SCARLETT2_PORT_TYPE_MIX, src_port - 1);
 
-			/* Check that source port is valid */
-			if (src_port < 0)
-				continue;
-
 			/* DEBUG: output routing information */
 			scarlett2_fmt_port_name(src, SNDRV_CTL_ELEM_ID_NAME_MAXLEN, "%s", info, SCARLETT2_PORT_IN,  src_port);
 			scarlett2_fmt_port_name(dst, SNDRV_CTL_ELEM_ID_NAME_MAXLEN, "%s", info, SCARLETT2_PORT_OUT, dst_port);
@@ -3397,7 +3395,35 @@ static int scarlett2_parse_sw_mux(struct usb_mixer_interface *mixer)
 		}
 	}
 
-	/* TODO: apply mixer routing */
+	/* Apply mixer routing */
+	num_mix_in = (info->has_mixer) ? info->ports[SCARLETT2_PORT_TYPE_MIX].num[SCARLETT2_PORT_OUT] : 0;
+	usb_audio_info(mixer->chip, "num mixer inputs = %d", num_mix_in);
+	for (i=0; i < num_mix_in; ++i) {
+		sw_idx = i;
+		sp_idx = i & (~1);
+
+		/* Check for stereo mode and read input port number */
+		if (sw_cfg->mixer_in_map[sp_idx] & 0x80) { /* Stereo mode? */
+			src_port = sw_cfg->mixer_in_mux[sp_idx];
+			if ((sw_idx & 1) && (src_port > 0)) /* Odd port always has even port + 1 index */
+				++src_port;
+		} else
+			src_port = sw_cfg->mixer_in_mux[sw_idx];
+
+		/* Decode the routing port */
+		src_port = scarlett2_get_port_num_from_sw(info->ports, info->sw_port_mapping, SCARLETT2_PORT_IN, src_port);
+
+		/* Check that destination port is valid */
+		dst_port = scarlett2_get_port_num(info->ports, SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_MIX, sw_idx);
+		if ((dst_port < 0) || (dst_port >= SCARLETT2_MUX_MAX))
+			continue;
+
+		/* DEBUG: output routing information */
+		scarlett2_fmt_port_name(src, SNDRV_CTL_ELEM_ID_NAME_MAXLEN, "%s", info, SCARLETT2_PORT_IN, src_port);
+		scarlett2_fmt_port_name(dst, SNDRV_CTL_ELEM_ID_NAME_MAXLEN, "%s", info, SCARLETT2_PORT_OUT, dst_port);
+		usb_audio_info(mixer->chip, "  MIX routing: %s[%d] -> %s[%d]\n", src, src_port, dst, dst_port);
+	}
+
 	return 0;
 }
 
