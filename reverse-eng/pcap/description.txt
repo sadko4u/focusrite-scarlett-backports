@@ -46,6 +46,8 @@ mono-stereo-switch - sequential switching from stereo channels to mono channels 
   custom-mix-3 - add all possible inputs (analog 1-8, SPDIF 1-2, ADAT 1-8) to custom mix in mono mode
   custom-mix-4 - add all possible PCM inputs (1-20) to custom mix in mono mode
   custom-mix-5 - add all possible inputs (analog 1-8, SPDIF 1-2, ADAT 1-8) to custom mix in stereo mode PCM inputs 1-6
+  custom-mix-6 - add all possible inputs (analog 1-8, SPDIF 1-2, ADAT 1-2) and playback (1-12) in interleaving stereo mode
+  custom-mix-7 - add all possible inputs (analog 1-8, SPDIF 1-2, ADAT 1-2) and playback (1-12) in interleaving mono mode
   custom-mixes-mute - mute custom mixes
   custom-mixes-pan - pan the first channel in all custom mixes to left, then to right
   custom-mixes-solo - solo custom mixes

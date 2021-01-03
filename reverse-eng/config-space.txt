@@ -116,18 +116,20 @@ SOFTWARE CONFIGURATION AREA (same for 8i6, 18i8, 18i20 devices)
                                 - only even numbers are used in configuration
 0112    0066    +00ec       ????????
 0178    001e    +008c       Mixer input routing:
-                              - 1 byte per input indicating the input
                               - Overall 30 inputs
+                              - 1 byte per input indicating the input
                               - input numbering:
                                 - 1-8: Analog inputs 1-8
                                 - 9-10: SPDIF 1-2
                                 - 11-18: ADAT 1.1-1.8
                                 - 19-22: ADAT 2.1-2.4 ???
                                 - 23-42: Playback 1-20
-0196    001e    +00aa       Stereo mixer configuration:
-                              - 2 bytes per mixer stereo pair
-                              - both bytes have bit 7 set when using stereo mode
-                              - the even byte refers to the input number
+0196    001e    +00aa       Mixer channel allocation:
+                              - Overall 30 channels
+                              - Mono input is stored as single zero byte
+                              - Stereo pair is stored as two bytes:
+                                - both bytes have bit 7 set when using stereo mode
+                                - the first byte stores the index of the second byte
                               - input numbering:
                                 - 1-8: Analog inputs 1-8
                                 - 9-10: SPDIF 1-2
@@ -199,11 +201,11 @@ SOFTWARE CONFIGURATION AREA (same for 8i6, 18i8, 18i20 devices)
 1950    0030    +1864       Mute settings for each mixer channel:
                               - 4 bytes per each mixer channel
                               - bitmask: 1 bit per each input
-                              - up to 12 bixer lines
+                              - up to 12 mixer lines
 1980    0030    +1894       Solo settings for each mixer channel:
                               - 4 bytes per each mixer channel
                               - bitmask: 1 bit per each input
-                              - up to 12 bixer lines
+                              - up to 12 mixer lines
 19b0    004a    +18c4       ????????
 19fa    0004    +190e       Custom mixer routing bit mask
                               - 1 bit per output (1 = mixer disabled, 0 = mixer enabled)
