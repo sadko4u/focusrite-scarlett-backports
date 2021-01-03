@@ -51,6 +51,7 @@ mono-stereo-switch - sequential switching from stereo channels to mono channels 
   custom-mixes-mute - mute custom mixes
   custom-mixes-pan - pan the first channel in all custom mixes to left, then to right
   custom-mixes-solo - solo custom mixes
+  custom-mix-muting - muting all channels of the mixer configured in mixed mode
   output-routing-1 - set all outputs to Analog 1-8, SPDIF 1-2, ADAT 1-8, Analog 1-2 in stereo mode
   output-routing-2 - set first 6 outputs to Custom Mix, second 6 outputs to Custom Mix + Talkback in stereo mode
   output-routing-3 - set all outputs to Playback 1-20, Playback 1-2 in stereo mode
