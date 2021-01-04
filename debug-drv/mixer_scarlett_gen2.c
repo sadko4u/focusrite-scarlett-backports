@@ -533,6 +533,17 @@ static const struct scarlett2_port_name s6i6_gen2_ports[] = {
 	{ -1, -1, -1, NULL }
 };
 
+static const struct scarlett2_sw_port_mapping s6i6_gen2_sw_port_mapping[] = {
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 0, 6  },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_SPDIF,    0, 2  },
+
+	{ SCARLETT2_PORT_IN,  SCARLETT2_PORT_TYPE_ANALOGUE, 0, 4  },
+	{ SCARLETT2_PORT_IN,  SCARLETT2_PORT_TYPE_SPDIF,    0, 2  },
+	{ SCARLETT2_PORT_IN,  SCARLETT2_PORT_TYPE_PCM,      0, 6  },
+
+	{ -1, -1, -1, -1}
+};
+
 static const struct scarlett2_device_info s6i6_gen2_info = {
 	.usb_id = USB_ID(0x1235, 0x8203),
 	
@@ -556,7 +567,9 @@ static const struct scarlett2_device_info s6i6_gen2_info = {
 
 	.port_names = s6i6_gen2_ports,
 
-	.mux_size = { 77, 77, 77, 73, 46 },
+	.sw_port_mapping = s6i6_gen2_sw_port_mapping,
+
+	.mux_size = { 42, 42, 42, 42, 42 },
 
 	.ports = {
 		[SCARLETT2_PORT_TYPE_ANALOGUE] = {
@@ -602,6 +615,18 @@ static const struct scarlett2_port_name s18i8_gen2_port_names[] = {
 	{ -1, -1, -1, NULL }
 };
 
+static const struct scarlett2_sw_port_mapping s18i8_gen2_sw_port_mapping[] = {
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 0, 8  },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_SPDIF,    0, 2  },
+
+	{ SCARLETT2_PORT_IN,  SCARLETT2_PORT_TYPE_ANALOGUE, 0, 8  },
+	{ SCARLETT2_PORT_IN,  SCARLETT2_PORT_TYPE_SPDIF,    0, 2  },
+	{ SCARLETT2_PORT_IN,  SCARLETT2_PORT_TYPE_ADAT,     0, 8  },
+	{ SCARLETT2_PORT_IN,  SCARLETT2_PORT_TYPE_PCM,      0, 20 },
+
+	{ -1, -1, -1, -1}
+};
+
 static const struct scarlett2_device_info s18i8_gen2_info = {
 	.usb_id = USB_ID(0x1235, 0x8204),
 
@@ -625,7 +650,9 @@ static const struct scarlett2_device_info s18i8_gen2_info = {
 
 	.port_names = s18i8_gen2_port_names,
 
-	.mux_size = { 77, 77, 77, 73, 46 },
+	.sw_port_mapping = s18i8_gen2_sw_port_mapping,
+
+	.mux_size = { 60, 60, 60, 56, 50 },
 
 	.ports = {
 		[SCARLETT2_PORT_TYPE_ANALOGUE] = {
@@ -790,6 +817,16 @@ static const struct scarlett2_port_name s4i4_gen3_port_names[] = {
 	{ -1, -1, -1, NULL }
 };
 
+static const struct scarlett2_sw_port_mapping s4i4_gen3_sw_port_mapping[] = {
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 0, 4  },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_PCM,      4, 2  }, /* Loopback = { PCM-04, PCM-05 } ??? */
+
+	{ SCARLETT2_PORT_IN,  SCARLETT2_PORT_TYPE_ANALOGUE, 0, 4  },
+	{ SCARLETT2_PORT_IN,  SCARLETT2_PORT_TYPE_PCM,      0, 4  },
+
+	{ -1, -1, -1, -1}
+};
+
 static const struct scarlett2_device_info s4i4_gen3_info = {
 	.usb_id = USB_ID(0x1235, 0x8212),
 
@@ -821,6 +858,8 @@ static const struct scarlett2_device_info s4i4_gen3_info = {
 	.has_hw_volume = 1,
 
 	.port_names = s4i4_gen3_port_names,
+
+	.sw_port_mapping = s4i4_gen3_sw_port_mapping,
 
 	.mux_size = { 77, 77, 77, 73, 46 },
 
@@ -859,6 +898,18 @@ static const struct scarlett2_port_name s8i6_gen3_port_names[] = {
 	{ -1, -1, -1, NULL }
 };
 
+static const struct scarlett2_sw_port_mapping s8i6_gen3_sw_port_mapping[] = {
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 0, 4  },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_SPDIF,    0, 2  },
+	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_PCM,      4, 2  }, /* Loopback = { PCM-05, PCM-06 } ??? */
+
+	{ SCARLETT2_PORT_IN,  SCARLETT2_PORT_TYPE_ANALOGUE, 0, 6  },
+	{ SCARLETT2_PORT_IN,  SCARLETT2_PORT_TYPE_SPDIF,    0, 2  },
+	{ SCARLETT2_PORT_IN,  SCARLETT2_PORT_TYPE_PCM,      0, 10 },
+
+	{ -1, -1, -1, -1}
+};
+
 static const struct scarlett2_device_info s8i6_gen3_info = {
 	.usb_id = USB_ID(0x1235, 0x8213),
 
@@ -893,6 +944,8 @@ static const struct scarlett2_device_info s8i6_gen3_info = {
 	.has_hw_volume = 1,
 
 	.port_names = s8i6_gen3_port_names,
+
+	.sw_port_mapping = s8i6_gen3_sw_port_mapping,
 
 	.mux_size = { 42, 42, 42, 42, 42 },
 
@@ -939,20 +992,21 @@ static const struct scarlett2_port_name s18i8_gen3_port_names[] = {
 	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 5, "Headphones 2 R" },
 	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 6, "Alt Monitor L" },
 	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 7, "Alt Monitor R" },
+
+	{ SCARLETT2_PORT_OUT,  SCARLETT2_PORT_TYPE_PCM, 10, "Loopback L" },
+	{ SCARLETT2_PORT_OUT,  SCARLETT2_PORT_TYPE_PCM, 11, "Loopback R" },
+	
 	{ -1, -1, -1, NULL }
 };
 
 static const struct scarlett2_sw_port_mapping s18i8_gen3_sw_port_mapping[] = {
 	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, 0, 8  },
 	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_SPDIF,    0, 2  },
-	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ADAT,     0, 8  },
-	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ADAT2,    0, 4  },
 	{ SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_PCM,      10, 2 }, /* Loopback */
 
 	{ SCARLETT2_PORT_IN,  SCARLETT2_PORT_TYPE_ANALOGUE, 0, 8  },
 	{ SCARLETT2_PORT_IN,  SCARLETT2_PORT_TYPE_SPDIF,    0, 2  },
 	{ SCARLETT2_PORT_IN,  SCARLETT2_PORT_TYPE_ADAT,     0, 8  },
-	{ SCARLETT2_PORT_IN,  SCARLETT2_PORT_TYPE_ADAT2,    0, 4  },
 	{ SCARLETT2_PORT_IN,  SCARLETT2_PORT_TYPE_PCM,      0, 20 },
 
 	{ -1, -1, -1, -1}
@@ -1006,7 +1060,7 @@ static const struct scarlett2_device_info s18i8_gen3_info = {
 
 	.port_names = s18i8_gen3_port_names,
 
-	/*.sw_port_mapping = s18i8_gen3_sw_port_mapping, */
+	.sw_port_mapping = s18i8_gen3_sw_port_mapping,
 
 	.mux_size = { 60, 60, 60, 56, 50 },
 
@@ -1500,6 +1554,8 @@ static int scarlett2_decode_port(int *out_type, int *out_num, const struct scarl
 static int scarlett2_get_sw_port_num(const struct scarlett2_sw_port_mapping *mapping, int direction, int type, int num)
 {
 	int base;
+	if (!mapping)
+		return -1;
 
 	for (base = 0 ; mapping->direction >= 0; ++mapping) {
 		if (direction != mapping->direction)
@@ -1517,6 +1573,8 @@ static int scarlett2_get_sw_port_num(const struct scarlett2_sw_port_mapping *map
 static int scarlett2_sw2drv_port_num(const struct scarlett2_ports *ports, const struct scarlett2_sw_port_mapping *mapping, int direction, int num)
 {
 	int base;
+	if (!mapping)
+		return -1;
 
 	if ((num--) < 0)
 		return -1;
@@ -1539,7 +1597,7 @@ static int scarlett2_sw2drv_port_num(const struct scarlett2_ports *ports, const 
 static int scarlett2_drv2sw_port_num(const struct scarlett2_ports *ports, const struct scarlett2_sw_port_mapping *mapping, int direction, int num)
 {
 	int port_type;
-	if (num < 0)
+	if ((num < 0) || (!mapping))
 		return -1;
 
 	for (port_type = 0; port_type < SCARLETT2_PORT_TYPE_COUNT; ++port_type) {
@@ -3484,7 +3542,7 @@ static int scarlett2_commit_sw_routing(struct usb_mixer_interface *mixer, int sr
 	u32 mask;
 
 	/* Nothing to do if there is no software config */
-	if (!sw_cfg)
+	if ((!sw_cfg) || (!info->sw_port_mapping))
 		return 0;
 
 	/* Decoded port OK? */
@@ -3678,7 +3736,6 @@ static int scarlett2_parse_sw_mux(struct usb_mixer_interface *mixer)
 {
 	struct scarlett2_mixer_data *private = mixer->private_data;
 	const struct scarlett2_device_info *info = private->info;
-	const struct scarlett2_sw_port_mapping *sw_mapping = info->sw_port_mapping;
 	struct scarlett2_sw_cfg *sw_cfg = private->sw_cfg;
 	char src[SNDRV_CTL_ELEM_ID_NAME_MAXLEN], dst[SNDRV_CTL_ELEM_ID_NAME_MAXLEN];
 
@@ -3696,7 +3753,7 @@ static int scarlett2_parse_sw_mux(struct usb_mixer_interface *mixer)
 	};
 
 	/* If we have software configuration and port mapping - apply them */
-	if ((sw_mapping == NULL) || (sw_cfg == NULL))
+	if ((sw_cfg == NULL) || (info->sw_port_mapping == NULL))
 		return 0;
 
 	/* Apply physical output routing */
