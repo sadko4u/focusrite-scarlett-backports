@@ -26,6 +26,10 @@ mono-stereo-switch - sequential switching from stereo channels to mono channels 
   add-hw-inputs-to-mixer-18i8-3gen - add all possible inputs (analog 1-8, SPDIF 1-2, ADAT 1-8) to custom mix in mono mode
   add-sw-inputs-to-mixer-18i8-3gen - add all possible PCM inputs (1-8) to custom mix in mono mode
   allOutsIn1ToIn2-18i8-3gen.pcap - all outputs in FC app are switched from Analog Input 1 to Analog Input 2
+  allColors-18i8-3gen - decoding of gain halo colors in order: Red, Yellow, Green, Cyan, Blue, Magenta, Pink
+  select-good-18i8-3gen - select gain halos for 'good' level (cyan).
+  select-preclip-18i8-3gen - select gain halos for 'pre-clip' level (blue).
+  select-clip-18i8-3gen - select gain halos for 'clip' level (magenta).
 
 18i20/
   connect-no-alt - the 18i20 device connected to USB port, ALT switching is disabled.
