@@ -207,21 +207,23 @@ static const u16 scarlett2_sw_config_mixer_values[173] = {
 };
 
 
-#define SCARLETT2_ANALOGUE_IN_MAX          8    /* Maximum number of analogue inputs */
-#define SCARLETT2_ANALOGUE_OUT_MAX         10   /* Maximum number of analogue outputs */
-#define SCARLETT2_ALL_IN_MAX               42   /* Maximum number of all inputs */
-#define SCARLETT2_ALL_OUT_MAX              26   /* Maximum number of all outputs */
-#define SCARLETT2_LEVEL_SWITCH_MAX         2    /* Maximum number of LINE/INST switches */
-#define SCARLETT2_PAD_SWITCH_MAX           8    /* Maximum number of PAD switches */
-#define SCARLETT2_AIR_SWITCH_MAX           8    /* Maximum number of AIR switches */
-#define SCARLETT2_48V_SWITCH_MAX           2    /* Maximum number of 48V switches */
-#define SCARLETT2_BUTTON_MAX               2    /* Hardware buttons on the 18i20 */
-#define SCARLETT2_INPUT_MIX_MAX            24   /* Maximum number of inputs to the mixer */
-#define SCARLETT2_OUTPUT_MIX_MAX           12   /* Maximum number of outputs from the mixer */
-#define SCARLETT2_MUX_MAX                  77   /* The maximum possible MUX connection count */
-#define SCARLETT2_NUM_METERS               56   /* Number of meters: 18 inputs, 20 outputs, 18 matrix inputs (XX FIXME) */
-#define SCARLETT2_IN_NAME_LEN              12   /* Maximum length of the input name */
-#define SCARLETT2_OUT_NAME_LEN             12   /* Maximum length of the output name */
+#define SCARLETT2_ANALOGUE_IN_MAX                8        /* Maximum number of analogue inputs */
+#define SCARLETT2_ANALOGUE_OUT_MAX               10       /* Maximum number of analogue outputs */
+#define SCARLETT2_ALL_IN_MAX                     42       /* Maximum number of all inputs */
+#define SCARLETT2_ALL_OUT_MAX                    26       /* Maximum number of all outputs */
+#define SCARLETT2_LEVEL_SWITCH_MAX               2        /* Maximum number of LINE/INST switches */
+#define SCARLETT2_PAD_SWITCH_MAX                 8        /* Maximum number of PAD switches */
+#define SCARLETT2_AIR_SWITCH_MAX                 8        /* Maximum number of AIR switches */
+#define SCARLETT2_48V_SWITCH_MAX                 2        /* Maximum number of 48V switches */
+#define SCARLETT2_BUTTON_MAX                     2        /* Hardware buttons on the 18i20 */
+#define SCARLETT2_INPUT_MIX_MAX                  24       /* Maximum number of inputs to the mixer */
+#define SCARLETT2_OUTPUT_MIX_MAX                 12       /* Maximum number of outputs from the mixer */
+#define SCARLETT2_MUX_MAX                        77       /* The maximum possible MUX connection count */
+#define SCARLETT2_NUM_METERS                     56       /* Number of meters: 18 inputs, 20 outputs, 18 matrix inputs (XX FIXME) */
+#define SCARLETT2_IN_NAME_LEN                    12       /* Maximum length of the input name */
+#define SCARLETT2_OUT_NAME_LEN                   12       /* Maximum length of the output name */
+#define SCARLETT2_GAIN_HALO_LEVELS               3        /* Number of gain halo levels */
+#define SCARLETT2_GAIN_HALO_LEDS_MAX             4        /* Maximum number of gain halo LEDs */
 
 #define SCARLETT2_SW_CONFIG_BASE                 0xec
 
@@ -289,12 +291,13 @@ enum {
 	SCARLETT2_CONFIG_MSD_SWITCH = 8,
 	SCARLETT2_CONFIG_MAIN_ALT_SPEAKER_SWITCH = 9,
 	SCARLETT2_CONFIG_SPEAKER_SWITCHING_SWITCH = 10,
-	SCARLETT2_CONFIG_GAIN_HALO_1 = 11,
-	SCARLETT2_CONFIG_GAIN_HALO_2 = 12,
-	SCARLETT2_CONFIG_MIX_TALKBACK = 13,
-	SCARLETT2_CONFIG_RETAIN_48V = 14,
-	SCARLETT2_CONFIG_MUTES = 15,
-	SCARLETT2_CONFIG_COUNT = 16
+	SCARLETT2_CONFIG_GAIN_HALO_ENABLE = 11,
+	SCARLETT2_CONFIG_GAIN_HALO_LEDS = 12,
+	SCARLETT2_CONFIG_GAIN_HALO_LEVELS = 13,
+	SCARLETT2_CONFIG_MIX_TALKBACK = 14,
+	SCARLETT2_CONFIG_RETAIN_48V = 15,
+	SCARLETT2_CONFIG_MUTES = 16,
+	SCARLETT2_CONFIG_COUNT = 17
 };
 
 static const char *const scarlett2_button_names[SCARLETT2_BUTTON_MAX] = {
@@ -358,6 +361,7 @@ struct scarlett2_device_info {
 	u8 has_sw_config; /* Software configuration is present */
 	u8 has_meters; /* Device has meters */
 	u8 has_hw_volume; /* Has hardware volume control */
+	u8 gain_halos_count; /* Number of gain halos */
 	const struct scarlett2_port_name * const port_names; /* Special names of ports */
 	const struct scarlett2_sw_port_mapping * const sw_port_mapping; /* Software port mapping */
 	const u8 mux_size[SCARLETT2_PORT_DIRECTIONS]; /* The maximum number of elements per mux */
@@ -431,6 +435,10 @@ struct scarlett2_mixer_data {
 	u8 speaker_switch;
 	u8 talkback_switch;
 	u8 buttons[SCARLETT2_BUTTON_MAX];
+	u8 ghalo_custom;                                                  /* Custom gain halos flag */
+	u8 ghalo_leds[SCARLETT2_GAIN_HALO_LEDS_MAX];                      /* Color of each gain halo led */
+	u8 ghalo_levels[SCARLETT2_GAIN_HALO_LEVELS];                      /* Gain halo colors for each level */
+
 	struct snd_kcontrol *master_vol_ctl;
 	struct snd_kcontrol *speaker_ctl;
 	struct snd_kcontrol *talkback_ctl;
@@ -487,11 +495,14 @@ static const struct scarlett2_config scarlett2_pro_config_items[SCARLETT2_CONFIG
 	[SCARLETT2_CONFIG_SPEAKER_SWITCHING_SWITCH] =  /* Speaker Switching */
 		{ .offset = 0xa0, .size = 1, .activate = 10 },
 
-	[SCARLETT2_CONFIG_GAIN_HALO_1] =               /* Gain Halos */
+	[SCARLETT2_CONFIG_GAIN_HALO_ENABLE] =          /* Gain Halo Enable flag: bit 1 enables immediate values for gain halo */
 		{ .offset = 0xa1, .size = 1, .activate = 9  },
 
-	[SCARLETT2_CONFIG_GAIN_HALO_2] =               /* Gain Halo? */
-		{ .offset = 0xa8, .size = 1, .activate = 11 },
+	[SCARLETT2_CONFIG_GAIN_HALO_LEDS] =            /* Gain Halo LED colors: 1 bit per each R,G,B component */
+		{ .offset = 0xa2, .size = 1, .activate = 9  },
+
+	[SCARLETT2_CONFIG_GAIN_HALO_LEVELS] =          /* Gain Halo Colors for corresponding levels: 1 byte per RGB in order: Clip, Pre-Clip, Good */
+		{ .offset = 0xa6, .size = 1, .activate = 11  },
 
 	[SCARLETT2_CONFIG_MIX_TALKBACK] =              /* Talkback enable flags for each output of internal mixer */
 		{ .offset = 0xb0, .size = 2, .activate = 10 },
@@ -1057,6 +1068,8 @@ static const struct scarlett2_device_info s18i8_gen3_info = {
 	.has_meters = 1,
 
 	.has_hw_volume = 1,
+
+	.gain_halos_count = 4,
 
 	.port_names = s18i8_gen3_port_names,
 
@@ -2528,6 +2541,189 @@ static const struct snd_kcontrol_new scarlett2_sw_hw_enum_ctl = {
 	.put  = scarlett2_sw_hw_enum_ctl_put,
 };
 
+/*** Gain Halos Switch Controls ***/
+static int scarlett2_ghalo_color_enum_ctl_info(struct snd_kcontrol *kctl,
+					 struct snd_ctl_elem_info *uinfo)
+{
+	static const char *const values[8] = {
+		"Default",
+		"Red",
+		"Green",
+		"Yellow",
+		"Blue",
+		"Magenta",
+		"Cyan",
+		"Pink"
+	};
+
+	return snd_ctl_enum_info(uinfo, 1, 8, values);
+}
+
+static int scarlett2_ghalo_custom_ctl_get(struct snd_kcontrol *kctl,
+					struct snd_ctl_elem_value *ucontrol)
+{
+	struct usb_mixer_elem_info *elem = kctl->private_data;
+	struct scarlett2_mixer_data *private = elem->head.mixer->private_data;
+
+	ucontrol->value.enumerated.item[0] = private->ghalo_custom;
+
+	return 0;
+}
+
+static int scarlett2_ghalo_level_ctl_get(struct snd_kcontrol *kctl,
+					struct snd_ctl_elem_value *ucontrol)
+{
+	struct usb_mixer_elem_info *elem = kctl->private_data;
+	struct scarlett2_mixer_data *private = elem->head.mixer->private_data;
+
+	usb_audio_info(elem->head.mixer->chip, ">>>scarlett2_ghalo_level_ctl_get index=%d\n", (int)elem->control);
+
+	ucontrol->value.enumerated.item[0] = private->ghalo_levels[elem->control];
+
+	usb_audio_info(elem->head.mixer->chip, "<<<scarlett2_ghalo_level_ctl_get index=%d value=%d\n",
+		(int)elem->control, ucontrol->value.enumerated.item[0]
+	);
+
+	return 0;
+}
+
+static int scarlett2_ghalo_led_ctl_get(struct snd_kcontrol *kctl,
+					struct snd_ctl_elem_value *ucontrol)
+{
+	struct usb_mixer_elem_info *elem = kctl->private_data;
+	struct scarlett2_mixer_data *private = elem->head.mixer->private_data;
+
+	usb_audio_info(elem->head.mixer->chip, ">>>scarlett2_ghalo_led_ctl_get index=%d\n", (int)elem->control);
+
+	ucontrol->value.enumerated.item[0] = private->ghalo_leds[elem->control];
+
+	usb_audio_info(elem->head.mixer->chip, "<<<scarlett2_ghalo_led_ctl_get index=%d value=%d\n",
+		(int)elem->control, ucontrol->value.enumerated.item[0]
+	);
+
+	return 0;
+}
+
+static int scarlett2_ghalo_custom_ctl_put(struct snd_kcontrol *kctl,
+					struct snd_ctl_elem_value *ucontrol)
+{
+	struct usb_mixer_elem_info *elem = kctl->private_data;
+	struct usb_mixer_interface *mixer = elem->head.mixer;
+	struct scarlett2_mixer_data *private = mixer->private_data;
+
+	int oval, val, err = 0;
+	int command;
+
+	mutex_lock(&private->data_mutex);
+
+	oval = private->ghalo_custom;
+	val = !!ucontrol->value.integer.value[0];
+
+	usb_audio_info(mixer->chip, ">>>scarlett2_ghalo_custom_ctl_put val=%d, oval=%d\n", val, oval);
+
+	if (oval == val)
+		goto unlock;
+
+	private->ghalo_custom = val;
+	command = (val) ? 0x02 : 0;
+
+	/* Set gain halo control */
+	usb_audio_info(mixer->chip, "  gain halo command byte = 0x%02x\n", command);
+	err = scarlett2_usb_set_config(
+		mixer, SCARLETT2_CONFIG_GAIN_HALO_ENABLE,
+		0, command);
+
+unlock:
+	mutex_unlock(&private->data_mutex);
+	return err;
+}
+
+static int scarlett2_ghalo_level_ctl_put(struct snd_kcontrol *kctl,
+					struct snd_ctl_elem_value *ucontrol)
+{
+	struct usb_mixer_elem_info *elem = kctl->private_data;
+	struct usb_mixer_interface *mixer = elem->head.mixer;
+	struct scarlett2_mixer_data *private = mixer->private_data;
+
+	int index = elem->control;
+	int oval, val, err = 0;
+
+	mutex_lock(&private->data_mutex);
+
+	oval = private->ghalo_levels[index];
+	val = ucontrol->value.integer.value[0];
+	val = clamp(val, 0, 7);
+
+	usb_audio_info(mixer->chip, ">>>scarlett2_ghalo_level_ctl_put index=%d, val=%d, oval=%d\n", index, val, oval);
+
+	if (oval == val)
+		goto unlock;
+
+	private->ghalo_levels[index] = val;
+
+	/* Set gain halo control */
+	err = scarlett2_usb_set_config(mixer, SCARLETT2_CONFIG_GAIN_HALO_LEVELS, index, val);
+
+unlock:
+	mutex_unlock(&private->data_mutex);
+	return err;
+}
+
+static int scarlett2_ghalo_led_ctl_put(struct snd_kcontrol *kctl,
+					struct snd_ctl_elem_value *ucontrol)
+{
+	struct usb_mixer_elem_info *elem = kctl->private_data;
+	struct usb_mixer_interface *mixer = elem->head.mixer;
+	struct scarlett2_mixer_data *private = mixer->private_data;
+
+	int index = elem->control;
+	int oval, val, err = 0;
+
+	mutex_lock(&private->data_mutex);
+
+	oval = private->ghalo_leds[index];
+	val = ucontrol->value.integer.value[0];
+	val = clamp(val, 0, 7);
+
+	usb_audio_info(mixer->chip, ">>>scarlett2_ghalo_led_ctl_put index=%d, val=%d, oval=%d\n", index, val, oval);
+
+	if (oval == val)
+		goto unlock;
+
+	private->ghalo_leds[index] = val;
+
+	/* Set gain halo control */
+	err = scarlett2_usb_set_config(mixer, SCARLETT2_CONFIG_GAIN_HALO_LEDS, index, val);
+
+unlock:
+	mutex_unlock(&private->data_mutex);
+	return err;
+}
+
+static const struct snd_kcontrol_new scarlett2_ghalo_custom_ctl = {
+	.iface = SNDRV_CTL_ELEM_IFACE_MIXER,
+	.name = "",
+	.info = scarlett2_bool_enum_ctl_info,
+	.get  = scarlett2_ghalo_custom_ctl_get,
+	.put  = scarlett2_ghalo_custom_ctl_put,
+};
+
+static const struct snd_kcontrol_new scarlett2_ghalo_level_ctl = {
+	.iface = SNDRV_CTL_ELEM_IFACE_MIXER,
+	.name = "",
+	.info = scarlett2_ghalo_color_enum_ctl_info,
+	.get  = scarlett2_ghalo_level_ctl_get,
+	.put  = scarlett2_ghalo_level_ctl_put,
+};
+
+static const struct snd_kcontrol_new scarlett2_ghalo_led_ctl = {
+	.iface = SNDRV_CTL_ELEM_IFACE_MIXER,
+	.name = "",
+	.info = scarlett2_ghalo_color_enum_ctl_info,
+	.get  = scarlett2_ghalo_led_ctl_get,
+	.put  = scarlett2_ghalo_led_ctl_put,
+};
+
 /*** Line Level/Instrument Level Switch Controls ***/
 static int scarlett2_update_line_ctl_switches(struct usb_mixer_interface *mixer)
 {
@@ -3267,6 +3463,70 @@ static int scarlett2_add_line_in_ctls(struct usb_mixer_interface *mixer)
 	return 0;
 }
 
+/*** Create the Gain Halo controls ***/
+static int scarlett2_add_ghalo_ctls(struct usb_mixer_interface *mixer)
+{
+	struct scarlett2_mixer_data *private = mixer->private_data;
+	const struct scarlett2_device_info *info = private->info;
+	int err, i, val;
+	char s[SNDRV_CTL_ELEM_ID_NAME_MAXLEN];
+	u8 ghalo_flag, ghalo_leds[SCARLETT2_GAIN_HALO_LEDS_MAX], ghalo_levels[SCARLETT2_GAIN_HALO_LEVELS];
+	static const char * const level_names[SCARLETT2_GAIN_HALO_LEVELS] = {
+		"LED Clip Color",
+		"LED Pre-Clip Color",
+		"LED Good Color"
+	};
+
+	/* Check that device supports gain halos */
+	if (info->gain_halos_count <= 0)
+		return 0;
+
+	/* Read custom color settings and add control */
+	err = scarlett2_usb_get_config(mixer, SCARLETT2_CONFIG_GAIN_HALO_ENABLE, 1, &ghalo_flag);
+	if (err < 0)
+		return err;
+
+	private->ghalo_custom = (ghalo_flag == 0x02);
+	usb_audio_info(mixer->chip, "  ghalo_value=0x%02x, ghalo_custom=%d\n", ghalo_flag, private->ghalo_custom);
+
+	err = scarlett2_add_new_ctl(mixer, &scarlett2_ghalo_custom_ctl, 0, 1, "LED Custom Colors", NULL);
+	if (err < 0)
+		return err;
+
+	/* Read state of level colors and add controls */
+	err = scarlett2_usb_get_config(mixer, SCARLETT2_CONFIG_GAIN_HALO_LEVELS, SCARLETT2_GAIN_HALO_LEVELS, ghalo_levels);
+	if (err < 0)
+		return err;
+
+	for (i = 0; i < SCARLETT2_GAIN_HALO_LEVELS; i++) {
+		val = ghalo_levels[i];
+		private->ghalo_levels[i] = clamp(val, 0, 7);
+		usb_audio_info(mixer->chip, "  ghalo_levels[%d]=0x%02x -> %d\n", i, ghalo_levels[i], private->ghalo_levels[i]);
+
+		err = scarlett2_add_new_ctl(mixer, &scarlett2_ghalo_level_ctl, i, 1, level_names[i], NULL);
+		if (err < 0)
+			return err;
+	}
+
+	/* Read state of custom colors and add controls */
+	err = scarlett2_usb_get_config(mixer, SCARLETT2_CONFIG_GAIN_HALO_LEDS, info->gain_halos_count, ghalo_leds);
+	if (err < 0)
+		return err;
+
+	for (i = 0; i<info->gain_halos_count; ++i) {
+		val = ghalo_leds[i];
+		private->ghalo_leds[i] = clamp(val, 0, 7);
+		usb_audio_info(mixer->chip, "  ghalo_leds[%d]=0x%02x -> %d\n", i, ghalo_leds[i], private->ghalo_leds[i]);
+
+		snprintf(s, SNDRV_CTL_ELEM_ID_NAME_MAXLEN, "LED %d Custom Color", i);
+		err = scarlett2_add_new_ctl(mixer, &scarlett2_ghalo_led_ctl, i, 1, s, NULL);
+		if (err < 0)
+			return err;
+	}
+
+	return 0;
+}
+
 /*** Mixer Volume Controls ***/
 static int scarlett2_mixer_ctl_info(struct snd_kcontrol *kctl,
 				    struct snd_ctl_elem_info *uinfo)
@@ -3319,7 +3579,7 @@ static int scarlett2_mixer_ctl_put(struct snd_kcontrol *kctl,
 	err = scarlett2_usb_set_mix(mixer, mix_num);
 	if (err < 0)
 		goto unlock;
-	
+
 	/* Update software configuration data */
 	level = scarlett2_sw_config_mixer_values[val];
 	gain  = &private->sw_cfg->mixer[mix_num][input_num];
@@ -4893,6 +5153,11 @@ int snd_scarlett_gen2_controls_create(struct usb_mixer_interface *mixer)
 
 	/* Create the level meter controls */
 	err = scarlett2_add_meter_ctl(mixer);
+	if (err < 0)
+		return err;
+
+	/* Create gain halos controls */
+	err = scarlett2_add_ghalo_ctls(mixer);
 	if (err < 0)
 		return err;
 
