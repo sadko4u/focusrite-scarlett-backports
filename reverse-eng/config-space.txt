@@ -25,7 +25,7 @@ LOOPBACK feature:
 0070: ?? ?? ?? ?? ?? ?? [   MSV   ] ?? ?? [INS] ?? ??
 0080: ?? ?? ?? ?? [    PAD SWITCHES     ] [ AIR SW  ]
 0090: [  AIR SW ] SP ?? ?? ?? XX ?? XX ?? PP MS RP AT
-00a0: SS GH [   ILC   ] ?? ?? ?? ?? ?? ?? ?? ?? ?? TV
+00a0: SS GH [   GHI   ] [ GHC  ] ?? ?? ?? ?? ?? ?? TV
 00b0: [TAL] ?? ?? ?? ?? ?? ?? XX XX ?? ?? ?? ?? ?? ??
 00c0: ?? XX XX ?? ?? ?? ?? ?? ?? XX XX ?? ?? ?? ?? ??
 00d0: ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ??
@@ -70,10 +70,14 @@ HARDWARE CONFIGURATION AREA
                               - 1 = retain is enabled
 009f    0001    AT          ALT/Talkback switches (bit mask)
 00a0    0001    SS          Speaker switching function
-00a1       ?    GH          Gain halos (?)
-00a2    0004    ILC         Input led colors:
+00a1    0001    GH          Gain halos: value 0x2 enables the immedate gain halo values
+00a2    0004    GHI         Immediate gain halo led colors:
                               - 1 byte per input (up to 4 bytes for 18i8)
-                              - each byte contains 1-bit RGB components (?)
+                              - each byte contains RGB components, 1-bit per component
+00a6    0003    GHC         Gain halo colors:
+                              - 1 byte per level
+                              - each  byte contains RGB components, 1-bit per component
+                              - the order of components: Clip color, Pre-Clip color, Good color
 00af    0001    TV          Talkback volume (minimum: 0x19, maximum: 0)
 00b0    0002    TAL         Enable talkback for mixer channel (bit mask, 12 bits)
 00b8    0002    ??          Unknown area, not zero
