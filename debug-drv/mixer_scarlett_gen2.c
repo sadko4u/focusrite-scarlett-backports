@@ -40,8 +40,8 @@
  * usbmon output and testing).
  *
  * Scarlett 18i8/18i20 Gen 3 support added in June 2020 (thanks to
- * Darren Jaeckel, Alex Sedlack, and Clovis Lunel for providing usbmon
- * output and testing).
+ * Darren Jaeckel, Alex Sedlack, Clovis Lunel and Dirk Lattermann for
+ * providing usbmon output, protocol traces and testing).
  *
  * Scarlett 2i2 Gen 3 support added in November 2020 (thanks to Alexander
  * Vorona for taking 2i2 USB protocol dumps).
@@ -2546,14 +2546,14 @@ static int scarlett2_ghalo_color_enum_ctl_info(struct snd_kcontrol *kctl,
 					 struct snd_ctl_elem_info *uinfo)
 {
 	static const char *const values[8] = {
-		"Default",
+		"Off",
 		"Red",
 		"Green",
-		"Yellow",
+		"Amber",
 		"Blue",
-		"Magenta",
-		"Cyan",
-		"Pink"
+		"Pink",
+		"Light Blue",
+		"Light Pink"
 	};
 
 	return snd_ctl_enum_info(uinfo, 1, 8, values);
