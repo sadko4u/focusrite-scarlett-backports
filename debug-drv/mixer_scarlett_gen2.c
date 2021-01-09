@@ -2270,6 +2270,8 @@ static int scarlett2_update_volumes(struct usb_mixer_interface *mixer)
 	for (i = 0; i < num_line_out; i++) {
 		/* Update software/hardware switch status */
 		private->vol_sw_hw_switch[i] = info->line_out_hw_vol && volume_status.sw_hw_switch[i];
+		private->mutes[i] = !! volume_status.mute[i];
+		usb_audio_info(mixer->chip, "  hw mute[%d] = %d\n", i, private->mutes[i]);
 
 		/* If volume is software-controlled, try to read it's value from software configuration */
 		if (private->vol_sw_hw_switch[i]) {
@@ -3219,15 +3221,14 @@ static int scarlett2_mute_ctl_put(struct snd_kcontrol *kctl,
 
 		/* Update software configuration */
 		err = scarlett2_commit_software_config(mixer, &private->sw_cfg->mute_sw, sizeof(__le32));
+		if (err < 0)
+			goto unlock;
+
+		/* Update MUX settings as it does the original software */
+		err = scarlett2_usb_set_mux(mixer);
 	}
 	else
 		err = -EINVAL;
-
-	if (err < 0)
-		goto unlock;
-
-	/* Update MUX settings as it does the original software */
-	err = scarlett2_usb_set_mux(mixer);
 
 unlock:
 	mutex_unlock(&private->data_mutex);
@@ -4868,20 +4869,16 @@ static void scarlett2_mixer_interrupt_vol_change(
 {
 	struct scarlett2_mixer_data *private = mixer->private_data;
 	const struct scarlett2_ports *ports = private->info->ports;
-	int num_line_out =
-		ports[SCARLETT2_PORT_TYPE_ANALOGUE].num[SCARLETT2_PORT_OUT];
+	int num_line_out = ports[SCARLETT2_PORT_TYPE_ANALOGUE].num[SCARLETT2_PORT_OUT];
 	int i;
 
 	private->vol_updated = 1;
 
-	snd_ctl_notify(mixer->chip->card, SNDRV_CTL_EVENT_MASK_VALUE,
-		       &private->master_vol_ctl->id);
+	snd_ctl_notify(mixer->chip->card, SNDRV_CTL_EVENT_MASK_VALUE, &private->master_vol_ctl->id);
 
 	for (i = 0; i < num_line_out; i++) {
-		if (!private->vol_sw_hw_switch[i])
-			continue;
-		snd_ctl_notify(mixer->chip->card, SNDRV_CTL_EVENT_MASK_VALUE,
-			       &private->vol_ctls[i]->id);
+		snd_ctl_notify(mixer->chip->card, SNDRV_CTL_EVENT_MASK_VALUE, &private->vol_ctls[i]->id);
+		snd_ctl_notify(mixer->chip->card, SNDRV_CTL_EVENT_MASK_VALUE, &private->mute_ctls[i]->id);
 	}
 }
 
@@ -4918,8 +4915,7 @@ static void scarlett2_mixer_interrupt_line_in_ctl_change(
 		private->line_ctl_updated = 1;
 
 		for (i = 0; i < info->power_48v_count; i++) {
-			snd_ctl_notify(mixer->chip->card, SNDRV_CTL_EVENT_MASK_VALUE,
-				       &private->pow_ctls[i]->id);
+			snd_ctl_notify(mixer->chip->card, SNDRV_CTL_EVENT_MASK_VALUE, &private->pow_ctls[i]->id);
 		}
 	}
 }
@@ -4935,8 +4931,7 @@ static void scarlett2_mixer_interrupt_button_change(
 
 	for (i = 0; i < private->info->button_count; i++) {
 		usb_audio_info(mixer->chip, "snd_ctl_notify: mask=%x, idx=%d\n", (int)SNDRV_CTL_EVENT_MASK_VALUE, i);
-		snd_ctl_notify(mixer->chip->card, SNDRV_CTL_EVENT_MASK_VALUE,
-			       &private->button_ctls[i]->id);
+		snd_ctl_notify(mixer->chip->card, SNDRV_CTL_EVENT_MASK_VALUE, &private->button_ctls[i]->id);
 	}
 }
 
@@ -4953,8 +4948,7 @@ static void scarlett2_mixer_interrupt_speaker_change(
 		       &private->speaker_ctl->id);
 
 	if (private->info->has_talkback)
-		snd_ctl_notify(mixer->chip->card, SNDRV_CTL_EVENT_MASK_VALUE,
-			       &private->talkback_ctl->id);
+		snd_ctl_notify(mixer->chip->card, SNDRV_CTL_EVENT_MASK_VALUE, &private->talkback_ctl->id);
 }
 
 /* Interrupt callback */
@@ -4971,7 +4965,7 @@ static void scarlett2_mixer_interrupt(struct urb *urb)
 
 	if (len == 8) {
 		u32 data = le32_to_cpu(*(u32 *)urb->transfer_buffer);
-		usb_audio_info(mixer->chip, "mixer_interrupt: data=%lx\n", (long)data);
+		usb_audio_info(mixer->chip, "mixer_interrupt: data=0x%lx\n", (long)data);
 		print_hex_dump(KERN_DEBUG, "INT: ", DUMP_PREFIX_ADDRESS, 16, 1, urb->transfer_buffer, len, true);
 		
 		if (data & SCARLETT2_USB_INTERRUPT_VOL_CHANGE)
@@ -4980,8 +4974,11 @@ static void scarlett2_mixer_interrupt(struct urb *urb)
 			scarlett2_mixer_interrupt_line_in_ctl_change(mixer);
 		if (data & SCARLETT2_USB_INTERRUPT_BUTTON_CHANGE)
 			scarlett2_mixer_interrupt_button_change(mixer);
-		if (data & SCARLETT2_USB_INTERRUPT_SPEAKER_CHANGE)
+		if (data & SCARLETT2_USB_INTERRUPT_SPEAKER_CHANGE) {
 			scarlett2_mixer_interrupt_speaker_change(mixer);
+			scarlett2_mixer_interrupt_vol_change(mixer);
+			scarlett2_mixer_interrupt_button_change(mixer);
+		}
 	} else {
 		usb_audio_err(mixer->chip,
 			      "scarlett mixer interrupt length %d\n", len);
