@@ -2001,7 +2001,7 @@ static int scarlett2_usb_set_mix(struct usb_mixer_interface *mixer,
 
 	struct {
 		__le16 mix_num;
-		__le16 data[SCARLETT2_INPUT_MIX_MAX];
+		__le16 data[SCARLETT2_INPUT_MIX_MAX + 1]; /* 1 additional output for talkback */
 	} __packed req;
 
 	int i, j;
@@ -2017,8 +2017,11 @@ static int scarlett2_usb_set_mix(struct usb_mixer_interface *mixer,
 		req.data[i] = cpu_to_le16(scarlett2_mixer_values[volume]);
 	}
 
+	if (info->has_talkback)
+		req.data[num_mixer_in++] = cpu_to_le16(0x2000);
+
 	return scarlett2_usb(mixer, SCARLETT2_USB_SET_MIX,
-			     &req, (num_mixer_in + 1) * sizeof(u16),
+			     &req, num_mixer_in * sizeof(__le16) + sizeof(__le16),
 			     NULL, 0);
 }
 
@@ -2041,7 +2044,11 @@ static void scarlett2_dump_mux(struct usb_mixer_interface *mixer, __le32 *data, 
 		scarlett2_fmt_port_name(src, SNDRV_CTL_ELEM_ID_NAME_MAXLEN, "%s", info, SCARLETT2_PORT_IN,  src_port);
 		scarlett2_fmt_port_name(dst, SNDRV_CTL_ELEM_ID_NAME_MAXLEN, "%s", info, SCARLETT2_PORT_OUT, dst_port);
 
-		usb_audio_info(mixer->chip, "  [%02d]:  [0x%08x]: %s[%d] -> %s[%d]\n", i, (int)mux_id, src, src_port, dst, dst_port);
+		usb_audio_info(mixer->chip, "  [%02d]:  [0x%08x]: %s[%d -> 0x%03x] -> %s[%d -> 0x%03x]\n", i,
+			(int)mux_id,
+			src, src_port, (mux_id >> 12) & 0xfff,
+			dst, dst_port, mux_id & 0xfff
+		);
 	}
 }
 
@@ -4586,8 +4593,12 @@ static void scarlett2_private_suspend(struct usb_mixer_interface *mixer)
 {
 	struct scarlett2_mixer_data *private = mixer->private_data;
 
+	usb_audio_info(mixer->chip, ">>>scarlett2_private_suspend");
+
 	if (cancel_delayed_work_sync(&private->work))
 		scarlett2_config_save(private->mixer);
+
+	usb_audio_info(mixer->chip, "<<<scarlett2_private_suspend");
 }
 
 /* Look through the interface descriptors for the Focusrite Control
