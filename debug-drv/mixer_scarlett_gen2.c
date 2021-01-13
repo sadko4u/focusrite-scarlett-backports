@@ -526,6 +526,13 @@ static const struct scarlett2_config scarlett2_pro_config_items[SCARLETT2_CONFIG
  * Configuration space for home segment devices like Scarlett 2i2
  */
 static const struct scarlett2_config scarlett2_home_config_items[SCARLETT2_CONFIG_COUNT] = {
+
+//	[SCARLETT2_CONFIG_MSD_SWITCH] =                /* MSD Mode */
+//		{ .offset = 0x04, .size = 1, .activate = 6 },
+
+	[SCARLETT2_CONFIG_RETAIN_48V] =                /* Retain 48V switch */
+		{ .offset = 0x05, .size = 1, .activate = 0 },
+
 	[SCARLETT2_CONFIG_48V_SWITCH] =                /* Phantom (48V) power */
 		{ .offset = 0x06, .size = 1, .activate = 3 },
 
@@ -537,6 +544,15 @@ static const struct scarlett2_config scarlett2_home_config_items[SCARLETT2_CONFI
 
 	[SCARLETT2_CONFIG_AIR_SWITCH] =                /* Air Switch */
 		{ .offset = 0x09, .size = 1, .activate = 8 },
+
+	[SCARLETT2_CONFIG_GAIN_HALO_ENABLE] =          /* Gain Halo Enable flag: bit 1 enables immediate values for gain halo */
+		{ .offset = 0x16, .size = 1, .activate = 9  },
+
+	[SCARLETT2_CONFIG_GAIN_HALO_LEDS] =            /* Gain Halo LED colors: 1 bit per each R,G,B component */
+		{ .offset = 0x17, .size = 1, .activate = 9  },
+
+	[SCARLETT2_CONFIG_GAIN_HALO_LEVELS] =          /* Gain Halo Colors for corresponding levels: 1 byte per RGB in order: Clip, Pre-Clip, Good */
+		{ .offset = 0x1a, .size = 1, .activate = 11  },
 };
 
 /* proprietary request/response format */
@@ -571,7 +587,7 @@ static const struct scarlett2_sw_port_mapping s6i6_gen2_sw_port_mapping[] = {
 
 static const struct scarlett2_device_info s6i6_gen2_info = {
 	.usb_id = USB_ID(0x1235, 0x8203),
-	
+
 	/* The first two analogue inputs can be switched between line
 	 * and instrument levels.
 	 */
@@ -826,6 +842,9 @@ static const struct scarlett2_port_name s2i2_gen3_port_names[] = {
 static const struct scarlett2_device_info s2i2_gen3_info = {
 	.usb_id = USB_ID(0x1235, 0x8210),
 
+	/* Has mass-storage device (MSD) mode */
+	//.has_msd_mode = 1,
+
 	/* The first two analogue inputs can be switched between line
 	 * and instrument levels.
 	 */
@@ -842,8 +861,14 @@ static const struct scarlett2_device_info s2i2_gen3_info = {
 	/* One 48V phantom power switch */
 	.power_48v_count = 1,
 
+	/* Has a 'Retain 48V' switch */
+	.has_retain48v = 1,
+
 	/* 26 bytes configuration space */
-	.config_size = 26,
+	.config_size = 29,
+
+	/* Number of gain halos */
+	.gain_halos_count = 2,
 
 	.config = scarlett2_home_config_items,
 
@@ -1801,7 +1826,6 @@ static int scarlett2_usb(
 
 	print_hex_dump(KERN_DEBUG, "TX: ", DUMP_PREFIX_ADDRESS, 16, 1, req, req_buf_size, true);
 	err = scarlett2_usb_tx(dev, private->interface, req, req_buf_size);
-	
 
 	if (err != req_buf_size) {
 		usb_audio_err(
@@ -2920,7 +2944,7 @@ static int scarlett2_level_enum_ctl_get(struct snd_kcontrol *kctl,
 	struct usb_mixer_interface *mixer = elem->head.mixer;
 	struct scarlett2_mixer_data *private = mixer->private_data;
 
-	usb_audio_info(elem->head.mixer->chip, "scarlett2_levl_enum_ctl_get index=%d\n", (int)elem->control);
+	usb_audio_info(elem->head.mixer->chip, "scarlett2_level_enum_ctl_get index=%d\n", (int)elem->control);
 
 	if (private->line_ctl_updated) {
 		mutex_lock(&private->data_mutex);
@@ -4500,7 +4524,7 @@ static int scarlett2_direct_monitor_switch_enum_ctl_get(
 	struct usb_mixer_interface *mixer = elem->head.mixer;
 	struct scarlett2_mixer_data *private = mixer->private_data;
 
-	usb_audio_info(elem->head.mixer->chip, "scarlett2_direct_monitor_switch_enum_ctl_get index=%d\n", (int)elem->control);
+	usb_audio_info(elem->head.mixer->chip, "<<<scarlett2_direct_monitor_switch_enum_ctl_get index=%d\n", (int)elem->control);
 
 	if (private->speaker_updated) {
 		mutex_lock(&private->data_mutex);
@@ -4509,6 +4533,7 @@ static int scarlett2_direct_monitor_switch_enum_ctl_get(
 	}
 
 	ucontrol->value.enumerated.item[0] = private->direct_monitor_switch;
+	usb_audio_info(elem->head.mixer->chip, "<<<scarlett2_direct_monitor_switch_enum_ctl_get result=%d\n", ucontrol->value.enumerated.item[0]);
 	return 0;
 }
 
@@ -5215,8 +5240,7 @@ static void scarlett2_mixer_interrupt(struct urb *urb)
 			scarlett2_mixer_interrupt_button_change(mixer);
 		}
 	} else {
-		usb_audio_err(mixer->chip,
-			      "scarlett mixer interrupt length %d\n", len);
+		usb_audio_err(mixer->chip, "scarlett mixer interrupt length %d\n", len);
 	}
 
 requeue:
@@ -5415,6 +5439,8 @@ int snd_scarlett_gen2_controls_create(struct usb_mixer_interface *mixer)
 	err = scarlett2_mixer_status_create(mixer);
 	if (err < 0)
 		return err;
+
+	usb_audio_info(chip, "Mixer driver has been initialized");
 
 	return 0;
 }
