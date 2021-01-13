@@ -5248,8 +5248,6 @@ requeue:
 	    ustatus != -ECONNRESET &&
 	    ustatus != -ESHUTDOWN) {
 		urb->dev = mixer->chip->dev;
-		urb->actual_length = 0;
-		*(u32 *)urb->transfer_buffer = 0;
 		usb_submit_urb(urb, GFP_ATOMIC);
 	}
 }
