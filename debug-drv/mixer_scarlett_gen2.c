@@ -452,6 +452,7 @@ struct scarlett2_mixer_data {
 	struct snd_kcontrol *vol_ctls[SCARLETT2_ANALOGUE_OUT_MAX];
 	struct snd_kcontrol *mute_ctls[SCARLETT2_ALL_OUT_MAX];
 	struct snd_kcontrol *pad_ctls[SCARLETT2_PAD_SWITCH_MAX];
+	struct snd_kcontrol *air_ctls[SCARLETT2_AIR_SWITCH_MAX];
 	struct snd_kcontrol *level_ctls[SCARLETT2_LEVEL_SWITCH_MAX];
 	struct snd_kcontrol *pow_ctls[SCARLETT2_48V_SWITCH_MAX];
 	struct snd_kcontrol *button_ctls[SCARLETT2_BUTTON_MAX];
@@ -2807,6 +2808,7 @@ static int scarlett2_update_line_ctl_switches(struct usb_mixer_interface *mixer)
 	struct scarlett2_mixer_data *private = mixer->private_data;
 	const struct scarlett2_device_info *info = private->info;
 	u8 pad_switches[SCARLETT2_PAD_SWITCH_MAX];
+	u8 air_switches[SCARLETT2_AIR_SWITCH_MAX];
 	u8 level_switches[SCARLETT2_LEVEL_SWITCH_MAX];
 	u8 pow_switch, retain48v;
 	int i, err = 0;
@@ -2830,6 +2832,21 @@ static int scarlett2_update_line_ctl_switches(struct usb_mixer_interface *mixer)
 		for (i = 0; i < info->pad_input_count; i++) {
 			private->pad_switch[i] = !!pad_switches[i];
 			usb_audio_info(mixer->chip, "pad_switch[%d] = %d", i, private->pad_switch[i]);
+		}
+	}
+
+	/* Update AIR input settings */
+	if (info->air_input_count) {
+		err = scarlett2_usb_get_config(
+			mixer,
+			SCARLETT2_CONFIG_AIR_SWITCH,
+			(info->air_input_bitmask) ? 1 : info->air_input_count,
+			air_switches);
+		if (err < 0)
+			return err;
+		for (i = 0; i < info->air_input_count; i++) {
+			private->air_switch[i] = !! ((info->air_input_bitmask) ? air_switches[0] & (1 << i) : air_switches[i]);
+			usb_audio_info(mixer->chip, "  air_switch[%d] = %d", i, private->air_switch[i]);
 		}
 	}
 
@@ -3027,15 +3044,20 @@ static const struct snd_kcontrol_new scarlett2_pad_ctl = {
 };
 
 /*** Air Switch Controls ***/
-
 static int scarlett2_air_ctl_get(struct snd_kcontrol *kctl,
 				 struct snd_ctl_elem_value *ucontrol)
 {
 	struct usb_mixer_elem_info *elem = kctl->private_data;
+	struct usb_mixer_interface *mixer = elem->head.mixer;
 	struct scarlett2_mixer_data *private = elem->head.mixer->private_data;
 
-	ucontrol->value.enumerated.item[0] =
-		private->air_switch[elem->control];
+	if (private->line_ctl_updated) {
+		mutex_lock(&private->data_mutex);
+		scarlett2_update_line_ctl_switches(mixer);
+		mutex_unlock(&private->data_mutex);
+	}
+
+	ucontrol->value.enumerated.item[0] = private->air_switch[elem->control];
 	return 0;
 }
 
@@ -3052,6 +3074,7 @@ static int scarlett2_air_ctl_put(struct snd_kcontrol *kctl,
 
 	usb_audio_info(mixer->chip, "scarlett2_air_ctl_put\n");
 	mutex_lock(&private->data_mutex);
+	scarlett2_update_line_ctl_switches(mixer);
 
 	oval = private->air_switch[index];
 	val = !!ucontrol->value.integer.value[0];
@@ -3549,14 +3572,17 @@ static int scarlett2_add_line_in_ctls(struct usb_mixer_interface *mixer)
 		scarlett2_fmt_port_name(s, SNDRV_CTL_ELEM_ID_NAME_MAXLEN, "%s Air Switch", info, SCARLETT2_PORT_IN, port);
 
 		err = scarlett2_add_new_ctl(mixer, &scarlett2_air_ctl,
-					    i, 1, s, NULL);
+					    i, 1, s, &private->air_ctls[i]);
 		if (err < 0)
 			return err;
 	}
 
 	/* Add input 48v controls */
 	for (i = 0; i < info->power_48v_count; i++) {
-		snprintf(s, sizeof(s), "Analogue In 48V Switch %d", i + 1);
+		if (info->power_48v_count > 1)
+			snprintf(s, sizeof(s), "Analogue In 48V Switch %d", i + 1);
+		else
+			snprintf(s, sizeof(s), "Analogue In 48V Switch");
 		err = scarlett2_add_new_ctl(mixer, &scarlett2_48v_ctl,
 					    i, 1, s, &private->pow_ctls[i]);
 		if (err < 0)
@@ -4836,7 +4862,6 @@ static int scarlett2_read_configs(struct usb_mixer_interface *mixer)
 	struct scarlett2_mixer_data *private = mixer->private_data;
 	const struct scarlett2_device_info *info = private->info;
 	const struct scarlett2_ports *ports = info->ports;
-	u8 air_switches[SCARLETT2_AIR_SWITCH_MAX];
 	u8 msd_switch;
 	__le16 mix_talkbacks;
 	int err, i, num_mixes, val;
@@ -4845,21 +4870,6 @@ static int scarlett2_read_configs(struct usb_mixer_interface *mixer)
 	err = scarlett2_update_line_ctl_switches(mixer);
 	if (err < 0)
 		return err;
-
-	/* AIR input settings */
-	if (info->air_input_count) {
-		err = scarlett2_usb_get_config(
-			mixer,
-			SCARLETT2_CONFIG_AIR_SWITCH,
-			(info->air_input_bitmask) ? 1 : info->air_input_count,
-			air_switches);
-		if (err < 0)
-			return err;
-		for (i = 0; i < info->air_input_count; i++) {
-			private->air_switch[i] = !! ((info->air_input_bitmask) ? air_switches[0] & (1 << i) : air_switches[i]);
-			usb_audio_info(mixer->chip, "  air_switch[%d] = %d", i, private->air_switch[i]);
-		}
-	}
 
 	/* Mass Storage Device (MSD) mode */
 	if (info->has_msd_mode) {
@@ -5097,6 +5107,17 @@ static void scarlett2_mixer_interrupt_line_in_ctl_change(
 			usb_audio_info(mixer->chip, "  private->pad_ctls[%d]=%lx\n", i, (long)private->pad_ctls[i]);
 			if (private->pad_ctls[i])
 				snd_ctl_notify(mixer->chip->card, SNDRV_CTL_EVENT_MASK_VALUE, &private->pad_ctls[i]->id);
+		}
+	}
+
+	/* Trigger all AIR inputs for changes */
+	if (info->air_input_count) {
+		private->line_ctl_updated = 1;
+
+		for (i = 0; i < info->air_input_count; i++) {
+			usb_audio_info(mixer->chip, "  private->air_ctls[%d]=%lx\n", i, (long)private->air_ctls[i]);
+			if (private->air_ctls[i])
+				snd_ctl_notify(mixer->chip->card, SNDRV_CTL_EVENT_MASK_VALUE, &private->air_ctls[i]->id);
 		}
 	}
 
