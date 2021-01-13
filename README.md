@@ -119,6 +119,14 @@ These options will enable driver for all supported Gen3 devices.
 Enabling MSD (Mass Storage Device) mode seems to me to be something that you would never want to do, so once you disable it the
 control gets hidden (use device_setup=3 if you really want to make it reappear).
 
+Some devices like Scarlett 2i2 may become suspended by the ```TLP``` system tool. To deny automatic suspend of USB device,
+you need to edit it's configuration file and add list of USB identifiers of the devices to the ```USB_BLACKLIST``` parameter, 
+for example:
+
+```
+echo 'USB_BLACKLIST="1235:8210 1235:8212 1235:8213 1235:8214 1235:8215"' >> /etc/default/tlp
+```
+
 ### Booting new kernel
 
 Restart operating system. Once Grub provides boot menu, select your custom kernel and boot it.
