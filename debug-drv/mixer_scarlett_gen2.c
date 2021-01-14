@@ -1395,6 +1395,7 @@ static const struct scarlett2_device_info *scarlett2_supported_devices[] = {
 	&s18i20_gen2_info,
 
 	/* Supported Gen3 devices */
+	&ssolo_gen3_info,
 	&s2i2_gen3_info,
 	&s4i4_gen3_info,
 	&s8i6_gen3_info,
