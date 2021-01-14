@@ -7,7 +7,8 @@ Linux Kernel 5.3.18 currently used in [openSUSE Leap 15.2](https://www.opensuse.
 
 The supported list of Gen3 devices:
 
-* Focusrite Scarlett 2i2 (experimental)
+* Focusrite Scarlett Solo
+* Focusrite Scarlett 2i2
 * Focusrite Scarlett 4i4
 * Focusrite Scarlett 8i6
 * Focusrite Scarlett 18i8
@@ -108,6 +109,7 @@ after the device is connected to the computer. You need to create additional ```
 ```bash
 echo "options snd_usb_audio device_setup=1,1,1,1" > /etc/modprobe.d/scarlett-gen3.conf
 echo "options snd_usb_audio vid=0x1235 pid=0x8210 device_setup=1" >> /etc/modprobe.d/scarlett-gen3.conf
+echo "options snd_usb_audio vid=0x1235 pid=0x8211 device_setup=1" >> /etc/modprobe.d/scarlett-gen3.conf
 echo "options snd_usb_audio vid=0x1235 pid=0x8212 device_setup=1" >> /etc/modprobe.d/scarlett-gen3.conf
 echo "options snd_usb_audio vid=0x1235 pid=0x8213 device_setup=1" >> /etc/modprobe.d/scarlett-gen3.conf
 echo "options snd_usb_audio vid=0x1235 pid=0x8214 device_setup=1" >> /etc/modprobe.d/scarlett-gen3.conf
@@ -124,7 +126,7 @@ you need to edit it's configuration file and add list of USB identifiers of the 
 for example:
 
 ```
-echo 'USB_BLACKLIST="1235:8210 1235:8212 1235:8213 1235:8214 1235:8215"' >> /etc/default/tlp
+echo 'USB_BLACKLIST="1235:8210 1235:8211 1235:8212 1235:8213 1235:8214 1235:8215"' >> /etc/default/tlp
 ```
 
 ### Booting new kernel
@@ -145,6 +147,7 @@ This ALSA mixer gives access to (model-dependent):
 * main/alt speaker switching
 
 The overall block scheme of the device:
+
 ```
     /--------------\    18chn            20chn     /--------------\
     | Hardware  in +--+------\    /-------------+--+ ALSA PCM out |
