@@ -352,6 +352,7 @@ struct scarlett2_device_info {
 	u8 line_out_hw_vol; /* line out hw volume is sw controlled */
 	u8 button_count; /* number of buttons */
 	u8 level_input_count; /* inputs with level selectable */
+	u8 level_input_offset; /* inputs with level selectable - UI numbering offset */
 	u8 level_input_bitmask; /* input levels are present as bitmask */
 	u8 pad_input_count; /* inputs with pad selectable */
 	u8 air_input_count; /* inputs with air selectable */
@@ -851,6 +852,7 @@ static const struct scarlett2_device_info ssolo_gen3_info = {
 	 * and instrument levels.
 	 */
 	.level_input_count = 1,
+	.level_input_offset = 1,
 	.level_input_bitmask = 1,
 
 	/* The first two analogue inputs have an optional "air" feature. */
@@ -2728,7 +2730,7 @@ static int scarlett2_update_line_ctl_switches(struct usb_mixer_interface *mixer)
 	u8 air_switches[SCARLETT2_AIR_SWITCH_MAX];
 	u8 level_switches[SCARLETT2_LEVEL_SWITCH_MAX];
 	u8 pow_switch, retain48v;
-	int i, err = 0;
+	int i, index, err = 0;
 
 	/* Check for re-entrance */
 	if (!private->line_ctl_updated)
@@ -2771,8 +2773,10 @@ static int scarlett2_update_line_ctl_switches(struct usb_mixer_interface *mixer)
 		if (err < 0)
 			return err;
 
-		for (i = 0; i < info->level_input_count; i++)
-			private->level_switch[i] = !! ((info->level_input_bitmask) ? level_switches[0] & (1 << i) : level_switches[i]);
+		for (i = 0; i < info->level_input_count; i++) {
+			index = i + info->level_input_offset;
+			private->level_switch[i] = !! ((info->level_input_bitmask) ? level_switches[0] & (1 << index) : level_switches[index]);
+		}
 	}
 
 	/* Update phantom power settings */
@@ -2857,7 +2861,7 @@ static int scarlett2_level_enum_ctl_put(struct snd_kcontrol *kctl,
 	if (info->level_input_bitmask) {
 		val = 0;
 		for (index = 0; index < info->level_input_count; ++index)
-			val |= private->level_switch[index] << index;
+			val |= private->level_switch[index] << (index + info->level_input_offset);
 		index = 0;
 	}
 
@@ -3409,7 +3413,7 @@ static int scarlett2_add_line_in_ctls(struct usb_mixer_interface *mixer)
 
 	/* Add input level (line/inst) controls */
 	for (i = 0; i < info->level_input_count; i++) {
-		port = scarlett2_get_port_num(info->ports, SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, i);
+		port = scarlett2_get_port_num(info->ports, SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, i + info->level_input_offset);
 		scarlett2_fmt_port_name(s, SNDRV_CTL_ELEM_ID_NAME_MAXLEN, "%s Mode Switch", info, SCARLETT2_PORT_IN, port);
 		err = scarlett2_add_new_ctl(mixer, &scarlett2_level_enum_ctl,
 					    i, 1, s, &private->level_ctls[i]);
