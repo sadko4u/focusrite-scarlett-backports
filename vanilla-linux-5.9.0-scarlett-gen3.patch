@@ -28,7 +28,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_quirks.c linux-5.9/sound/usb/mixer_quir
  
 diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mixer_scarlett_gen2.c
 --- linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c	2020-10-16 18:19:45.107108984 +0300
-+++ linux-5.9/sound/usb/mixer_scarlett_gen2.c	2021-01-15 01:42:34.933370131 +0300
++++ linux-5.9/sound/usb/mixer_scarlett_gen2.c	2021-01-18 22:44:14.851095523 +0300
 @@ -1,8 +1,10 @@
  // SPDX-License-Identifier: GPL-2.0
  /*
@@ -329,7 +329,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  /* Description of each hardware port type:
   * - id: hardware ID for this port type
   * - num: number of sources/destinations of this port type
-@@ -209,42 +334,262 @@
+@@ -209,42 +334,263 @@
  	const char * const src_descr;
  	int src_num_offset;
  	const char * const dst_descr;
@@ -351,6 +351,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  	u8 line_out_hw_vol; /* line out hw volume is sw controlled */
  	u8 button_count; /* number of buttons */
  	u8 level_input_count; /* inputs with level selectable */
++	u8 level_input_offset; /* inputs with level selectable - UI numbering offset */
 +	u8 level_input_bitmask; /* input levels are present as bitmask */
  	u8 pad_input_count; /* inputs with pad selectable */
 -	const char * const line_out_descrs[SCARLETT2_ANALOGUE_MAX];
@@ -602,7 +603,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  	/* The first two analogue inputs can be switched between line
  	 * and instrument levels.
  	 */
-@@ -253,52 +598,81 @@
+@@ -253,52 +599,81 @@
  	/* The first two analogue inputs have an optional pad. */
  	.pad_input_count = 2,
  
@@ -709,7 +710,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  	/* The first two analogue inputs can be switched between line
  	 * and instrument levels.
  	 */
-@@ -307,64 +681,91 @@
+@@ -307,64 +682,91 @@
  	/* The first four analogue inputs have an optional pad. */
  	.pad_input_count = 4,
  
@@ -835,7 +836,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  	/* The analogue line outputs on the 18i20 can be switched
  	 * between software and hardware volume control
  	 */
-@@ -373,200 +774,943 @@
+@@ -373,200 +775,944 @@
  	/* Mute and dim buttons */
  	.button_count = 2,
  
@@ -960,6 +961,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
 +	 * and instrument levels.
 +	 */
 +	.level_input_count = 1,
++	.level_input_offset = 1,
 +	.level_input_bitmask = 1,
 +
 +	/* The first two analogue inputs have an optional "air" feature. */
@@ -1910,7 +1912,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  
  static void scarlett2_fill_request_header(struct scarlett2_mixer_data *private,
  					  struct scarlett2_usb_packet *req,
-@@ -582,16 +1726,91 @@
+@@ -582,16 +1728,91 @@
  	req->pad = 0;
  }
  
@@ -2004,7 +2006,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  
  	req = kmalloc(req_buf_size, GFP_KERNEL);
  	if (!req) {
-@@ -608,20 +1827,12 @@
+@@ -608,20 +1829,12 @@
  	mutex_lock(&private->usb_mutex);
  
  	/* build request message and send it */
@@ -2026,7 +2028,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  
  	if (err != req_buf_size) {
  		usb_audio_err(
-@@ -633,29 +1844,24 @@
+@@ -633,29 +1846,24 @@
  	}
  
  	/* send a second message to get the response */
@@ -2064,7 +2066,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  	    resp_size != le16_to_cpu(resp->size) ||
  	    resp->error ||
  	    resp->pad) {
-@@ -673,7 +1879,7 @@
+@@ -673,7 +1881,7 @@
  		goto unlock;
  	}
  
@@ -2073,7 +2075,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  		memcpy(resp_data, resp->data, resp_size);
  
  unlock:
-@@ -704,14 +1910,12 @@
+@@ -704,14 +1912,12 @@
  }
  
  /* Send a USB message to set a configuration parameter (volume level,
@@ -2089,7 +2091,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  	struct {
  		__le32 offset;
  		__le32 bytes;
-@@ -720,26 +1924,36 @@
+@@ -720,26 +1926,36 @@
  	__le32 req2;
  	int err;
  	struct scarlett2_mixer_data *private = mixer->private_data;
@@ -2134,7 +2136,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  
  	/* Schedule the change to be written to NVRAM */
  	schedule_delayed_work(&private->work, msecs_to_jiffies(2000));
-@@ -747,20 +1961,69 @@
+@@ -747,20 +1963,69 @@
  	return 0;
  }
  
@@ -2210,7 +2212,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  }
  
  /* Send a USB message to get configuration parameters; result placed in *buf */
-@@ -768,11 +2031,17 @@
+@@ -768,11 +2033,17 @@
  	struct usb_mixer_interface *mixer,
  	int config_item_num, int count, void *buf)
  {
@@ -2232,7 +2234,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  }
  
  /* Send a USB message to get volume status; result placed in *buf */
-@@ -780,8 +2049,7 @@
+@@ -780,8 +2051,7 @@
  	struct usb_mixer_interface *mixer,
  	struct scarlett2_usb_volume_status *buf)
  {
@@ -2242,7 +2244,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  }
  
  /* Send a USB message to set the volumes for all inputs of one mix
-@@ -795,41 +2063,66 @@
+@@ -795,41 +2065,66 @@
  
  	struct {
  		__le16 mix_num;
@@ -2329,7 +2331,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  }
  
  /* Send USB messages to set mux inputs */
-@@ -838,15 +2131,17 @@
+@@ -838,15 +2133,17 @@
  	struct scarlett2_mixer_data *private = mixer->private_data;
  	const struct scarlett2_device_info *info = private->info;
  	const struct scarlett2_ports *ports = info->ports;
@@ -2350,7 +2352,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  	};
  
  	struct {
-@@ -855,55 +2150,46 @@
+@@ -855,55 +2152,46 @@
  		__le32 data[SCARLETT2_MUX_MAX];
  	} __packed req;
  
@@ -2436,7 +2438,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  }
  
  /* Send USB message to get meter levels */
-@@ -934,6 +2220,15 @@
+@@ -934,6 +2222,15 @@
  }
  
  /*** Control Functions ***/
@@ -2452,7 +2454,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  
  /* helper function to create a new control */
  static int scarlett2_add_new_ctl(struct usb_mixer_interface *mixer,
-@@ -981,14 +2276,24 @@
+@@ -981,14 +2278,24 @@
  static int scarlett2_update_volumes(struct usb_mixer_interface *mixer)
  {
  	struct scarlett2_mixer_data *private = mixer->private_data;
@@ -2481,7 +2483,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  	err = scarlett2_usb_get_volume_status(mixer, &volume_status);
  	if (err < 0)
  		return err;
-@@ -997,14 +2302,35 @@
+@@ -997,14 +2304,35 @@
  		volume_status.master_vol + SCARLETT2_VOLUME_BIAS,
  		0, SCARLETT2_VOLUME_BIAS);
  
@@ -2518,7 +2520,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  	return 0;
  }
  
-@@ -1062,10 +2388,13 @@
+@@ -1062,10 +2390,13 @@
  	struct usb_mixer_elem_info *elem = kctl->private_data;
  	struct usb_mixer_interface *mixer = elem->head.mixer;
  	struct scarlett2_mixer_data *private = mixer->private_data;
@@ -2532,7 +2534,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  
  	oval = private->vol[index];
  	val = ucontrol->value.integer.value[0];
-@@ -1074,8 +2403,24 @@
+@@ -1074,8 +2405,24 @@
  		goto unlock;
  
  	private->vol[index] = val;
@@ -2557,7 +2559,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  	if (err == 0)
  		err = 1;
  
-@@ -1129,8 +2474,7 @@
+@@ -1129,8 +2476,7 @@
  	struct usb_mixer_elem_info *elem = kctl->private_data;
  	struct scarlett2_mixer_data *private = elem->head.mixer->private_data;
  
@@ -2567,7 +2569,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  	return 0;
  }
  
-@@ -1143,8 +2487,10 @@
+@@ -1143,8 +2489,10 @@
  
  	int index = elem->control;
  	int oval, val, err = 0;
@@ -2578,7 +2580,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  
  	oval = private->vol_sw_hw_switch[index];
  	val = !!ucontrol->value.integer.value[0];
-@@ -1157,30 +2503,46 @@
+@@ -1157,30 +2505,46 @@
  	/* Change access mode to RO (hardware controlled volume)
  	 * or RW (software controlled volume)
  	 */
@@ -2638,7 +2640,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  
  unlock:
  	mutex_unlock(&private->data_mutex);
-@@ -1195,7 +2557,254 @@
+@@ -1195,7 +2559,256 @@
  	.put  = scarlett2_sw_hw_enum_ctl_put,
  };
  
@@ -2813,7 +2815,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
 +	u8 air_switches[SCARLETT2_AIR_SWITCH_MAX];
 +	u8 level_switches[SCARLETT2_LEVEL_SWITCH_MAX];
 +	u8 pow_switch, retain48v;
-+	int i, err = 0;
++	int i, index, err = 0;
 +
 +	/* Check for re-entrance */
 +	if (!private->line_ctl_updated)
@@ -2856,8 +2858,10 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
 +		if (err < 0)
 +			return err;
 +
-+		for (i = 0; i < info->level_input_count; i++)
-+			private->level_switch[i] = !! ((info->level_input_bitmask) ? level_switches[0] & (1 << i) : level_switches[i]);
++		for (i = 0; i < info->level_input_count; i++) {
++			index = i + info->level_input_offset;
++			private->level_switch[i] = !! ((info->level_input_bitmask) ? level_switches[0] & (1 << index) : level_switches[index]);
++		}
 +	}
 +
 +	/* Update phantom power settings */
@@ -2893,7 +2897,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  
  static int scarlett2_level_enum_ctl_info(struct snd_kcontrol *kctl,
  					 struct snd_ctl_elem_info *uinfo)
-@@ -1211,10 +2820,16 @@
+@@ -1211,10 +2824,16 @@
  					struct snd_ctl_elem_value *ucontrol)
  {
  	struct usb_mixer_elem_info *elem = kctl->private_data;
@@ -2913,7 +2917,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  	return 0;
  }
  
-@@ -1224,12 +2839,13 @@
+@@ -1224,12 +2843,13 @@
  	struct usb_mixer_elem_info *elem = kctl->private_data;
  	struct usb_mixer_interface *mixer = elem->head.mixer;
  	struct scarlett2_mixer_data *private = mixer->private_data;
@@ -2928,7 +2932,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  	oval = private->level_switch[index];
  	val = !!ucontrol->value.integer.value[0];
  
-@@ -1238,7 +2854,14 @@
+@@ -1238,7 +2858,14 @@
  
  	private->level_switch[index] = val;
  
@@ -2936,7 +2940,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
 +	if (info->level_input_bitmask) {
 +		val = 0;
 +		for (index = 0; index < info->level_input_count; ++index)
-+			val |= private->level_switch[index] << index;
++			val |= private->level_switch[index] << (index + info->level_input_offset);
 +		index = 0;
 +	}
 +
@@ -2944,7 +2948,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  	err = scarlett2_usb_set_config(mixer, SCARLETT2_CONFIG_LEVEL_SWITCH,
  				       index, val);
  
-@@ -1256,12 +2879,18 @@
+@@ -1256,12 +2883,18 @@
  };
  
  /*** Pad Switch Controls ***/
@@ -2965,7 +2969,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  
  	ucontrol->value.enumerated.item[0] =
  		private->pad_switch[elem->control];
-@@ -1279,6 +2908,7 @@
+@@ -1279,6 +2912,7 @@
  	int oval, val, err = 0;
  
  	mutex_lock(&private->data_mutex);
@@ -2973,7 +2977,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  
  	oval = private->pad_switch[index];
  	val = !!ucontrol->value.integer.value[0];
-@@ -1288,9 +2918,8 @@
+@@ -1288,9 +2922,8 @@
  
  	private->pad_switch[index] = val;
  
@@ -2985,7 +2989,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  
  unlock:
  	mutex_unlock(&private->data_mutex);
-@@ -1300,11 +2929,182 @@
+@@ -1300,11 +2933,182 @@
  static const struct snd_kcontrol_new scarlett2_pad_ctl = {
  	.iface = SNDRV_CTL_ELEM_IFACE_MIXER,
  	.name = "",
@@ -3169,7 +3173,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  /*** Mute/Dim Controls ***/
  
  static int scarlett2_button_ctl_get(struct snd_kcontrol *kctl,
-@@ -1335,6 +3135,7 @@
+@@ -1335,6 +3139,7 @@
  	int oval, val, err = 0;
  
  	mutex_lock(&private->data_mutex);
@@ -3177,7 +3181,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  
  	oval = private->buttons[index];
  	val = !!ucontrol->value.integer.value[0];
-@@ -1356,26 +3157,182 @@
+@@ -1356,26 +3161,182 @@
  static const struct snd_kcontrol_new scarlett2_button_ctl = {
  	.iface = SNDRV_CTL_ELEM_IFACE_MIXER,
  	.name = "",
@@ -3366,7 +3370,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  		err = scarlett2_add_new_ctl(mixer,
  					    &scarlett2_master_volume_ctl,
  					    0, 1, s, &private->master_vol_ctl);
-@@ -1384,38 +3341,39 @@
+@@ -1384,38 +3345,39 @@
  	}
  
  	/* Add volume controls */
@@ -3434,7 +3438,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  		}
  	}
  
-@@ -1428,32 +3386,75 @@
+@@ -1428,32 +3390,75 @@
  			return err;
  	}
  
@@ -3465,7 +3469,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  	/* Add input level (line/inst) controls */
  	for (i = 0; i < info->level_input_count; i++) {
 -		snprintf(s, sizeof(s), "Line In %d Level Capture Enum", i + 1);
-+		port = scarlett2_get_port_num(info->ports, SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, i);
++		port = scarlett2_get_port_num(info->ports, SCARLETT2_PORT_OUT, SCARLETT2_PORT_TYPE_ANALOGUE, i + info->level_input_offset);
 +		scarlett2_fmt_port_name(s, SNDRV_CTL_ELEM_ID_NAME_MAXLEN, "%s Mode Switch", info, SCARLETT2_PORT_IN, port);
  		err = scarlett2_add_new_ctl(mixer, &scarlett2_level_enum_ctl,
 -					    i, 1, s, NULL);
@@ -3517,7 +3521,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  		if (err < 0)
  			return err;
  	}
-@@ -1461,8 +3462,66 @@
+@@ -1461,8 +3466,66 @@
  	return 0;
  }
  
@@ -3585,7 +3589,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  static int scarlett2_mixer_ctl_info(struct snd_kcontrol *kctl,
  				    struct snd_ctl_elem_info *uinfo)
  {
-@@ -1492,22 +3551,33 @@
+@@ -1492,22 +3555,33 @@
  	struct usb_mixer_elem_info *elem = kctl->private_data;
  	struct usb_mixer_interface *mixer = elem->head.mixer;
  	struct scarlett2_mixer_data *private = mixer->private_data;
@@ -3627,7 +3631,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  	if (err == 0)
  		err = 1;
  
-@@ -1534,64 +3604,155 @@
+@@ -1534,64 +3608,155 @@
  	.tlv = { .p = db_scale_scarlett2_mixer }
  };
  
@@ -3813,7 +3817,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  }
  
  static int scarlett2_mux_src_enum_ctl_get(struct snd_kcontrol *kctl,
-@@ -1600,7 +3761,140 @@
+@@ -1600,7 +3765,140 @@
  	struct usb_mixer_elem_info *elem = kctl->private_data;
  	struct scarlett2_mixer_data *private = elem->head.mixer->private_data;
  
@@ -3955,7 +3959,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  	return 0;
  }
  
-@@ -1616,12 +3910,18 @@
+@@ -1616,12 +3914,18 @@
  	mutex_lock(&private->data_mutex);
  
  	oval = private->mux[index];
@@ -3976,7 +3980,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  	private->mux[index] = val;
  	err = scarlett2_usb_set_mux(mixer);
  	if (err == 0)
-@@ -1640,36 +3940,137 @@
+@@ -1640,36 +3944,137 @@
  	.put  = scarlett2_mux_src_enum_ctl_put,
  };
  
@@ -4133,7 +4137,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  /*** Meter Controls ***/
  
  static int scarlett2_meter_ctl_info(struct snd_kcontrol *kctl,
-@@ -1712,11 +4113,442 @@
+@@ -1712,11 +4117,442 @@
  
  static int scarlett2_add_meter_ctl(struct usb_mixer_interface *mixer)
  {
@@ -4576,7 +4580,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  /*** Cleanup/Suspend Callbacks ***/
  
  static void scarlett2_private_free(struct usb_mixer_interface *mixer)
-@@ -1724,6 +4556,8 @@
+@@ -1724,6 +4560,8 @@
  	struct scarlett2_mixer_data *private = mixer->private_data;
  
  	cancel_delayed_work_sync(&private->work);
@@ -4585,7 +4589,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  	kfree(private);
  	mixer->private_data = NULL;
  }
-@@ -1736,71 +4570,33 @@
+@@ -1736,71 +4574,33 @@
  		scarlett2_config_save(private->mixer);
  }
  
@@ -4681,7 +4685,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  }
  
  /* Initialise private data, routing, sequence number */
-@@ -1809,6 +4605,7 @@
+@@ -1809,6 +4609,7 @@
  {
  	struct scarlett2_mixer_data *private =
  		kzalloc(sizeof(struct scarlett2_mixer_data), GFP_KERNEL);
@@ -4689,7 +4693,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  
  	if (!private)
  		return -ENOMEM;
-@@ -1816,19 +4613,27 @@
+@@ -1816,19 +4617,27 @@
  	mutex_init(&private->usb_mutex);
  	mutex_init(&private->data_mutex);
  	INIT_DELAYED_WORK(&private->work, scarlett2_config_save_work);
@@ -4725,7 +4729,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  }
  
  /* Read line-in config and line-out volume settings on start */
-@@ -1837,64 +4642,194 @@
+@@ -1837,64 +4646,194 @@
  	struct scarlett2_mixer_data *private = mixer->private_data;
  	const struct scarlett2_device_info *info = private->info;
  	const struct scarlett2_ports *ports = info->ports;
@@ -4956,7 +4960,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  }
  
  /* Notify on volume change */
-@@ -1903,20 +4838,68 @@
+@@ -1903,20 +4842,68 @@
  {
  	struct scarlett2_mixer_data *private = mixer->private_data;
  	const struct scarlett2_ports *ports = private->info->ports;
@@ -5033,7 +5037,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  	}
  }
  
-@@ -1929,9 +4912,28 @@
+@@ -1929,9 +4916,28 @@
  
  	private->vol_updated = 1;
  
@@ -5065,7 +5069,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  }
  
  /* Interrupt callback */
-@@ -1940,20 +4942,27 @@
+@@ -1940,20 +4946,27 @@
  	struct usb_mixer_interface *mixer = urb->context;
  	int len = urb->actual_length;
  	int ustatus = urb->status;
@@ -5097,7 +5101,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  	}
  
  requeue:
-@@ -1961,6 +4970,8 @@
+@@ -1961,6 +4974,8 @@
  	    ustatus != -ECONNRESET &&
  	    ustatus != -ESHUTDOWN) {
  		urb->dev = mixer->chip->dev;
@@ -5106,7 +5110,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  		usb_submit_urb(urb, GFP_ATOMIC);
  	}
  }
-@@ -1968,8 +4979,8 @@
+@@ -1968,8 +4983,8 @@
  static int scarlett2_mixer_status_create(struct usb_mixer_interface *mixer)
  {
  	struct usb_device *dev = mixer->chip->dev;
@@ -5117,7 +5121,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  	void *transfer_buffer;
  
  	if (mixer->urb) {
-@@ -1985,14 +4996,14 @@
+@@ -1985,14 +5000,14 @@
  	if (!mixer->urb)
  		return -ENOMEM;
  
@@ -5135,7 +5139,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  
  	return usb_submit_urb(mixer->urb, GFP_KERNEL);
  }
-@@ -2000,57 +5011,73 @@
+@@ -2000,57 +5015,73 @@
  /* Entry point */
  int snd_scarlett_gen2_controls_create(struct usb_mixer_interface *mixer)
  {
@@ -5228,7 +5232,7 @@ diff -uNr linux-5.9-orig/sound/usb/mixer_scarlett_gen2.c linux-5.9/sound/usb/mix
  	if (err < 0)
  		return err;
  
-@@ -2064,12 +5091,27 @@
+@@ -2064,12 +5095,27 @@
  	if (err < 0)
  		return err;
  
