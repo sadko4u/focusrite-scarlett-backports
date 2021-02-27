@@ -18,7 +18,8 @@ Provided patches:
 
 * ```opensuse-leap-linux-5.3.18-scarlett-gen3.patch``` - patch for the standard desktop openSUSE Leap 5.3.18 kernel.
 * ```opensuse-leap-linux-5.3.18-scarlett-gen3-rt.patch``` - patch for the realtime (RT) openSUSE Leap 5.3.18 kernel.
-* ```vanilla-linux-5.9.0-scarlettt-gen3.patch``` - patch for the original (vanilla) Linux kernel 5.9.0
+* ```vanilla-linux-5.9.0-scarlett-gen3.patch``` - patch for the original (vanilla) Linux kernel 5.9.0
+* ```vanilla-linux-5.11.1-scarlett-gen3.patch``` - patch for the vanilla Linux kernel 5.11.1 (NOTE: in 5.11 the quirks loading has been refactored, so the patch aligns with that)
 
 ## Installation
 
