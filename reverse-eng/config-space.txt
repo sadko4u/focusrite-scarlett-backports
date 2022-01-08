@@ -87,11 +87,11 @@ HARDWARE CONFIGURATION AREA
 SOFTWARE CONFIGURATION AREA (same for 8i6, 18i8, 18i20 devices)
 -------------------------------------------------------------------------------
 00ec    0002    +0000       Overall size of block (?)
-00ee    0002    +0002       Magic number (?) - 0x3006 for all devices
+00ee    0002    +0002       Software Version (?) - 0x3006 for all devices, (very probably describes verison 3.6)
 00f0    0004    +0004       Version (?) - 0x5 for all devices
 00f4    0002    +0008       The size of software configuration area used by application
                               - includes size of checksum
-                              - 18i20, 8i6 devices have value of 0x1984
+                              - 18i20, 18i8, 8i6 devices have value of 0x1984
 00f6    0002    +000a       Padding (?) - always zero
 00f8    0080    +000c       Output routing:
                               - 1 byte per output
@@ -151,12 +151,16 @@ SOFTWARE CONFIGURATION AREA (same for 8i6, 18i8, 18i20 devices)
                                 - 24..25 - Loopback 1-2
 01b8    0004    +0xd0       Logic Mutes for outputs:
                               - 1 bit per output
-                              - bit encoding:
+                              - bit encoding for 18i20:
                                 - 0..9   - line outputs 1-10
                                 - 10..11 - SPDIF 1-2
                                 - 12..19 - ADAT 1.1-1.8
                                 - 20..23 - ADAT 2.1-2.4 ???
                                 - 24..25 - Loopback 1-2
+                              - it encoding for 18i8:
+                                - 0..7   - line outputs 1-8
+                                - 8..9   - SPDIF 1-2
+                                - 10..11 - Loopback 1-2
 01bc    0028    +00d0       Volume settings of each output:
                               - stored as array of 4-byte structures:
                                 - uint16le byte gain value (same will be written to SW VOLUME SETTINGS):
