@@ -109,12 +109,17 @@ SOFTWARE CONFIGURATION AREA (same for 8i6, 18i8, 18i20 devices)
                                 - ADAT 1.1-1.8
                                 - ADAT 2.1-2.4 ???
                                 - Loopback 1-2
-                              - The numbering of inputs:
-                                - Analog inputs 1-8
-                                - SPDIF inputs 1-2
-                                - ADAT 1.1-1.8
-                                - ADAT 2.1-2.4 ???
-                                - Playback 1-20
+                              - The numbering of inputs for Scarlett 18i8 device:
+                                - 1..8 = Analog inputs 1-8
+                                - 9..10 = SPDIF inputs 1-2
+                                - 11..18 = ADAT 1.1-1.8
+                                - 19..26 = Payback 1-8
+                              - The numbering of inputs for Scarlett 18i20 device:
+                                - 1..8 = Analog inputs 1-8
+                                - 9..10 = SPDIF inputs 1-2
+                                - 11..18 = ADAT 1.1-1.8
+                                - 19..22 = ADAT 2.1-2.4 ???
+                                - 23..43 = Playback 1-20
                               - The Numbering of mixer lines:
                                 - 1-c - mixer lines 1-12
                                 - only even numbers are used in configuration
@@ -151,16 +156,16 @@ SOFTWARE CONFIGURATION AREA (same for 8i6, 18i8, 18i20 devices)
                                 - 24..25 - Loopback 1-2
 01b8    0004    +0xd0       Logic Mutes for outputs:
                               - 1 bit per output
+                              - bit encoding for 18i8:
+                                - 0..7   - line outputs 1-8
+                                - 8..9   - SPDIF 1-2
+                                - 10..11 - Loopback 1-2
                               - bit encoding for 18i20:
                                 - 0..9   - line outputs 1-10
                                 - 10..11 - SPDIF 1-2
                                 - 12..19 - ADAT 1.1-1.8
                                 - 20..23 - ADAT 2.1-2.4 ???
                                 - 24..25 - Loopback 1-2
-                              - it encoding for 18i8:
-                                - 0..7   - line outputs 1-8
-                                - 8..9   - SPDIF 1-2
-                                - 10..11 - Loopback 1-2
 01bc    0028    +00d0       Volume settings of each output:
                               - stored as array of 4-byte structures:
                                 - uint16le byte gain value (same will be written to SW VOLUME SETTINGS):
