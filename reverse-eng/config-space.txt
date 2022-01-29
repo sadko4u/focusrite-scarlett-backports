@@ -13,6 +13,31 @@ LOOPBACK feature:
 - Loopback inputs are mapped as PCM OUT 9 and PCM OUT 10
 - Loopback outputs are mapped as PCM IN 1 and PCM IN 2 
 
+SOFTWARE OUTPUT PORT NUMBERING FOR DEVICES:
+- Scarlett 18i8:
+  - 0..7   - line outputs 1-8
+  - 8..9   - SPDIF 1-2
+  - 10..11 - Loopback 1-2
+- Scarlett 18i20:
+  - 0..9   - line outputs 1-10
+  - 10..11 - SPDIF 1-2
+  - 12..19 - ADAT 1.1-1.8
+  - 20..23 - ADAT 2.1-2.4 ???
+  - 24..25 - Loopback 1-2
+  
+SOFTWARE INPUT PORT NUMBERING FOR DEVICES:
+- Scarlett 18i8:
+  - 1..8 = Analog inputs 1-8
+  - 9..10 = SPDIF inputs 1-2
+  - 11..18 = ADAT 1.1-1.8
+  - 19..26 = Payback 1-8
+- Scarlett 18i20:
+  - 1..8 = Analog inputs 1-8
+  - 9..10 = SPDIF inputs 1-2
+  - 11..18 = ADAT 1.1-1.8
+  - 19..22 = ADAT 2.1-2.4 ???
+  - 23..43 = Playback 1-20
+
       00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f
       -----------------------------------------------
 0000: [ CFG SIZE] ?? ?? ?? ?? ?? ?? ?? ?? [   FWV   ]
@@ -109,17 +134,7 @@ SOFTWARE CONFIGURATION AREA (same for 8i6, 18i8, 18i20 devices)
                                 - ADAT 1.1-1.8
                                 - ADAT 2.1-2.4 ???
                                 - Loopback 1-2
-                              - The numbering of inputs for Scarlett 18i8 device:
-                                - 1..8 = Analog inputs 1-8
-                                - 9..10 = SPDIF inputs 1-2
-                                - 11..18 = ADAT 1.1-1.8
-                                - 19..26 = Payback 1-8
-                              - The numbering of inputs for Scarlett 18i20 device:
-                                - 1..8 = Analog inputs 1-8
-                                - 9..10 = SPDIF inputs 1-2
-                                - 11..18 = ADAT 1.1-1.8
-                                - 19..22 = ADAT 2.1-2.4 ???
-                                - 23..43 = Playback 1-20
+                              - The numbering of inputs - see SOFTWARE INPUT PORT NUMBERING
                               - The Numbering of mixer lines:
                                 - 1-c - mixer lines 1-12
                                 - only even numbers are used in configuration
@@ -148,24 +163,10 @@ SOFTWARE CONFIGURATION AREA (same for 8i6, 18i8, 18i20 devices)
 01b4    0004    +00c8       Mono/Stereo switch for output channels:
                               - it's a bitmask
                               - bits are set/cleared by pairs, for example: 0xff -> 0xfc
-                              - bit encoding:
-                                - 0..9   - Line outputs 1-10
-                                - 10..11 - SPDIF 1-2
-                                - 12..19 - ADAT 1.1-1.8
-                                - 20..23 - ADAT 2.1-2.4 ???
-                                - 24..25 - Loopback 1-2
+                              - bit encoding: see SOFTWARE OUTPUT PORT NUMBERING
 01b8    0004    +0xd0       Logic Mutes for outputs:
                               - 1 bit per output
-                              - bit encoding for 18i8:
-                                - 0..7   - line outputs 1-8
-                                - 8..9   - SPDIF 1-2
-                                - 10..11 - Loopback 1-2
-                              - bit encoding for 18i20:
-                                - 0..9   - line outputs 1-10
-                                - 10..11 - SPDIF 1-2
-                                - 12..19 - ADAT 1.1-1.8
-                                - 20..23 - ADAT 2.1-2.4 ???
-                                - 24..25 - Loopback 1-2
+                              - bit encoding: see SOFTWARE OUTPUT PORT NUMBERING
 01bc    0028    +00d0       Volume settings of each output:
                               - stored as array of 4-byte structures:
                                 - uint16le byte gain value (same will be written to SW VOLUME SETTINGS):
