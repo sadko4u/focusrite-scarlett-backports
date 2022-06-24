@@ -1,8 +1,12 @@
 The description of configuration space of the 18i20 device:
 
 Matrix MIXER features:
-- Up to 25 inputs (24 for custom mix and 1 for talkback)
-- Up to 12 outputs
+- The number of mixer lines for the 18i8:
+  - ??? inputs
+  - Up to 10 outputs for the device
+- The number of mixer lines for the 18i20:
+  - Up to 25 inputs (24 for custom mix and 1 for talkback)
+  - Up to 12 outputs for the device
 
 TALKBACK feature:
 - Builtin focusrite Talkback microphone is connected to hidden ANALOG-9 channel. 
@@ -172,7 +176,7 @@ SOFTWARE CONFIGURATION AREA (same for 8i6, 18i8, 18i20 devices)
                                 - uint16le byte gain value (same will be written to SW VOLUME SETTINGS):
                                   - 0x0000 means -127 dB
                                   - 0xff81 means 0 dB
-                                - uint8 change flag?
+                                - uint8 change flag (bit #2)?
                                 - uint8 some unknown data
                               - volume changes only for first output in pair in STEREO mode
                               - 10 values for 18i20 device
